@@ -76,6 +76,8 @@ m.cant_update_builder_too_old = ", atualização para a versão {0} não pode se
 m.cant_update_builder_too_new = ", atualização para a versão {0} não pode ser aplicada: O plugin é muito antigo";
 m.cant_install_builder_too_old = "; não foi possível instalar: O Builder não está atualizado";
 m.cant_install_builder_too_new = "; não foi possível instalar: O plugin é muito antigo";
+m.updates_available = "Atualizações Disponíveis";
+m.plugin_download_failed = "O download do plugin falhou.";
 
 // Menus
 m.menu_file = "Arquivo";
@@ -186,6 +188,7 @@ m.sel2_true = "verdadeiro";
 m.sel2_false = "falso";
 m.sel2_untitled_run = "Sem Título";
 m.sel2_server_error = "Erro do Servidor";
+m.sel2_must_playback_in_foreground = "Nota: É necessário deixar a janela de playback em primeiro plano durante o playback local.";
 
 // Step display
 m.param_expr_info = "<br>Expressões de parâmetro no formato <i>${varname}</i> são substituídos pelo conteúdo da variável <i>varname</i>";
