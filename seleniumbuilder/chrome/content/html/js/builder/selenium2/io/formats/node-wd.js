@@ -40,6 +40,30 @@ builder.selenium2.io.addLangFormatter({
       ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
       "  b.next('clickElement', el, function(){});\n" +
       "})\n",
+    "setElementText":
+      ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
+      "  b.next('clear', el, function(err){\n" +
+      "    b.next('type', el, {text}, function(){});\n" +
+      "  });\n" +
+      "})\n",
+    "doubleClickElement":
+      ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
+      "  b.next('moveTo', el, 0, 0, function(){\n" +
+        "  b.next('doubleclick', function(){});\n" +
+      "  });\n" +
+      "})\n",
+    "clickAndHoldElement":
+      ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
+      "  b.next('moveTo', el, 0, 0, function(){\n" +
+        "  b.next('buttonDown', function(){});\n" +
+      "  });\n" +
+      "})\n",
+    "releaseElement":
+      ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
+      "  b.next('moveTo', el, 0, 0, function(){\n" +
+        "  b.next('buttonUp', function(){});\n" +
+      "  });\n" +
+      "})\n",
     "sendKeysToElement":
       ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
       "  b.next('type', el, {text}, function(){});\n" +
