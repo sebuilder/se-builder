@@ -280,6 +280,7 @@ builder.selenium2.io.addLangFormatter({
   },
 
   locatorByForType: function(stepType, locatorType, locatorIndex) {
+    if(locatorType === "xpath"){ return "XPath"; }
     return locatorType.split(" ").map(function(el) {
       return el.charAt(0).toUpperCase() + el.slice(1);
     }).join("");
