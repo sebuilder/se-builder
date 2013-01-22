@@ -1,4 +1,4 @@
-# Se Builder
+# Se Builder [![Build Status](https://secure.travis-ci.org/sebuilder/se-builder.png)](http://travis-ci.org/sebuilder/se-builder)
 
 A test development environment for Selenium 1 and 2
 
