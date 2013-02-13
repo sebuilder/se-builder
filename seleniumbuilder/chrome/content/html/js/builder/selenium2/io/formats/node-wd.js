@@ -4,90 +4,85 @@ builder.selenium2.io.addLangFormatter({
   not: "!",
   start:
     "var wd = require('wd')\n" +
-    "  , assert = require('assert')\n" +
     "  , _ = require('underscore')\n" +
     "  , fs = require('fs')\n" +
     "  , path = require('path')\n" +
     "  , uuid = require('uuid-js');\n" +
     "var VARS = {};\n" +
     "\n" +
-    "var b = wd.remote();\n\n" +
+    "var b = wd.promiseRemote();\n\n" +
     "b.on('status', function(info){" +
       "console.log('\x1b[36m%s\x1b[0m', info);" +
     "});" +
     "b.on('command', function(meth, path, data){" +
     "  console.log(' > \x1b[33m%s\x1b[0m: %s', meth, path, data || '');" +
     "});\n" +
-    "b.chain().init({\n" +
+    "b.init({\n" +
     "  browserName:'firefox'\n" +
     "})\n",
   end:
-    ".quit(null);\n",
+    ".fin(function () {\n" +
+        "b.quit();\n" +
+    "}).done();\n",
   lineForType: {
     "print":
-      ".queueAdd(function(){ console.log({text}); })\n",
+      ".then(function () { console.log({text}); })\n",
     "pause":
-      ".pauseChain({waitTime})\n",
+      ".delay({waitTime})\n",
     "get":
-      ".get({url})\n",
+      ".then(function () { return b.get({url}); })\n",
     "goBack":
-      ".back()\n",
+      ".then(function () { return b.back(); })\n",
     "goForward":
-      ".forward()\n",
+      ".then(function () { return b.forward(); })\n",
     "store":
-      ".queueAdd(function(){ ${{variable}} = '' + {text};})\n",
+      ".then(function () {  ${{variable}} = '' + {text}; })\n",
     "clickElement":
-      ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
-      "  b.next('clickElement', el, function(){});\n" +
-      "})\n",
+      ".then(function () { return b.elementBy{locatorBy}({locator}); })\n" +
+      ".then(function (el) { return b.clickElement(el); })\n",
     "setElementText":
-      ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
-      "  b.next('clear', el, function(err){\n" +
-      "    b.next('type', el, {text}, function(){});\n" +
-      "  });\n" +
+      ".then(function () { return b.elementBy{locatorBy}({locator}); })\n" +
+      ".then(function (el) { return b.clear(el)\n" +
+      "  .then(function () { return b.type(el, {text}); });\n" +
       "})\n",
     "doubleClickElement":
-      ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
-      "  b.next('moveTo', el, 0, 0, function(){\n" +
-        "  b.next('doubleclick', function(){});\n" +
-      "  });\n" +
-      "})\n",
+      ".then(function () { return b.elementBy{locatorBy}({locator}); })\n" +
+      ".then(function (el) { return b.moveTo(el, 0, 0); })\n" +
+      ".then(function () { return b.doubleclick(); })\n",
     "clickAndHoldElement":
-      ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
-      "  b.next('moveTo', el, 0, 0, function(){\n" +
-        "  b.next('buttonDown', function(){});\n" +
-      "  });\n" +
+      ".then(function () { return b.elementBy{locatorBy}({locator}); })\n" +
+      ".then(function (el) { return b.moveTo(el, 0, 0)\n" +
+      "  .then(function (el) { return b.buttonDown(); })\n" +
       "})\n",
     "releaseElement":
-      ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
-      "  b.next('moveTo', el, 0, 0, function(){\n" +
-        "  b.next('buttonUp', function(){});\n" +
-      "  });\n" +
-      "})\n",
+      ".then(function () { return b.elementBy{locatorBy}({locator}); })\n" +
+      ".then(function (el) { return b.moveTo(el, 0, 0); })\n" +
+      ".then(function (el) { return b.buttonUp(); })\n",
     "sendKeysToElement":
-      ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
-      "  b.next('type', el, {text}, function(){});\n" +
-      "})\n",
+      ".then(function () { return b.elementBy{locatorBy}({locator}); })\n" +
+      ".then(function (el) { return b.type(el, {text}); })\n",
     "setElementSelected":
-      ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
-      "  b.next('isSelected', el, function(err, isSelected){\n" +
-      "    if (!isSelected) {\n" +
-      "      b.next('clickElement', el, function(){});\n" +
-      "    }\n" +
+      ".then(function () { return b.elementBy{locatorBy}({locator}); })\n" +
+      ".then(function (el) { return b.isSelected(el)\n" +
+      "  .then(function (isSelected) {\n" +
+      "     if (!isSelected) {\n" +
+      "       return b.clickElement(el);\n" +
+      "     }\n" +
       "  });\n" +
       "})\n",
     "setElementNotSelected":
-      ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
-      "  b.next('isSelected', el, function(err, isSelected){\n" +
-      "    if (isSelected) {\n" +
-      "      b.next('clickElement', el, function(){});\n" +
-      "    }\n" +
+      ".then(function () { return b.elementBy{locatorBy}({locator}); })\n" +
+      ".then(function (el) { return b.isSelected(el)\n" +
+      "  .then(function (isSelected) {\n" +
+      "     if (isSelected) {\n" +
+      "       return b.clickElement(el);\n" +
+      "     }\n" +
       "  });\n" +
       "})\n",
     "close":
       "",
     "refresh":
-      ".refresh(function(){})\n",
+      ".then(function () { return b.refresh() })",
     "addCookie":
       function(step, escapeValue) {
         var data = {value: step.value, name: step.name};
@@ -95,36 +90,34 @@ builder.selenium2.io.addLangFormatter({
           var entryArr = entry.split("=");
           data[entryArr[0]] = data[entryArr[1]];
         });
-        return ".setCookie(" + JSON.stringify(data) + ", function(){})\n";
+        return ".then(function () { return b.setCookie(" + JSON.stringify(data) + "); })\n";
       },
     "deleteCookie":
-      ".deleteCookie({name}, function(){})\n",
+      ".then(function () { return b.deleteCookie({name}); })\n",
     "saveScreenshot":
-      ".takeScreenshot(function(err, base64Image) {\n" +
+      ".then(function () { return b.takeScreenshot(); })\n" +
+      ".then(function (base64Image) {\n" +
       "  var decodedImage = new Buffer(base64Image, 'base64');\n" +
       "  fs.writeFile(path.resolve(__dirname, 'screenShot' + uuid.create() + '.png'), decodedImage, function write(err) { if (err) throw err; });\n" +
       "})\n",
     "switchToFrame":
-      ".frame({identifier}, function(){})\n",
+      ".then(function () { return b.frame({identifier}); })\n",
     "switchToFrameByIndex":
-      ".frame({index}, function(){})\n",
+      ".then(function () { return b.frame({index}); })\n",
     "switchToWindow":
-      ".window({name}, function(){})\n",
+      ".then(function () { return b.window({name}); })\n",
     // "switchToDefaultContent":
     //   "        wd = (FirefoxDriver) wd.switchTo().switchToDefaultContent();\n",
     "answerAlert":
-      ".alertKeys({text}, function() {\n" +
-      "  b.next('acceptAlert', function(){});\n" +
-      "})\n",
+      ".then(function () { return b.alertKeys({text}); })\n" +
+      ".then(function () { return b.acceptAlert(); })\n",
     "acceptAlert":
-      ".acceptAlert(function(){})\n",
+      ".then(function () { return b.acceptAlert(); })\n",
     "dismissAlert":
-      ".dismissAlert(function(){})\n",
-
+      ".then(function () { return b.dismissAlert(); })\n",
     "submitElement":
-      ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
-      "  b.next('submit', el, function(err){});" +
-      "})\n"
+      ".then(function () { return b.elementBy{locatorBy}({locator}); })\n" +
+      ".then(function (el) { return b.submit(el); })"
   },
   waitFor: "",
   assert: function(step, escapeValue, doSubs, getter) {
@@ -188,91 +181,106 @@ builder.selenium2.io.addLangFormatter({
     "{getterFinish}\n",
   boolean_getters: {
     "TextPresent": {
-      getter: ".elementByTagName('html', function(err, el) {\n" +
-        "  b.next('text', el, function(err, text){\n" +
-      "    var bool = text.indexOf({text}) != -1;",
-      getterFinish: "  });\n})",
+      getter: ".then(function () { return b.elementByTagName('html'); })\n" +
+      ".then(function (el) { return el.text(); })\n" +
+      ".then(function (text) {\n" +
+      "  var bool = text.indexOf({text}) != -1;",
+      getterFinish: "})",
       value: "bool"
     },
     "ElementPresent": {
-      getter: ".hasElement({locatorBy},{locator}, function(err, bool) {",
+      getter: ".then(function () { return b.hasElement({locatorBy},{locator}); })\n" +
+      ".then(function (el) {",
       getterFinish: "})",
       value: "bool"
     },
     "ElementSelected": {
-      getter: ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
-      "b.next('isSelected', el, function(err, bool){",
-      getterFinish: "  });\n})",
+      getter: ".then(function () { return b.elementBy{locatorBy}({locator}); })\n" +
+      ".then(function (el) { return b.isSelected(el); })\n" +
+      ".then(function (bool) {",
+      getterFinish: "})",
       value: "bool"
     },
     "CookiePresent": {
-      getter: ".allCookies(function(err, cookies) {\n" +
+      getter: ".then(function () { return b.allCookies(); })\n" +
+        ".then(function (cookies) {\n" +
         "  var hasCookie = _.find(cookies, function(e){ return e.name === {name}; });",
       getterFinish: "})",
       value: "hasCookie"
     },
-    "AlertPresent": {
-      getter: ".alertText(function(err, bool){",
+    "AlertPresent": { // should return an error if it's not there (and true if it's there)
+      getter: ".then(function () { return b.alertText(); })\n" +
+        ".then(function (bool) { return bool; }, function (err) { return false; })\n" +
+        ".then(function (bool) {",
       getterFinish: "})",
       value: "bool"
     }
   },
   getters: {
     "BodyText": {
-      getter: ".elementByTagName('html', function(err, el) {\n" +
-      "  b.text(el, function(err, text){",
-      getterFinish: "  });\n})",
+      getter: ".then(function () { return b.elementByTagName('html'); })\n" +
+        ".then(function (el) { return el.text(); })\n" +
+        ".then(function (text) {",
+      getterFinish: "})",
       cmp: "{text}",
       value: "text"
     },
     "PageSource": {
-      getter: ".source(function(err, source) {",
+      getter: ".then(function () { return b.source(); })\n" +
+        ".then(function (source) {",
       getterFinish: "})",
       cmp: "{source}",
       value: "source"
     },
     "Text": {
-      getter: ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
-      "  b.text(el, function(err, text){",
-      getterFinish: "  });\n})",
+      getter: ".then(function () { return b.elementBy{locatorBy}({locator}); })\n" +
+        ".then(function (el) { return el.text(); })\n" +
+        ".then(function (text) {",
+      getterFinish: "})",
       cmp: "{text}",
       value: "text"
     },
     "CurrentUrl": {
-      getter: ".url(function(err, url) {",
+      getter: ".then(function () { return b.url(); })" +
+        ".then(function (url) {",
       getterFinish: "})",
       cmp: "{url}",
       value: "url"
     },
     "Title": {
-      getter: ".title(function(err, title){",
+      getter: ".then(function () { return b.title(); })\n" +
+        ".then(function (title) {",
       getterFinish: "})",
       cmp: "{title}",
       value: "title"
     },
     "ElementValue": {
-      getter: ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
-      "  b.getAttribute(el, 'value', function(err, value){",
-      getterFinish: "  });\n})",
+      getter: ".then(function () { return b.elementBy{locatorBy}({locator}); })\n" +
+        ".then(function (el) { return b.getAttribute(el, 'value'); })" +
+        ".then(function (value) {",
+      getterFinish: "})",
       cmp: "{value}",
       value: "value"
     },
     "ElementAttribute": {
-      getter: ".elementBy{locatorBy}({locator}, function(err, el) {\n" +
-      "  b.getAttribute(el, {attributeName}, function(err, value){",
-      getterFinish: "  });\n})",
+      getter: ".then(function (el) { return b.elementBy{locatorBy}({locator}); })\n" +
+        ".then(function (el) { return b.getAttribute(el, {attributeName}); })" +
+        ".then(function (value) {",
+      getterFinish: "})",
       cmp: "{value}",
       value: "value"
     },
     "CookieByName": {
-      getter: ".allCookies(function(err, cookies) {\n" +
-      "  var cookie = _.find(cookies, function(e){ return e.name === {name}; });",
+      getter: ".then(function (el) { return b.allCookies(); })\n" +
+        ".then(function (cookies) {\n" +
+        "  var cookie = _.find(cookies, function(e){ return e.name === {name}; });",
       getterFinish: "})",
       cmp: "{value}",
       value: "cookie"
     },
     "AlertText": {
-      getter: ".alertText(function(err, text){",
+      getter: ".then(function (el) { return b.alertText(); })" +
+        ".then(function (text) {",
       getterFinish: "})",
       cmp: "{text}",
       value: "text"
