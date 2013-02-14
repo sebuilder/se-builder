@@ -1,27 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>Selenium Builder - The next evolution</title>
-    <link href="css/style.css" rel="stylesheet">
     <script src="http://api.html5media.info/1.1.5/html5media.min.js"></script>
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <link href="js/google-code-prettify/prettify.css" rel="stylesheet">
+    <link href="http://vjs.zencdn.net/c/video-js.css" rel="stylesheet">
+    <script src="http://vjs.zencdn.net/c/video.js"></script>
+
   </head>
   <body>
-    <div id="splash">
-      <div style="margin-left: 30px; float: right; border: 1px solid gray;"><video src="sbintro-streaming.mp4" width="400" height="300" poster="sbintro-cover.jpg" controls preload></video></div>
-      <img src="images/logo.png" alt="Selenium Builder">
-      <h1>A faster way to build tests.</h1>
-      <p class="important">A Firefox add-on that lets you easily create Selenium tests.</p>
-      <a href="http://www.saucelabs.com/addons/selenium-builder-latest.xpi" class="button">Install</a>
+
+
+    <!-- Navbar
+    ================================================== -->
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="/" style="color:#eee">Selenium Builder</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li class="active"><a href="/">Home</a></li>
+
+              <li><a href="plugins.html">Plugins</a></li>
+              <li><a href="http://github.com/sebuilder/se-builder">Github</a></li>
+              <li><a href="https://github.com/sebuilder/se-builder/wiki">Docs</a></li>
+
+              <li><a href="https://groups.google.com/d/forum/se-builder">Mailing List</a></li>
+              <li><a href="http://www.youtube.com/watch?v=RdAd4QfAT8w">Hacking Video</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
-    <ul id="nav-top">
-      <li><a href="http://www.youtube.com/watch?v=RdAd4QfAT8w">Hacking Video</a></li>
-      <li><a href="https://groups.google.com/d/forum/se-builder">Mailing List</a></li>
-      <li><a href="http://github.com/sebuilder/se-builder">Github</a></li>
-      <li><a href="https://github.com/sebuilder/se-builder/wiki">Docs</a></li>
-      <li><a href="plugins.html">Plugins</a></li>
+
+
+<div class="jumbotron masthead">
+  <div class="container">
+    <h1 class="selenium-builder-logo">Selenium Builder</h1>
+    <p>A faster way to build tests.</p>
+    <p class="small">A Firefox add-on that lets you easily create Selenium tests.</p>
+
+    <p>
+     <a href="http://www.saucelabs.com/addons/selenium-builder-latest.xpi" class="btn btn-primary btn-large">Install</a>
+     <a id="watch-demo" class="btn btn-secondary btn-large">Watch a demo <i class="icon-play"></i></a>
+    </p>
+
+    <ul class="masthead-links">
+      <li>
+        <a href="http://github.com/sebuilder/se-builder">View on GitHub</a>
+      </li>
+      <li>
+        <a href="https://github.com/sebuilder/se-builder/wiki">Documentation</a>
+      </li>
+      <li>
+        <a href="https://secure.travis-ci.org/sebuilder/se-builder"><img src="https://secure.travis-ci.org/sebuilder/se-builder.png" alt="Build Status"></a>
+      </li>
     </ul>
+  </div>
+</div>
+
+<div id="video-container" class="hidden">
+  <i class="icon-remove"></i>
+  <video id="video-tag" src="sbintro-streaming.mp4" width="400" height="300" poster="sbintro-cover.jpg" controls preload class="video-js vjs-default-skin" data-setup="{}"></video>
+</div>
+
+<br class="thick-line"/>
     <div id="content">
-      <h2>As simple as it gets</h2>
+      <h1>As simple as it gets</h1>
+      <p>Follow these three easy steps and get your tests running</p>
       <div id="steps" style="position: relative; height: 260px;">
         <div id="step_1" class="step col_1">
           1<br>
@@ -39,7 +96,7 @@
           Run tests locally or&nbsp;on Selenium RC.
         </div>
       </div>
-      <span class="important">Save. Export in your programming language of choice. You're done.</span>
+      <h2 class="important">Save. Export in your programming language of choice. You're done.</h2>
       <div class="ruler"></div>
       <div id="details" style="position: relative; height: 180px;">
         <div id="detail_1" class="col_1">
@@ -95,14 +152,36 @@
           </div>
         </div>
       </div>
-      <span class="important">We know. Your life just got way better.</span>
+      <h2>We know. Your life just got way better.</h2>
+      <p>
+        We'd be happy to to hear from you. Share some love!
+        <a href="https://twitter.com/seleniumbuilder" class="twitter-follow-button" data-show-count="false">Follow @seleniumbuilder</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+      </p>
     </div>
-    <ul id="nav-bottom">
-      <li><a href="http://www.youtube.com/watch?v=RdAd4QfAT8w">Hacking Video</a></li>
-      <li><a href="https://groups.google.com/d/forum/se-builder">Mailing List</a></li>
-      <li><a href="http://github.com/sebuilder/se-builder">Github</a></li>
-      <li><a href="https://github.com/sebuilder/se-builder/wiki">Docs</a></li>
-      <li><a href="plugins.html">Plugins</a></li>
-    </ul>
+
+      <!-- Footer
+    ================================================== -->
+    <footer class="footer">
+      <div class="container">
+        <ul class="footer-links">
+          <li><a href="http://www.youtube.com/watch?v=RdAd4QfAT8w">Hacking Video</a></li>
+          <li><a href="https://groups.google.com/d/forum/se-builder">Mailing List</a></li>
+          <li><a href="http://github.com/sebuilder/se-builder">Github</a></li>
+          <li><a href="https://github.com/sebuilder/se-builder/wiki">Docs</a></li>
+          <li><a href="plugins.html">Plugins</a></li>
+        </ul>
+        <p style="color:rgb(153, 153, 153);">Powered by <a href="https://saucelabs.com/se-builder">Sauce Labs</a> and robots.</p>
+      </div>
+    </footer>
+
+
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/google-code-prettify/prettify.js"></script>
+    <script src="js/app.js"></script>
+
+    </script>
+
   </body>
 </html>

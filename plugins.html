@@ -1,37 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Selenium Builder - Plugins</title>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Selenium Builder - The next evolution</title>
+    <script src="http://api.html5media.info/1.1.5/html5media.min.js"></script>
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/bootstrap-responsive.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
-    <link href="css/lightbox.css" rel="stylesheet">
+    <link href="js/google-code-prettify/prettify.css" rel="stylesheet">
+    <link href="http://vjs.zencdn.net/c/video-js.css" rel="stylesheet">
+    <script src="http://vjs.zencdn.net/c/video.js"></script>
+
   </head>
   <body>
+
+
+    <!-- Navbar
+    ================================================== -->
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="/" style="color:#eee">Selenium Builder</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li><a href="/">Home</a></li>
+              <li class="active"><a href="plugins.html">Plugins</a></li>
+              <li><a href="http://github.com/sebuilder/se-builder">Github</a></li>
+              <li><a href="https://github.com/sebuilder/se-builder/wiki">Docs</a></li>
+
+              <li><a href="https://groups.google.com/d/forum/se-builder">Mailing List</a></li>
+              <li><a href="http://www.youtube.com/watch?v=RdAd4QfAT8w">Hacking Video</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+<header class="jumbotron subhead" id="overview">
+  <div class="container">
+    <h1>Plugins</h1>
+    <p class="lead">Want to extend Selenium Builder functionlity? Here is how you do it!</p>
+  </div>
+</header>
+
     <div id="splash">
-      <h1>Plugins</h1>
       <p>You can manage your plugins directly from within Selenium Builder. If you want to develop a plugin, <a href="https://github.com/sebuilder/se-builder/wiki/Plugin-Developer-Documentation">have a look at the developer documentation</a>.</p>
       <p>Selenium Builder also supports adding a <a href="http://seleniumhq.org/docs/08_user_extensions.html">user_extensions.js file</a>. To install the file, put it in <pre>&lt;your firefox profile folder&gt;/SeBuilder/user-extensions.js</pre></p>
     </div>
-    <ul id="nav-top">
-      <li><a href="http://www.youtube.com/watch?v=RdAd4QfAT8w">Hacking Video</a></li>
-      <li><a href="https://groups.google.com/d/forum/se-builder">Mailing List</a></li>
-      <li><a href="http://github.com/sebuilder/se-builder">Github</a></li>
-      <li><a href="https://github.com/sebuilder/se-builder/wiki">Docs</a></li>
-      <li><a href="index.html">Home</a></li>
-    </ul>
+
     <div id="content">
       <div id="plugins-loading" style="background: white; padding: 5px; border-radius: 5px;"><img src="img/loading.gif" />&nbsp;&nbsp;Loading...</div>
       <ul id="plugins-list" class="plugins">
         
       </ul>
     </div>
-    <ul id="nav-bottom">
-      <li><a href="http://www.youtube.com/watch?v=RdAd4QfAT8w">Hacking Video</a></li>
-      <li><a href="https://groups.google.com/d/forum/se-builder">Mailing List</a></li>
-      <li><a href="http://github.com/sebuilder/se-builder">Github</a></li>
-      <li><a href="https://github.com/sebuilder/se-builder/wiki">Docs</a></li>
-      <li><a href="index.html">Home</a></li>
-    </ul>
-    <script src="js/jquery.min.js"></script>
+
+
+      <!-- Footer
+    ================================================== -->
+    <footer class="footer">
+      <div class="container">
+        <ul class="footer-links">
+          <li><a href="http://www.youtube.com/watch?v=RdAd4QfAT8w">Hacking Video</a></li>
+          <li><a href="https://groups.google.com/d/forum/se-builder">Mailing List</a></li>
+          <li><a href="http://github.com/sebuilder/se-builder">Github</a></li>
+          <li><a href="https://github.com/sebuilder/se-builder/wiki">Docs</a></li>
+          <li><a href="plugins.html">Plugins</a></li>
+        </ul>
+        <p style="color:rgb(153, 153, 153);">Powered by <a href="https://saucelabs.com/se-builder">Sauce Labs</a> and robots.</p>
+      </div>
+    </footer>
+
+
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/google-code-prettify/prettify.js"></script>
+    <script src="js/lightbox.js"></script>
+
+</body>
+
+
     <script src="js/lightbox.js"></script>
     <script type="text/javascript">
       /**
