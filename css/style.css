@@ -653,10 +653,10 @@ h1, h2, h3, h4, h1 + p, h2 +p, h3 + p, h4 + p{
 	background-color: rgb(122, 0, 204);
 	color: #fff;
 	text-shadow: 0 -1px 0 rgba(0,0,0,0.25);
-	background-image: -moz-linear-gradient(top, rgb(139, 0, 204), rgb(139, 0, 204));
-	background-image: -webkit-gradient(linear,0 0,0 100%,from(rgb(139, 0, 204)),to(rgb(139, 0, 204)));
-	background-image: -o-linear-gradient(top, rgb(139, 0, 204), rgb(139, 0, 204));
-	background-image: linear-gradient(to bottom, rgb(139, 0, 204), rgb(139, 0, 204));
+	background-image: -moz-linear-gradient(top, rgb(139, 0, 204), rgb(73, 0, 204));
+	background-image: -webkit-gradient(linear,0 0,0 100%,from(rgb(139, 0, 204)),to(rgb(73, 0, 204)));
+	background-image: -o-linear-gradient(top, rgb(139, 0, 204), rgb(73, 0, 204));
+	background-image: linear-gradient(to bottom, rgb(139, 0, 204), rgb(73, 0, 204));
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc',endColorstr='#ff0044cc',GradientType=0);
 	filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
 }
