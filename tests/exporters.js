@@ -4,7 +4,7 @@ var assert = require('assert')
   , convert = require('../tools/convert');
 
 // test exporters
-var exporters = ["node-wd", "java_new", "english"];
+var exporters = ["node-wd", "node-mocha", "java_new", "english"];
 var testExporter = function(exporter, testFile) {
   assert.doesNotThrow(function(){
     convert.run([exporter, testFile]);

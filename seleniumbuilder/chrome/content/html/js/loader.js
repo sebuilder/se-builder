@@ -174,6 +174,7 @@ builder.loader.loadScripts(
   "builder/selenium2/io/formats/python_unittest.js",
   "builder/selenium2/io/formats/php.js",
   "builder/selenium2/io/formats/node-wd.js",
+  "builder/selenium2/io/formats/node-mocha.js",
   "builder/selenium2/io/formats/csharp_new.js",
   "builder/selenium2/io/formats/csharp_new_nunit.js",
   "builder/selenium2/io/formats/english.js",
