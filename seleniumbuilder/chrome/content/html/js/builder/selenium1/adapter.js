@@ -338,9 +338,11 @@ builder.selenium1.adapter.convertTestCaseToScript = function(testCase, originalF
       }
     }
     try {
-      // Internally we don't have base URLs, so we have to put them straight in here.
+      // Internally we don't have base URLs, so we have to put them straight in here if the provided URL isn't already absolute.
       if (stepType == builder.selenium1.stepTypes.open) {
-        if (params[0].startsWith("/") && endsWith(baseURL, "/")) {
+        if (params[0].match('^(http|https)://')) {
+          // leave already absolute params[0] alone
+        } else if (params[0].startsWith("/") && endsWith(baseURL, "/")) {
           params[0] = baseURL + params[0].substring(1);
         } else {
           params[0] = baseURL + params[0];
