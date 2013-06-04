@@ -131,6 +131,7 @@ builder.loader.loadScripts(
   "builder/i18n/en.js",
   "builder/i18n/de.js",
   "builder/i18n/fr.js",
+  "builder/i18n/jp.js",
   "builder/i18n/pt-br.js",
   "builder/io.js",
   "builder/url.js",
