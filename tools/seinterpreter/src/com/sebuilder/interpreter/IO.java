@@ -16,13 +16,16 @@
 
 package com.sebuilder.interpreter;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.HashMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Utilities for reading scripts.
@@ -34,8 +37,9 @@ public class IO {
 	 * @return A script, ready to run.
 	 * @throws IOException If anything goes wrong with interpreting the JSON, or with the Reader.
 	 * @throws JSONException If the JSON can't be parsed.
+     * @throws SuiteException If the script is of type 'suite', so that each script referenced by the suite can be processed
 	 */
-	public static Script read(Reader r) throws IOException, JSONException {
+	public static Script read(Reader r) throws IOException, JSONException, SuiteException {
 		return parse(new JSONObject(new JSONTokener(r)));
 	}
 	
@@ -43,8 +47,9 @@ public class IO {
 	 * @param scriptO A JSONObject describing a script.
 	 * @return A script, ready to run.
 	 * @throws IOException If anything goes wrong with interpreting the JSON.
+     * @throws SuiteException If the script is of type 'suite', so that each script referenced by the suite can be processed
 	 */
-	public static Script parse(JSONObject scriptO) throws IOException {
+	public static Script parse(JSONObject scriptO) throws IOException, SuiteException {
 		try {
 			if (!scriptO.get("seleniumVersion").equals("2")) {
 				throw new IOException("Unsupported Selenium version: \"" + scriptO.get("seleniumVersion") + "\".");
@@ -52,6 +57,12 @@ public class IO {
 			if (scriptO.getInt("formatVersion") != 1) {
 				throw new IOException("Unsupported Selenium script format version: \"" + scriptO.get("formatVersion") + "\".");
 			}
+            if (scriptO.has("type")) {
+                String type = scriptO.getString("type");
+                if (type.equals("suite")) {
+                    throw new SuiteException(scriptO);
+                }
+            }
 			Script script = new Script();
 			JSONArray stepsA = scriptO.getJSONArray("steps");
 			for (int i = 0; i < stepsA.length(); i++) {
@@ -74,7 +85,11 @@ public class IO {
 				}
 			}
 			return script;
-		} catch (Exception e) {
+		}
+        catch (SuiteException e) {
+            throw e;
+        }
+        catch (Exception e) {
 			throw new IOException("Could not parse script.", e);
 		}
 	}
@@ -146,4 +161,36 @@ public class IO {
 			throw new RuntimeException("Step type \"" + name + "\" is not implemented.", e);
 		}
 	}
+    /**
+     * Exception which is thrown when the {@link IO#parse(org.json.JSONObject)} method detects that a Script file
+     * is a suite.
+     *
+     * @author Ross Rowe
+     */
+    public static class SuiteException extends Exception {
+
+        private List<String> paths = new ArrayList<String>();
+
+        /**
+         * Constructs the exception, and populates the {@link #paths} by parsing the jsonObject.
+         *
+         * @param jsonObject A JSONObject describing a script.
+         * @throws org.json.JSONException if any errors occur retrieving the attributes from the jsonObject
+         */
+        public SuiteException(JSONObject jsonObject) throws JSONException {
+
+            JSONArray scriptLocations = jsonObject.getJSONArray("scripts");
+            for (int i = 0; i < scriptLocations.length(); i++) {
+                JSONObject script = scriptLocations.getJSONObject(i);
+                String where = script.getString("where");
+                //TODO handle 'where' types other than 'local'
+                String path = script.getString("path");
+                paths.add(path);
+            }
+        }
+
+        public List<String> getPaths() {
+            return paths;
+        }
+    }
 }

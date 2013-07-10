@@ -18,14 +18,16 @@ package com.sebuilder.interpreter;
 
 import com.sebuilder.interpreter.webdriverfactory.Firefox;
 import com.sebuilder.interpreter.webdriverfactory.WebDriverFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.PriorityQueue;
 
 /**
  * An interpreter for Builder JSON tests. Given one or more JSON script files, it plays them back
@@ -77,7 +79,10 @@ public class SeInterpreter {
 		}
 		
 		try {
-			for (String s : paths) {
+			//use a queue instead of iterating over the paths, as we may be adding to the paths if the script file is of type 'suite'
+            PriorityQueue<String> queue = new PriorityQueue<String>(paths);
+            while (queue.size() != 0) {
+                String s = queue.remove();
 				File f = new File(s);
 				if (!f.exists() || f.isDirectory()) {
 					throw new RuntimeException("The file " + f + " does not exist!");
@@ -98,7 +103,10 @@ public class SeInterpreter {
 					} catch (Exception e) {
 						log.info(s + " failed", e);
 					}
-				} finally {
+				} catch (IO.SuiteException e) {
+                    queue.addAll(e.getPaths());
+                }
+                finally {
 					if (br != null) { br.close(); }
 				}
 			}
