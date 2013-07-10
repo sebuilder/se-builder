@@ -24,6 +24,10 @@ var assert = require('assert')
 
 log.info("Testing if exporterts really work with Selenium & Sauce Labs");
 
+if (process.env.TRAVIS_PULL_REQUEST !== false) {
+  return log.info("This is a pull request, skipping");
+}
+
 // exporters to test
 var exporters = ["node-wd"];
 
