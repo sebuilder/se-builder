@@ -1,5 +1,5 @@
 builder.selenium2.io.addLangFormatter({
-  name: "PHP",
+  name: "PHP - Webdriver",
   extension: ".php",
   not: "! ",
   start:
