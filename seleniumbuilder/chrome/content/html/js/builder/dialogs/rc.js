@@ -43,7 +43,7 @@ builder.dialogs.rc.show = function (node, playall, altCallback, altOKText) {
         altCallback(hostPort, browserString);
       } else {
         if (playall) {
-          builder.dialogs.runall.runRC(node, hostPort, browserString);
+          builder.dialogs.runall.runRC(node, hostPort, browserString, browserVersion, platform);
         } else {
           if (script.seleniumVersion.rcPlayback.browserVersionAndPlatform) {
             script.seleniumVersion.rcPlayback.run(hostPort, browserString, browserVersion, platform);
