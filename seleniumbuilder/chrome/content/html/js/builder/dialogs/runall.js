@@ -6,6 +6,8 @@ builder.dialogs.runall.node = null;
 builder.dialogs.runall.dialog = null;
 builder.dialogs.runall.hostPort = null;
 builder.dialogs.runall.browserString = null;
+builder.dialogs.runall.browserVersion = null;
+builder.dialogs.runall.platform = null;
 
 builder.dialogs.runall.currentScriptIndex = -1;
 builder.dialogs.runall.scriptNames = [];
@@ -21,10 +23,12 @@ builder.dialogs.runall.currentPlayback = null;
 
 builder.dialogs.runall.running = false;
 
-builder.dialogs.runall.runRC = function(node, hostPort, browserString) {
+builder.dialogs.runall.runRC = function(node, hostPort, browserString, browserVersion, platform) {
   builder.dialogs.runall.node = node;
   builder.dialogs.runall.hostPort = hostPort;
   builder.dialogs.runall.browserString = browserString;
+  builder.dialogs.runall.browserVersion = browserVersion;
+  builder.dialogs.runall.platform = platform;
   builder.dialogs.runall.rc = true;
   builder.dialogs.runall.run();
 };
