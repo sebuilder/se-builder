@@ -168,6 +168,8 @@ builder.dialogs.runall.runNextRC = function() {
     builder.dialogs.runall.currentPlayback.run(
       builder.dialogs.runall.hostPort,
       builder.dialogs.runall.browserString,
+      builder.dialogs.runall.browserVersion,
+      builder.dialogs.runall.platform,
       builder.dialogs.runall.processRCResult);
   } else {
     jQuery('#suite-playback-stop').hide();
