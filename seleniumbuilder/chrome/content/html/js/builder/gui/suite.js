@@ -170,7 +170,7 @@ builder.registerPostLoadHook(function() {
   builder.gui.menu.addItem('suite', _t('menu_suite_remove_script'), 'suite-removescript', function() {
     builder.record.stopAll();
     builder.suite.removeScript(builder.suite.getSelectedScriptIndex());
-    builder.gui.menu.updateRunSuiteOnRC();
+    //builder.gui.menu.updateRunSuiteOnRC();
     builder.stepdisplay.update();
   });
   
