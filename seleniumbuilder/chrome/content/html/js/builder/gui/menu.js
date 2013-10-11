@@ -162,7 +162,7 @@ builder.registerPostLoadHook(function() {
   // Suite menu
   builder.gui.menu.addMenu(_t('menu_suite'), 'suite');
   
-  builder.gui.menu.updateRunSuiteOnRC();
+  //builder.gui.menu.updateRunSuiteOnRC();
   
   // Debug menu
   builder.gui.menu.addMenu(_t('menu_debug'), 'debug');
