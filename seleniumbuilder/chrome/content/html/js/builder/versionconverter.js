@@ -23,7 +23,7 @@ builder.versionconverter.addHook(
   builder.selenium1,
   function(step, src, tar) {
     var newSteps = builder.versionconverter.defaultConvertStep(step, src, tar);
-    newSteps.push(new builder.Step(builder.selenium1.stepTypes.waitForPageToLoad, 60000));
+    newSteps.push(new builder.Step(builder.selenium1.stepTypes.waitForPageToLoad, "60000"));
     return newSteps;
   }
 );
@@ -69,12 +69,48 @@ builder.versionconverter.defaultConvertStep = function(step, sourceVersion, targ
     var srcParamNames = step.getParamNames();
     var targetParamNames = newStep.getParamNames();
     for (var i = 0; i < srcParamNames.length && i < targetParamNames.length; i++) {
-      newStep[targetParamNames[i]] = step[srcParamNames[i]];
+      newStep[targetParamNames[i]] = builder.versionconverter.convertParam(step[srcParamNames[i]], step.type.getParamType(srcParamNames[i]), sourceVersion, targetVersion);
     }
     return [newStep];
   }
   return null;
 };
+
+builder.versionconverter.convertParam = function(param, paramType, sourceVersion, targetVersion) {
+  if (paramType == "locator") {
+    if (param.getName(targetVersion) == null) {
+      // Uh-oh, this is something that the target version does not support.
+      var loc2 = builder.locator.empty();
+      for (var k in builder.locator.methods) {
+        var lMethod = builder.locator.methods[k];
+        if (!lMethod[targetVersion]) { continue; }
+        if (param.supportsMethod(lMethod)) {
+          loc2.preferredMethod = lMethod;
+          loc2.values[lMethod] = {};
+          for (var i = 0; i < param.values[lMethod].length; i++) {
+            loc2.values[lMethod].push(param.values[lMethod][i]);
+          }
+        }
+      }
+      if (loc2.getValue() == "") {
+        // Uh-oh x2: And there are no alternatives. So we'll have to convert something.
+        if (sourceVersion == builder.selenium1) {
+          if (param.supportsMethod(builder.locator.methods.identifier)) {
+            loc2.values[builder.locator.methods.id] = [param.getValueForMethod(builder.locator.methods.identifier)];
+            loc2.preferredMethod = builder.locator.methods.id;
+            return loc2;
+          }
+        }
+        
+        // Give up!
+        return loc2;
+      }
+    }
+  }
+  
+  return param;
+};
+
 
 builder.versionconverter.convertScript = function(script, targetVersion) {
   var newScript = new builder.Script(targetVersion);
@@ -115,10 +151,10 @@ builder.versionconverter.sel1ToSel2Steps = {
   "check":                "setElementSelected",
   "clickAt":              "clickElementWithOffset",
   "doubleClick":          "doubleClickElement",
+  "mouseOver":            "mouseOverElement",
   "dragAndDropToObject":  "dragToAndDropElement",
   "mouseDown":            "clickAndHoldElement",
   "mouseUp":              "releaseElement",
-  "typeKeys":             "sendKeysToElement",
   "addSelection":         "setElementSelected",
   "removeAllSelections":  "clearSelections",
   "removeSelection":      "setElementNotSelected",
@@ -154,10 +190,6 @@ builder.versionconverter.sel1ToSel2Steps = {
   "verifyTitle":          "verifyTitle",
   "waitForTitle":         "waitForTitle",
   "storeTitle":           "storeTitle",
-  "assertAttribute":      "assertElementAttribute",
-  "verifyAttribute":      "verifyElementAttribute",
-  "waitForAttribute":     "waitForElementAttribute",
-  "storeAttribute":       "storeElementAttribute",
   "assertChecked":        "assertElementSelected",
   "verifyChecked":        "verifyElementSelected",
   "waitForChecked":       "waitForElementSelected",
@@ -166,7 +198,6 @@ builder.versionconverter.sel1ToSel2Steps = {
   "verifyValue":          "verifyElementValue",
   "waitForValue":         "waitForElementValue",
   "storeValue":           "storeElementValue",
-  "createCookie":         "addCookie",
   "deleteCookie":         "deleteCookie",
   "assertCookieByName":   "assertCookieByName",
   "verifyCookieByName":   "verifyCookieByName",
@@ -178,7 +209,31 @@ builder.versionconverter.sel1ToSel2Steps = {
   "storeCookiePresent":   "storeCookiePresent",
   "captureEntirePageScreenshot": "saveScreenshot",
   "echo":                 "print",
-  "pause":                "pause"
+  "pause":                "pause",
+  "selectFrame":          "switchToFrame",
+  "selectWindow":         "switchToWindow",
+  "assertAlert":          "assertAlertText",
+  "assertPrompt":         "assertAlertText",
+  "verifyAlert":          "verifyAlertText",
+  "verifyPrompt":         "verifyAlertText",
+  "waitForAlert":         "waitForAlertText",
+  "waitForPrompt":        "waitForAlertText",
+  "storeAlert":           "storeAlertText",
+  "storePrompt":          "storeAlertText",
+  "assertAlertPresent":   "assertAlertPresent",
+  "assertPromptPresent":  "assertAlertPresent",
+  "verifyAlertPresent":   "verifyAlertPresent",
+  "verifyPromptPresent":  "verifyAlertPresent",
+  "waitForAlertPresent":  "waitForAlertPresent",
+  "waitForPromptPresent": "waitForAlertPresent",
+  "storeAlertPresent":    "storeAlertPresent",
+  "storePromptPresent":   "storeAlertPresent",
+  "answerOnNextPrompt":   "answerAlert",
+  "chooseCancelOnNextConfirmation": "dismissAlert",
+  "assertEval":           "assertEval",
+  "verifyEval":           "verifyEval",
+  "waitForEval":          "waitForEval",
+  "storeEval":            "storeEval"
 };
 
 builder.versionconverter.sel2ToSel1Steps = {};

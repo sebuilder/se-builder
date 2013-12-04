@@ -18,11 +18,8 @@ builder.gui.suite.addScriptMenuItem = function(name, id, index, isSelected) {
 builder.gui.suite.update = function() {
   if (builder.suite.getNumberOfScripts() > 1) {
     jQuery('#suite-panel').show();
-    builder.gui.menu.showItem('suite-save');
-    builder.gui.menu.showItem('suite-save-as');
     builder.gui.menu.showItem('suite-discard');
     builder.gui.menu.showItem('suite-removescript');
-    jQuery('#script-discard-li').hide();
     
     builder.gui.menu.clearSection('suite', 'scripts');
     var scriptNames = builder.suite.getScriptNames();
@@ -39,67 +36,107 @@ builder.gui.suite.update = function() {
   } else {
     builder.gui.menu.clearSection('suite', 'scripts');
     jQuery('#suite-panel').hide();
-    builder.gui.menu.hideItem('suite-save');
-    builder.gui.menu.hideItem('suite-save-as');
     builder.gui.menu.hideItem('suite-discard');
     builder.gui.menu.hideItem('suite-removescript');
-    jQuery('#script-discard-li').show();
+  }
+  
+  if (builder.suite.isSaveable()) {
+    if (builder.suite.path == null || builder.suite.path.where != "local") {
+      jQuery('#suite-save').html(_t('menu_save_suite'));
+      builder.gui.menu.hideItem('suite-save-as');
+    } else {
+      jQuery('#suite-save').html(_t('menu_save_suite_to', builder.suite.path.path));
+      builder.gui.menu.showItem('suite-save-as');
+    }
+    builder.gui.menu.showItem('suite-save');
+  } else {
+    builder.gui.menu.hideItem('suite-save');
+    builder.gui.menu.hideItem('suite-save-as');
+  }
+  
+  builder.gui.menu.setItemVisible('suite-export', builder.suite.isExportable());
+  
+  if (builder.suite.getSuiteSaveRequired() && !builder.suite.isSaveable()) {
+    jQuery('#suite-cannotsave-unsavedscripts').show();
+  } else {
+    jQuery('#suite-cannotsave-unsavedscripts').hide();
+  }
+  
+  if (builder.suite.getSuiteSaveRequired() && builder.suite.isSaveable()) {
+    jQuery('#suite-saverequired').show();
+  } else {
+    jQuery('#suite-saverequired').hide();
   }
 };
 
 /** @return Whether the suite can be exported. */
 builder.gui.suite.canExport = function() {
-  return builder.gui.suite.allSelenium1() && builder.gui.suite.allSavedAsHTML();
+  return builder.gui.suite.allSameSelenium() && builder.gui.suite.allSavedAsSame();
 };
 
 /** @return Whether all scripts have been saved in HTML format. */
 builder.gui.suite.allSavedAsHTML = function() {
   for (var i = 0; i < builder.suite.scripts.length; i++) {
     if (!builder.suite.scripts[i].path) { return false; }
+    if (builder.suite.scripts[i].path.where != 'local') { return false; }
     if (builder.suite.scripts[i].path.format.name !== "HTML") { return false; }
   }
   return true;
 };
 
-/** @return Whether all scripts are Selenium 1. */
-builder.gui.suite.allSelenium1 = function() {
+/** @return Whether all scripts have been saved in the same format. */
+builder.gui.suite.allSavedAsSame = function() {
+  var formatName = null;
+  var whereName = null;
   for (var i = 0; i < builder.suite.scripts.length; i++) {
-    if (builder.suite.scripts[i].seleniumVersion !== builder.selenium1) { return false; }
+    if (!builder.suite.scripts[i].exportpath) { return false; }
+    if (!builder.suite.scripts[i].exportpath.format.name) { return false; }
+    if (formatName == null) {
+      formatName = builder.suite.scripts[i].exportpath.format.name;
+    } else {
+      if (formatName != builder.suite.scripts[i].exportpath.format.name) { return false; }
+    }
+    if (whereName == null) {
+      whereName = builder.suite.scripts[i].exportpath.where;
+    } else {
+      if (whereName != builder.suite.scripts[i].exportpath.where) { return false; }
+    }
+  }
+  return true;
+};
+
+/** @return Whether all scripts are all in the same version. */
+builder.gui.suite.allSameSelenium = function() {
+  if (builder.suite.scripts.length == 0) { return true; }
+  var version = builder.suite.scripts[0].seleniumVersion;
+  for (var i = 0; i < builder.suite.scripts.length; i++) {
+    if (builder.suite.scripts[i].seleniumVersion !== version) { return false; }
   }
   return true;
 };
 
 // Setup suite menus.
 builder.registerPostLoadHook(function() {
-  // Save the suite as a Selenium 1 HTML file.
+  // Save the suite
   builder.gui.menu.addItem('suite', _t('menu_save_suite'), 'suite-save', function() {
-    if (builder.gui.suite.canExport()) {
-      builder.record.stopAll();
-      var path = builder.selenium1.adapter.exportSuite(builder.suite.scripts, builder.suite.path);
-      if (path) {
-        builder.suite.path = path;
-        builder.suite.setSuiteSaveRequired(false);
-        builder.gui.suite.update();
+    if (builder.suite.isSaveable()) {
+      if (builder.suite.path == null || builder.suite.path.where != "local") {
+        builder.dialogs.exportsuite.saveAs();
+      } else {
+        builder.dialogs.exportsuite.save();
       }
-    } else {
-      alert(_t('cant_save_suite_must_save_as_html'));
     }
   });
   
   builder.gui.menu.addItem('suite', _t('menu_save_suite_as'), 'suite-save-as', function() {
-    if (builder.gui.suite.canExport()) {
-      var path = builder.selenium1.adapter.exportSuite(builder.suite.scripts);
-      if (path) {
-        builder.suite.path = path;
-        builder.suite.setSuiteSaveRequired(false);
-        builder.gui.suite.update();
-      }
-    } else {
-      if (!builder.gui.suite.allSelenium1()) {
-        alert(_t('cant_save_suite_must_be_sel1'));
-      } else {
-        alert(_t('cant_save_suite_must_save_as_html'));
-      }
+    if (builder.suite.isSaveable()) {
+      builder.dialogs.exportsuite.saveAs();
+    }
+  });
+  
+  builder.gui.menu.addItem('suite', _t('menu_export_suite'), 'suite-export', function() {
+    if (builder.suite.isExportable()) {
+      builder.dialogs.exportsuite.doExport();
     }
   });
   
@@ -126,22 +163,13 @@ builder.registerPostLoadHook(function() {
   // Add script from file.
   builder.gui.menu.addItem('suite', _t('menu_add_script_from_file'), 'suite-addscript', function() {
     builder.record.stopAll();
-    var script = builder.io.loadNewScriptForSuite();
-    if (script) {
-      // Save the current script and unselect it to make sure that when we overwrite its
-      // info in the GUI by opening the new script, we don't overwrite its info in
-      // builder.suite.
-      builder.suite.addScript(script);
-      builder.gui.menu.updateRunSuiteOnRC();
-      builder.stepdisplay.update();
-    }
+    builder.io.loadUnknownFile(/*addToSuite*/ true);
   });
   
   // Remove script from suite.
   builder.gui.menu.addItem('suite', _t('menu_suite_remove_script'), 'suite-removescript', function() {
     builder.record.stopAll();
     builder.suite.removeScript(builder.suite.getSelectedScriptIndex());
-    builder.gui.menu.updateRunSuiteOnRC();
     builder.stepdisplay.update();
   });
   
@@ -150,30 +178,7 @@ builder.registerPostLoadHook(function() {
   
   // Depending on what the state of the scripts is, different options are available.
   builder.suite.addScriptChangeListener(function() {
-    jQuery('#edit-suite-path').html("Suite: " + (builder.suite.path ? builder.suite.path : '[Untitled Suite]'));
-    if (builder.suite.getSuiteSaveRequired()) {
-      if (builder.gui.suite.canExport()) {
-        jQuery('#suite-saverequired').show();
-        jQuery('#suite-cannotsave-unsavedscripts').hide();
-        jQuery('#suite-cannotsave-notallsel1').hide();
-      } else {
-        if (builder.gui.suite.allSelenium1()) {
-          jQuery('#suite-cannotsave-notallsel1').hide();
-          if (builder.gui.suite.allSavedAsHTML()) {
-            jQuery('#suite-cannotsave-unsavedscripts').hide();
-          } else {
-            jQuery('#suite-cannotsave-unsavedscripts').show();
-          }
-        } else {
-          jQuery('#suite-cannotsave-notallsel1').show();
-        }
-        jQuery('#suite-saverequired').hide();
-      }
-    } else {
-      jQuery('#suite-cannotsave-unsavedscripts').hide();
-      jQuery('#suite-cannotsave-notallsel1').hide();
-      jQuery('#suite-saverequired').hide();
-    }
+    builder.gui.suite.update();
   });
   
   builder.gui.suite.update();

@@ -5,8 +5,8 @@ function getSelectLocaleFunction(name) {
     jQuery('#locale_chooser').remove();
     
     builder.translate.setNewLocaleName(name);
-    if (name == builder.translate.getLocaleName()) {
-      jQuery('#locale_indicator').text(name);
+    if (name == builder.translate.getEffectiveLocaleName()) {
+      jQuery('#locale_indicator').text(name + " || " + _t('select_locale'));
     } else {
       jQuery('#locale_indicator').text(name + " || " + _t('new_locale_after_restart'));
     }
@@ -35,7 +35,7 @@ builder.gui.translate.selectLocale = function() {
   builder.dialogs.show(dialog);
   
   var locs = builder.translate.getAvailableLocales();
-  var current_name = builder.translate.getNewLocaleName();
+  var current_name = builder.translate.getEffectiveNewLocaleName();
   
   for (var i = 0; i < locs.length; i++) {
     jQuery('#locale_list').append(newNode('li', newNode('a', {
@@ -52,6 +52,6 @@ var localeIndicator = newNode('a', {
     'title': _t('select_locale'),
     'click': builder.gui.translate.selectLocale
   },
-  builder.translate.getLocaleName());
+  builder.translate.getEffectiveLocaleName() + " || " + _t('select_locale'));
 
 jQuery('#startup').append(localeIndicator);

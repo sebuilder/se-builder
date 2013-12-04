@@ -34,13 +34,31 @@ window.onbeforeunload = function() {
   }
 };
 
-// If the recorder window is closed, shut down builder.
-window.onunload = function() {
+builder.runPreShutdownHooks = function() {
   for (var i = 0; i < builder.preShutdownHooks.length; i++) {
     try {
       builder.preShutdownHooks[i]();
     } catch (e) { dump(e); }
   }
+  builder.preShutdownHooks = [];
+};
+
+builder.shutdown = function() {
+  builder.runPreShutdownHooks();
+  window.bridge.shutdown();
+};
+
+builder.reboot = function() {
+  builder.runPreShutdownHooks();
+  bridge.getBrowser().setTimeout(function() {
+    bridge.boot();
+  }, 1000);
+  window.bridge.shutdown();
+};
+
+// If the recorder window is closed, shut down builder.
+window.onunload = function() {
+  builder.runPreShutdownHooks();
   window.bridge.recorderWindow = null; // As we're closing it ourselves just now, shutdown doesn't have to.
   window.bridge.shutdown();
 };

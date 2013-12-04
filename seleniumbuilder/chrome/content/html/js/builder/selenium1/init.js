@@ -6,7 +6,8 @@
  */
 builder.selenium1 = {
   toString: function() { return "__SELENIUM_1__"; },
-  name: "Selenium 1"
+  name: "Selenium 1",
+  shortName: "sel1"
 };
 
 builder.seleniumVersions.push(builder.selenium1);

@@ -9591,16 +9591,18 @@ WebElement.getElementLocationOnceScrolledIntoView = function(a, b) {
 fxdriver.error = {};
 fxdriver.error.toJSON = function(a) {
   var b = [], c = {message:a.message ? a.message : a.toString(), stackTrace:b};
-  if(a.stack) {
-    for(var d = a.stack.replace(/\s*$/, "").split("\n"), e = d.shift();e;e = d.shift()) {
-      e = e.match(/^([a-zA-Z_$][\w]*)?(?:\(.*\))?@(.+)?:(\d*)$/), b.push({methodName:e[1], fileName:e[2], lineNumber:Number(e[3])})
+  try {
+    if(a.stack) {
+      for(var d = a.stack.replace(/\s*$/, "").split("\n"), e = d.shift();e;e = d.shift()) {
+        e = e.match(/^([a-zA-Z_$][\w]*)?(?:\(.*\))?@(.+)?:(\d*)$/), b.push({methodName:e[1], fileName:e[2], lineNumber:Number(e[3])})
+      }
     }
-  }
-  if(a.additionalFields && a.additionalFields.length) {
-    for(b = 0;b < a.additionalFields.length;++b) {
-      c[a.additionalFields[b]] = a[a.additionalFields[b]]
+    if(a.additionalFields && a.additionalFields.length) {
+      for(b = 0;b < a.additionalFields.length;++b) {
+        c[a.additionalFields[b]] = a[a.additionalFields[b]]
+      }
     }
-  }
+  } catch (ex) { /* Ignore and just do your best.*/ } // qqDPSWD
   return c
 };
 var wdSession = function() {
@@ -9975,13 +9977,32 @@ nsCommandProcessor.prototype.execute = function(a, b) {
       }
       var j = d.session.getChromeWindow();
       if(g = j.fxdriver) {
+        // qqDPSWD
+        // Used by Selenium 1 local playback to set up special handling code for dialogs.
+        if (c.name == "setModalHandling") {
+         g.modalHandling = c.parameters.value.modalHandling;
+         g.modalResponse = c.parameters.value.modalResponse;
+         d.value = "victory!";
+         d.send();
+         return; 
+        }
+        if (c.name == "getOldAlertText") {
+          if (g.modalOpen) {
+            d.value = g.modalOpen;
+            d.send();
+            return;
+          } else {
+            c.name = "getAlertText";
+          }
+        }
+        // qqDPSWD
         if(j.getBrowser().contentWindow) {
-          if(g.modalOpen && "getAlertText" != c.name && "setAlertValue" != c.name && "acceptAlert" != c.name && "dismissAlert" != c.name) {
+          if(g.modalOpen && "getAlertText" != c.name && "setAlertValue" != c.name && "acceptAlert" != c.name && "dismissAlert" != c.name && "getAlert" != c.name) {
             var l = g.modalOpen;
             fxdriver.modals.dismissAlert(g);
             fxdriver.Logger.dumpn("Sending error from command " + c.name + " with alertText: " + l);
             d.sendError(new WebDriverError(bot.ErrorCode.MODAL_DIALOG_OPENED, "Modal dialog present", {alert:{text:l}}))
-          }else {
+          } else {
             if("getCurrentUrl" == c.name) {
               if(c = d.session.getWindow()) {
                 l = c.location
@@ -10079,6 +10100,8 @@ nsCommandProcessor.prototype.newSession = function(a, parameters) {
           (w.document && w.document.title.indexOf(parameters['title_identifier']) != -1))
       {
         foundW = w;
+        w.title = parameters['original_title'];
+        if (w.document) { w.document.title = parameters['original_title']; }
       }
     }
     if (foundW) {
@@ -10097,6 +10120,7 @@ nsCommandProcessor.prototype.newSession = function(a, parameters) {
     c.setChromeWindow(b);
     a.session = c;
     a.value = c.getId()
+    b.fxdriver.modalOpen = null; // qqDPSWD Resetting modalOpen.
   }else {
     a.sendError(new WebDriverError(bot.ErrorCode.UNKNOWN_ERROR, "No drivers associated with the window"))
   }

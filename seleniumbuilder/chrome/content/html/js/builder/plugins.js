@@ -23,11 +23,23 @@ builder.plugins.startupErrors = [];
 builder.plugins.MAX_HEADER_VERSION = 1;
 builder.plugins.PLUGINS_BUILDER_VERSION = 1;
 
+// List of {"id":, "version"} objects.
+builder.plugins.bundledPlugins = [];
+
+builder.plugins.getGotoPluginsView = function() {
+  return bridge.prefManager.getBoolPref("extensions.seleniumbuilder.plugins.gotoPluginsView");
+};
+
+builder.plugins.setGotoPluginsView = function(b) {
+  bridge.prefManager.setBoolPref("extensions.seleniumbuilder.plugins.gotoPluginsView", b);
+};
+
 /**
  * Will call callback with a list of {identifier, installState, enabledState, installedInfo, repositoryInfo} of all plugins.
  */
 builder.plugins.getListAsync = function(callback) {
   builder.plugins.getRemoteListAsync(function(repoList, error) {
+    if (error) { callback(null, error); return; }
     var installedList = builder.plugins.getInstalledIDs();
     var repoMap = {};
     if (repoList) {
@@ -77,6 +89,18 @@ builder.plugins.isUpdateable = function(info) {
     return false;
   }
   return !builder.plugins.checkMaxVersion(info.installedInfo.pluginVersion, info.repositoryInfo.browsers[bridge.browserType()].pluginVersion);
+};
+
+builder.plugins.isPluginTooNew = function(info) {
+  info = info.repositoryInfo.browsers[bridge.browserType()];
+  if (!info) { return false; }
+  return info.builderMinVersion && !builder.plugins.checkMinVersion(info.builderMinVersion + "", builder.version);
+};
+
+builder.plugins.isPluginTooOld = function(info) {
+  info = info.repositoryInfo.browsers[bridge.browserType()];
+  if (!info) { return false; }
+  return info.builderMaxVersion && !builder.plugins.checkMaxVersion(info.builderMaxVersion + "", builder.version);
 };
 
 builder.plugins.createDir = function(f) {
@@ -198,7 +222,8 @@ builder.plugins.getState = function(id) {
 };
 
 builder.plugins.pluginExists = function(id) {
-  return builder.plugins.getDirForPlugin(id).isDirectory();
+  var d = builder.plugins.getDirForPlugin(id);
+  return d.exists() && d.isDirectory();
 };
 
 builder.plugins.getDirForPlugin = function(id) {
@@ -227,12 +252,17 @@ builder.plugins.getExtractForPlugin = function(id) {
  * @return A list of info objects of all plugins in the plugin DB.
  */
 builder.plugins.getRemoteListAsync = function(callback) {
+  var loadTimedOut = false;
+  var loadSucceeded = false;
+  
   jQuery.ajax({
     type: "GET",
     cache: false,
     dataType: "json",
     url: bridge.pluginRepository() + "?" + Math.random(),
     success: function(data) {
+      if (loadTimedOut) { return; }
+      loadSucceeded = true;
       if (data.repositoryVersion > 1) {
         callback(null, _t('plugin_list_too_new'));
       } else {
@@ -246,20 +276,33 @@ builder.plugins.getRemoteListAsync = function(callback) {
       }
     },
     error: function(jqXHR, textStatus, errorThrown) {
+      if (loadTimedOut) { return; }
+      loadSucceeded = true;
       callback(null, _t('unable_to_fetch_plugins') + ": " + (textStatus ? textStatus : "") + " " + (errorThrown ? errorThrown : ""));
     }
   });
+  
+  setTimeout(function() {
+    if (loadSucceeded) { return; }
+    loadTimedOut = true;
+    callback(null, _t('unable_to_fetch_plugins') + ": " + _t('plugin_load_timed_out'));
+  }, 5000);
 };
 
-builder.plugins.performDownload = function(id, url) {
+builder.plugins.performDownload = function(id, url, callback) {
   builder.plugins.downloadingCount++;
   jQuery('#plugins-downloading').show();
+  
+  var loadTimedOut = false;
+  var loadSucceeded = false;
   
   var oReq = new XMLHttpRequest();
   oReq.open("GET", url + "?" + Math.random(), true);
   oReq.responseType = "arraybuffer";
-
+  
   oReq.onload = function (oEvent) {
+    if (loadTimedOut) { return; }
+    loadSucceeded = true;
     var arrayBuffer = oReq.response; // Note: not oReq.responseText
     if (arrayBuffer) {
       var byteArray = new Uint8Array(arrayBuffer);
@@ -279,13 +322,23 @@ builder.plugins.performDownload = function(id, url) {
       } else {
         stream.close();
       }
-      builder.plugins.downloadSucceeded(id);
+      if (f.exists()) {
+        builder.plugins.downloadSucceeded(id);
+        if (callback) { callback(); }
+      } else {
+        builder.plugins.downloadFailed(id, null);
+      }
     } else {
       builder.plugins.downloadFailed(id, url + " " + _t('plugin_url_not_found'));
     }
   };
 
   oReq.send(null);
+  setTimeout(function() {
+    if (loadSucceeded) { return; }
+    loadTimedOut = true;
+    builder.plugins.downloadFailed(id, _t('plugin_load_timed_out'));
+  }, 5000);
 };
 
 builder.plugins.downloadSucceeded = function(id) {
@@ -297,7 +350,7 @@ builder.plugins.downloadSucceeded = function(id) {
 };
 
 builder.plugins.downloadFailed = function(id, e) {
-  alert("Download failed: " + e);
+  alert(_t('plugin_download_failed') + (e ? ("\n" + e) : ""));
   builder.plugins.setInstallState(id, builder.plugins.NOT_INSTALLED);
   builder.plugins.downloadingCount--;
   if (builder.plugins.downloadingCount == 0) {
@@ -333,15 +386,23 @@ builder.plugins.validatePlugin = function(id, f) {
     if (header.identifier != id) {
       return _t('plugin_id_mismatch', header.identifier, id);
     }
+    if (!header.pluginVersion || !header.pluginVersion.match(/^[0-9]+([.][0-9]+)*$/)) {
+      return _t('plugin_version_invalid');
+    }
   } catch (e) {
     return _t('plugin_cant_verify', e);
   }
   return null;
 };
 
-builder.plugins.performInstall = function(id) {
+builder.plugins.performInstall = function(id, customZipF) {
   try {
-    var zipF = builder.plugins.getZipForPlugin(id);
+    var zipF = customZipF ? customZipF : builder.plugins.getZipForPlugin(id);
+    if (!zipF.exists()) {
+      builder.plugins.startupErrors.push(_t('plugin_unable_to_install', id, _t('plugin_download_failed')));
+      builder.plugins.setInstallState(id, builder.plugins.NOT_INSTALLED);
+      return;
+    }
     var installD = builder.plugins.getDirForPlugin(id);
     try { builder.plugins.getExtractForPlugin(id).remove(true); } catch (e) {} // qqDPS
     builder.plugins.createDir(builder.plugins.getExtractForPlugin(id));
@@ -368,7 +429,7 @@ builder.plugins.performInstall = function(id) {
   
     var validationError = builder.plugins.validatePlugin(id, builder.plugins.getExtractForPlugin(id));
     if (validationError) {
-      builder.plugins.startupErrors.push(_t('plugin_unable_to_install', id, validationError));
+      builder.plugins.startupErrors.push(_t('plugin_unable_to_install', id, "" + validationError));
       builder.plugins.setInstallState(id, builder.plugins.NOT_INSTALLED);
       return;
     }
@@ -378,7 +439,7 @@ builder.plugins.performInstall = function(id) {
     builder.plugins.setInstallState(id, builder.plugins.INSTALLED);
     builder.plugins.setEnabledState(id, builder.plugins.ENABLED);
   } catch (e) {
-    builder.plugins.startupErrors.push(_t('plugin_unable_to_install', id, e));
+    builder.plugins.startupErrors.push(_t('plugin_unable_to_install', id, "" + e));
     builder.plugins.setInstallState(id, builder.plugins.NOT_INSTALLED);
   }
 };
@@ -392,12 +453,19 @@ builder.plugins.performUninstall = function(id) {
   }
 };
 
-builder.plugins.start = function() {
+builder.plugins.start = function(callback) {
+  bridge.getInternalFile("/chrome/content/html/js/builder/bundledPlugins/", function(bundledPluginsDir) {
+    builder.plugins.start_2(callback, bundledPluginsDir);
+  });
+};
+
+builder.plugins.start_2 = function(callback, bundledPluginsDir) {
   // Start up database connection.
   Components.utils.import("resource://gre/modules/Services.jsm");
   var dbFile = builder.plugins.getBuilderDir();
   dbFile.append("plugins.sqlite");
   builder.plugins.db = Services.storage.openDatabase(dbFile); // Will also create the file if it does not exist
+  // Create the "state" table if it doesn't exist yet.
   var s = null;
   try {
     s = builder.plugins.db.createStatement("SELECT name FROM sqlite_master WHERE type='table' AND name='state'");
@@ -408,6 +476,24 @@ builder.plugins.start = function() {
     }
   } finally { s.finalize(); }
   
+  // Install bundled plugins.
+  for (var i = 0; i < builder.plugins.bundledPlugins.length; i++) {
+    var id = builder.plugins.bundledPlugins[i].id;
+    var version = builder.plugins.bundledPlugins[i].version;
+    var isUpdate = true;
+    try {
+      isUpdate = !builder.plugins.checkMaxVersion(builder.plugins.getInstalledInfo(id).pluginVersion, version);
+    } catch (e) {
+      // Ignore
+    }
+    if ((!builder.plugins.pluginExists(id) || isUpdate) && builder.plugins.getState(id).installState != builder.plugins.TO_INSTALL) {
+      var zipF = bundledPluginsDir.clone();
+      zipF.append(id + ".zip");
+      builder.plugins.performInstall(id, zipF);
+      builder.plugins.setEnabledState(id, builder.plugins.ENABLED);
+    }
+  }
+    
   // Install new plugins.
   var to_install = [];
   try {
@@ -422,9 +508,9 @@ builder.plugins.start = function() {
   }
   
   // Update plugins
+  var to_update = [];
   try {
     s = builder.plugins.db.createStatement("SELECT identifier FROM state WHERE installState = '" + builder.plugins.TO_UPDATE + "'");
-    var to_update = [];
     while (s.executeStep()) {
       to_update.push(s.row.identifier);
     }
@@ -434,9 +520,9 @@ builder.plugins.start = function() {
   }
   
   // Uninstall plugins.
+  var to_uninstall = [];
   try {
     s = builder.plugins.db.createStatement("SELECT identifier FROM state WHERE installState = '" + builder.plugins.TO_UNINSTALL + "'");
-    var to_uninstall = [];
     while (s.executeStep()) {
       to_uninstall.push(s.row.identifier);
     }
@@ -457,6 +543,7 @@ builder.plugins.start = function() {
   
   // Load plugins
   installeds = builder.plugins.getInstalledIDs();
+  var to_load = [];
   for (var i = 0; i < installeds.length; i++) {
     var state = builder.plugins.getState(installeds[i]);
     if (state.installState == builder.plugins.INSTALLED && state.enabledState == builder.plugins.ENABLED) {
@@ -471,21 +558,18 @@ builder.plugins.start = function() {
         builder.plugins.startupErrors.push(_t('plugin_disabled_builder_too_new', info.name, info.builderMaxVersion, builder.version));
         continue;
       }
-      var to_load = [];
       for (var j = 0; j < info.load.length; j++) {
         to_load.push(builder.plugins.getResourcePath(installeds[i], info.load[j]));
       }
-      builder.loader.loadListOfScripts(to_load);
     }
   }
+  builder.loader.loadListOfScripts(to_load, callback);
   
   // Show any startup errors.
   for (var i = 0; i < builder.plugins.startupErrors.length; i++) {
     alert(builder.plugins.startupErrors[i]);
   }
 };
-
-builder.registerPostLoadHook(builder.plugins.start);
 
 builder.plugins.shutdown = function() {
   var installeds = builder.plugins.getInstalledIDs();
@@ -516,34 +600,53 @@ builder.plugins.getResourcePath = function(id, relativePath) {
   return builder.plugins.ios.newFileURI(f).spec;
 };
 
+/**
+ * Checks that actualVersion >= minVersion.
+ */
 builder.plugins.checkMinVersion = function(minVersion, actualVersion) {
   minVersion = (minVersion + "").split(".");
   actualVersion = (actualVersion + "").split(".");
   for (var i = 0; i < Math.max(minVersion.length, actualVersion.length); i++) {
     var min = i >= minVersion.length    ? 0 : minVersion[i];
     var act = i >= actualVersion.length ? 0 : actualVersion[i];
-    if (min != "*" && act < min) {
+    if (min != "*" && parseInt(act) < parseInt(min)) {
       return false;
     }
-    if (min == "*" || act > min) {
+    if (min == "*" || parseInt(act) > parseInt(min)) {
       return true;
     }
   }
   return true;
 };
 
+/**
+ * Checks that actualVersion <= maxVersion.
+ */
 builder.plugins.checkMaxVersion = function(maxVersion, actualVersion) {
   maxVersion = (maxVersion + "").split(".");
   actualVersion = (actualVersion + "").split(".");
   for (var i = 0; i < Math.max(maxVersion.length, actualVersion.length); i++) {
     var max = i >= maxVersion.length    ? 0 : maxVersion[i];
     var act = i >= actualVersion.length ? 0 : actualVersion[i];
-    if (max != "*" && act > max) {
+    if (max != "*" && parseInt(act) > parseInt(max)) {
       return false;
     }
-    if (max == "*" || act < max) {
+    if (max == "*" || parseInt(act) < parseInt(max)) {
       return true;
     }
   }
   return true;
+};
+
+builder.plugins.hasUpdates = function(callback) {
+  builder.plugins.getListAsync(function(result) {
+    for (var i = 0; i < result.length; i++) {
+      var info = result[i];
+      if (builder.plugins.isUpdateable(info) && !builder.plugins.isPluginTooNew(info) && !builder.plugins.isPluginTooOld(info)) {
+        callback(true);
+        return;
+      }
+    }
+    callback(false);
+  });
 };

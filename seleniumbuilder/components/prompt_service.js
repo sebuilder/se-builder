@@ -5650,18 +5650,41 @@ fxdriver.modals.clearFlag_ = function(a) {
   fxdriver.modals.setFlag(a, !1)
 };
 fxdriver.modals.findAssociatedDriver_ = function(a) {
-  CC["@mozilla.org/embedcomp/window-watcher;1"].getService(CI.nsIWindowWatcher);
-  for(var b = CC["@mozilla.org/appshell/window-mediator;1"].getService(CI.nsIWindowMediator).getEnumerator("navigator:browser");b.hasMoreElements();) {
-    var c = b.getNext().QueryInterface(CI.nsIDOMWindow);
-    if(c.content == a || c.content.top == a.top) {
-      return c.fxdriver
+  if (a) { // qqDPSWD Added this if.
+    CC["@mozilla.org/embedcomp/window-watcher;1"].getService(CI.nsIWindowWatcher);
+    for(var b = CC["@mozilla.org/appshell/window-mediator;1"].getService(CI.nsIWindowMediator).getEnumerator("navigator:browser");b.hasMoreElements();) {
+      var c = b.getNext().QueryInterface(CI.nsIDOMWindow);
+      if(c.content == a || c.content.top == a.top) {
+        return c.fxdriver
+      }
     }
-  }
+  } // qqDPSWD Added this if.
   fxdriver.Logger.dumpn("Unable to find the associated driver")
 };
 fxdriver.modals.signalOpenModal = function(a, b) {
+  if (!a) { return; } // No window, no signal. qqDPSWD
   fxdriver.Logger.dumpn("signalOpenModal");
   var c = fxdriver.modals.findAssociatedDriver_(a);
+  // qqDPSWD
+  // Selenium 1 local playback piggybacks on Selenium 2 by setting these directives.
+  if (c && c.modalHandling && c.modalHandling != 0) {
+    if(c/* && c.response_*/) {
+      fxdriver.modals.setFlag(c, b);
+    }
+    if (c.modalHandling == "acceptAlert") {
+      c.acceptAlert({'send': function() {}});
+    } else if (c.modalHandling == "dismissAlert") {
+      c.dismissAlert({'send': function() {}});
+    } else if (c.modalHandling == "answerAlert") {
+      c.setAlertValue({'send': function() {
+        c.acceptAlert({'send': function() {}});
+      }}, {'text': c.modalResponse});
+    }
+    
+    c.modalHandling = "acceptAlert";
+    return;
+  }
+  // qqDPSWD
   if(c && c.response_) {
     fxdriver.modals.setFlag(c, b);
     var d = c.response_;

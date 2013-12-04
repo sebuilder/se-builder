@@ -18,6 +18,10 @@ builder.selenium2.io.formats.push(builder.selenium2.io.createLangFormatter({
       "wd.navigate.forward\n",
     "clickElement":
       "wd.find_element({locatorBy}, {locator}).click\n",
+    "doubleClickElement":
+      "wd.action.double_click(wd.find_element({locatorBy}, {locator})).perform\n",
+    "mouseOverElement":
+      "wd.action.move_to(wd.find_element({locatorBy}, {locator})).perform\n",
     "setElementText":
       "wd.find_element({locatorBy}, {locator}).click\n" +
       "wd.find_element({locatorBy}, {locator}).clear\n" +
@@ -38,11 +42,11 @@ builder.selenium2.io.formats.push(builder.selenium2.io.createLangFormatter({
     "close":
       "",
     "verifyTextPresent":
-      "if wd.find_element(:tag_name, \"html\").text.include? {posNot}{text}\n" +
+      "if {posNot}wd.find_element(:tag_name, \"html\").text.include? {text}\n" +
 	  "    print \"{negNot}verifyTextPresent failed\"\n"+
 	  "end\n",
     "assertTextPresent":
-      "if wd.find_element(:tag_name, \"html\").text.include? {posNot}{text}\n" +
+      "if {posNot}wd.find_element(:tag_name, \"html\").text.include? {text}\n" +
 	  "    wd.quit\n" +
 	  "    raise Exception, \"{negNot}assertTextPresent failed\"\n"+
 	  "end\n",

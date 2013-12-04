@@ -29,6 +29,72 @@ builder.selenium2.docs = {
     },
     "description": "Pauses script execution for a given amount of time."
   },
+  "switchToFrame": {
+    "params": {
+      "identifier": "The name or ID of the frame to switch to. Note that Selenium 1 style relative=X parameters are not supported."
+    },
+    "description": "Switches playback to a different frame."
+  },
+  "switchToFrameByIndex": {
+    "params": {
+      "index": "The index of the frame to switch to."
+    },
+    "description": "Switches playback to a different frame, identified by its index."
+  },
+  "switchToWindow": {
+    "params": {
+      "name": "The name of the window to switch to. Note that Selenium 1 style relative=X parameters are not supported."
+    },
+    "description": "Switches playback to a different window."
+  },
+  "switchToDefaultContent": {
+    "params": {},
+    "description": "Switches playback to the default/top frame."
+  },
+  "assertAlertText": {
+    "params": {"text": "The expected alert text." },
+    "description": "Asserts that there is an alert showing with the given text."
+  },
+  "verifyAlertText": {
+    "params": {"text": "The expected alert text." },
+    "description": "Verifies that there is an alert showing with the given text."
+  },
+  "waitForAlertText": {
+    "params": {"text": "The expected alert text." },
+    "description": "Wait for an alert showing with the given text."
+  },
+  "storeAlertText": {
+    "params": {"variable": "The name of the variable to store the text in." },
+    "description": "Store the text of the visible alert in the given variable."
+  },
+  "assertAlertPresent": {
+    "params": {},
+    "description": "Asserts that there is an alert showing."
+  },
+  "verifyAlertPresent": {
+    "params": {},
+    "description": "Verifies that there is an alert showing."
+  },
+  "waitForAlertPresent": {
+    "params": {},
+    "description": "Wait for an alert."
+  },
+  "storeAlertPresent": {
+    "params": {"variable": "The name of the variable to store in whether an alert is present." },
+    "description": "Store whether an alert is present in the given variable."
+  },
+  "answerAlert": {
+    "params": {"text": "The text to type into the prompt." },
+    "description": "Type the given text into the alert prompt."
+  },
+  "acceptAlert": {
+    "params": {},
+    "description": "Dismiss the current alert."
+  },
+  "dismissAlert": {
+    "params": {},
+    "description": "Accept the current alert."
+  },
   "store": {
     "params": {
       "variable": "The name of the variable to store the text in.",
@@ -41,6 +107,18 @@ builder.selenium2.docs = {
       "locator": "How to find the element to be clicked."
     },
     "description": "Click an element on the current page."
+  },
+  "doubleClickElement": {
+    "params": {
+      "locator": "How to find the element to be clicked."
+    },
+    "description": "Click an element on the current page twice."
+  },
+  "mouseOverElement": {
+    "params": {
+      "locator": "How to find the element."
+    },
+    "description": "Move the mouse cursor over the given element."
   },
   "clickElementWithOffset": {
     "params": {
@@ -275,6 +353,31 @@ builder.selenium2.docs = {
     },
     "description": "Stores the page source in the given variable."
   },
+  "assertElementPresent": {
+    "params": {
+      "locator": "How to find the element."
+    },
+    "description": "Asserts that the given element exists. If this is not the case, script execution will stop and be marked as failed."
+  },
+  "verifyElementPresent": {
+    "params": {
+      "locator": "How to find the element."
+    },
+    "description": "Verifies that the given element exists. If this is not the case, script execution will be marked as failed, but the script will continue running."
+  },
+  "waitForElementPresent": {
+    "params": {
+      "locator": "How to find the element."
+    },
+    "description": "Waits for an element to exist."
+  },
+  "storeElementPresent": {
+    "params": {
+      "variable": "Name of the variable to store the attribute value in.",
+      "locator": "How to find the element."
+    },
+    "description": "Stores whether the element exists."
+  },
   "assertElementSelected": {
     "params": {
       "locator": "How to find the element."
@@ -412,5 +515,33 @@ builder.selenium2.docs = {
       "name": "The cookie's name."
     },
     "description": "Stores the value (content) of the cookie with the given name in a variable."
+  },
+  "assertEval": {
+    "params": {
+      "script": "A JavaScript expression to be evaluated.",
+      "value": "The value the script is expected to evaluate to."
+    },
+    "description": "Evaluates a JavaScript expression within the context of the page and asserts it matches the given value."
+  },
+  "verifyEval": {
+    "params": {
+      "script": "A JavaScript expression to be evaluated.",
+      "value": "The value the script is expected to evaluate to."
+    },
+    "description": "Evaluates a JavaScript expression within the context of the page and verifies it matches the given value. If this is not the case, script execution will be marked as failed, but the script will continue running."
+  },
+  "waitForEval": {
+    "params": {
+      "script": "A JavaScript expression to be evaluated.",
+      "value": "The value the script is expected to evaluate to."
+    },
+    "description": "Waits for the given script to evaluate to the given value."
+  },
+  "storeEval": {
+    "params": {
+      "variable": "The name of the variable to store evaluation result in.",
+      "script": "A JavaScript expression to be evaluated."
+    },
+    "description": "Evaluates a JavaScript expression and stores the result in a variable."
   }
 };

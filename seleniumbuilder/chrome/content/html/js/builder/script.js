@@ -1,3 +1,5 @@
+builder.breakpointsEnabled = true;
+
 /**
  * Defines a Script object that encapsulates a single test script.
 */
@@ -8,6 +10,7 @@ builder.Script = function(seleniumVersion) {
   this.seleniumVersion = seleniumVersion;
   this.path = null;
   this.saveRequired = false;
+  this.data = {'configs':{}, 'source': 'none'};
 };
 
 builder.Script.prototype = {
@@ -104,6 +107,23 @@ builder.Step = function(type) {
   this.changeType(this.type);
 };
 
+builder.stepFromJSON = function(parsedJSON, seleniumVersion) {
+  var step = new builder.Step(seleniumVersion.stepTypes[parsedJSON.type]);
+  step.negated = parsedJSON.negated || false;
+  var pNames = step.getParamNames();
+  for (var j = 0; j < pNames.length; j++) {
+    if (parsedJSON[pNames[j]]) {
+      if (step.type.getParamType(pNames[j]) == "locator") {
+        step[pNames[j]] = builder.selenium2.io.jsonToLoc(parsedJSON[pNames[j]]);
+      } else {
+        step[pNames[j]] = parsedJSON[pNames[j]];
+      }
+    }
+  }
+  
+  return step;
+};
+
 builder.Step.prototype = {
   getParamNames: function() {
     return this.type.getParamNames();
@@ -116,5 +136,21 @@ builder.Step.prototype = {
         this[pNames[i]] = this.type.getParamType(pNames[i]) == "locator" ? builder.locator.empty() : "";
       }
     }
+  },
+  toJSON: function() {
+    var cleanStep = { type: this.type.name };
+    if (this.negated) {
+      cleanStep.negated = true;
+    }
+    var pNames = this.getParamNames();
+    for (var j = 0; j < pNames.length; j++) {
+      if (this.type.getParamType(pNames[j]) == "locator") {
+        cleanStep[pNames[j]] = builder.selenium2.io.locToJSON(this[pNames[j]]);
+      } else {
+        cleanStep[pNames[j]] = this[pNames[j]];
+      }
+    }
+    
+    return cleanStep;
   }
 };

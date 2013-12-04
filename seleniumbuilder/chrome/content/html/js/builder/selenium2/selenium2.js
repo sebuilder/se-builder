@@ -6,7 +6,8 @@
  */
 builder.selenium2 = {
   toString: function() { return "__SELENIUM_2__"; },
-  name: "Selenium 2"
+  name: "Selenium 2",
+  shortName: "sel2"
 };
 
 builder.seleniumVersions.push(builder.selenium2);
@@ -27,7 +28,9 @@ builder.selenium2.StepType.prototype = {
     return this.name.startsWith("waitFor") ||
            this.name.startsWith("assert") ||
            this.name.startsWith("verify");
-  }
+  },
+  /** @return The note text for this step type, if any. */
+  getNote: function() { return builder.selenium2.__stepNotes[this.name] ? _t(builder.selenium2.__stepNotes[this.name]) : null; }
 };
 
 /** Internal step data - converted into stepTypes below. */
@@ -38,8 +41,9 @@ builder.selenium2.__stepData = {
   "clickElement":                    ["locator"], 
   "setElementText":                  ["locator", "text"], 
   "sendKeysToElement":               ["locator", "text"], 
-  "clickElementWithOffset":          ["locator", "offset"], 
-  "doubleClickElement":              ["locator"], 
+  "clickElementWithOffset":          ["locator", "offset"],
+  "doubleClickElement":              ["locator"],
+  "mouseOverElement":                ["locator"],
   "dragToAndDropElement":            ["locator", "targetLocator"], 
   "clickAndHoldElement":             ["locator"], 
   "releaseElement":                  ["locator"], 
@@ -52,7 +56,7 @@ builder.selenium2.__stepData = {
   "assertTextPresent":               ["text"], 
   "verifyTextPresent":               ["text"], 
   "waitForTextPresent":              ["text"], 
-  "storeTextPresent":                ["variable", "text"], 
+  "storeTextPresent":                ["text", "variable"], 
   "assertBodyText":                  ["text"], 
   "verifyBodyText":                  ["text"], 
   "waitForBodyText":                 ["text"], 
@@ -60,7 +64,7 @@ builder.selenium2.__stepData = {
   "assertElementPresent":            ["locator"], 
   "verifyElementPresent":            ["locator"], 
   "waitForElementPresent":           ["locator"], 
-  "storeElementPresent":             ["variable", "locator"], 
+  "storeElementPresent":             ["locator", "variable"], 
   "assertPageSource":                ["source"], 
   "verifyPageSource":                ["source"], 
   "waitForPageSource":               ["source"], 
@@ -68,7 +72,7 @@ builder.selenium2.__stepData = {
   "assertText":                      ["locator", "text"], 
   "verifyText":                      ["locator", "text"], 
   "waitForText":                     ["locator", "text"], 
-  "storeText":                       ["variable", "locator"], 
+  "storeText":                       ["locator", "variable"], 
   "assertCurrentUrl":                ["url"], 
   "verifyCurrentUrl":                ["url"], 
   "waitForCurrentUrl":               ["url"], 
@@ -80,29 +84,62 @@ builder.selenium2.__stepData = {
   "assertElementAttribute":          ["locator", "attributeName", "value"], 
   "verifyElementAttribute":          ["locator", "attributeName", "value"], 
   "waitForElementAttribute":         ["locator", "attributeName", "value"], 
-  "storeElementAttribute":           ["variable", "locator", "attributeName"], 
+  "storeElementAttribute":           ["locator", "attributeName", "variable"], 
   "assertElementSelected":           ["locator"], 
   "verifyElementSelected":           ["locator"], 
   "waitForElementSelected":          ["locator"], 
-  "storeElementSelected":            ["variable", "locator"], 
+  "storeElementSelected":            ["locator", "variable"], 
   "assertElementValue":              ["locator", "value"], 
   "verifyElementValue":              ["locator", "value"], 
   "waitForElementValue":             ["locator", "value"], 
-  "storeElementValue":               ["variable", "locator"], 
+  "storeElementValue":               ["locator", "variable"], 
   "addCookie":                       ["name", "value", "options"], 
   "deleteCookie":                    ["name"], 
   "assertCookieByName":              ["name", "value"], 
   "verifyCookieByName":              ["name", "value"], 
   "waitForCookieByName":             ["name", "value"], 
-  "storeCookieByName":               ["variable", "name"], 
+  "storeCookieByName":               ["name", "variable"], 
   "assertCookiePresent":             ["name"], 
   "verifyCookiePresent":             ["name"], 
   "waitForCookiePresent":            ["name"], 
-  "storeCookiePresent":              ["variable", "name"], 
+  "storeCookiePresent":              ["name", "variable"], 
   "saveScreenshot":                  ["file"], 
   "print":                           ["text"], 
   "store":                           ["text", "variable"],
-  "pause":                           ["waitTime"]
+  "pause":                           ["waitTime"],
+  "switchToFrame":                   ["identifier"],
+  "switchToFrameByIndex":            ["index"],
+  "switchToWindow":                  ["name"],
+  "switchToDefaultContent":          [],
+  "assertAlertText":                 ["text"],
+  "verifyAlertText":                 ["text"],
+  "waitForAlertText":                ["text"],
+  "storeAlertText":                  ["variable"],
+  "assertAlertPresent":              [],
+  "verifyAlertPresent":              [],
+  "waitForAlertPresent":             [],
+  "storeAlertPresent":               ["variable"],
+  "answerAlert":                     ["text"],
+  "acceptAlert":                     [],
+  "dismissAlert":                    [],
+  "assertEval":                      ["script", "value"],
+  "verifyEval":                      ["script", "value"],
+  "waitForEval":                     ["script", "value"],
+  "storeEval":                       ["script", "variable"]
+};
+
+builder.selenium2.__stepNotes = {
+  "assertAlertText": 'sel2_must_playback_in_foreground',
+  "verifyAlertText": 'sel2_must_playback_in_foreground',
+  "waitForAlertText": 'sel2_must_playback_in_foreground',
+  "storeAlertText": 'sel2_must_playback_in_foreground',
+  "assertAlertPresent": 'sel2_must_playback_in_foreground',
+  "verifyAlertPresent": 'sel2_must_playback_in_foreground',
+  "waitForAlertPresent": 'sel2_must_playback_in_foreground',
+  "storeAlertPresent": 'sel2_must_playback_in_foreground',
+  "answerAlert": 'sel2_must_playback_in_foreground',
+  "acceptAlert": 'sel2_must_playback_in_foreground',
+  "dismissAlert": 'sel2_must_playback_in_foreground'
 };
 
 /** Map of step types. */
@@ -116,15 +153,17 @@ builder.selenium2.navigateToUrlStepType = builder.selenium2.stepTypes.get;
 
 /** List of categories. */
 builder.selenium2.categories = [
-  ["Navigation", [
+  [_t('navigation_sel2_cat'), [
     builder.selenium2.stepTypes.get,
     builder.selenium2.stepTypes.refresh,
     builder.selenium2.stepTypes.goBack,
     builder.selenium2.stepTypes.goForward,
     builder.selenium2.stepTypes.close
   ]],
-  ["Input", [
+  [_t('input_sel2_cat'), [
     builder.selenium2.stepTypes.clickElement,
+    builder.selenium2.stepTypes.doubleClickElement,
+    builder.selenium2.stepTypes.mouseOverElement,
     builder.selenium2.stepTypes.setElementText,
     builder.selenium2.stepTypes.sendKeysToElement,
     builder.selenium2.stepTypes.setElementSelected,
@@ -135,53 +174,72 @@ builder.selenium2.categories = [
     builder.selenium2.stepTypes.clickAndHoldElement,
     builder.selenium2.stepTypes.releaseElement
   ]],
-  ["Misc",[
+  [_t('misc_sel2_cat'),[
     builder.selenium2.stepTypes.addCookie,
     builder.selenium2.stepTypes.deleteCookie,
     builder.selenium2.stepTypes.saveScreenshot,
     builder.selenium2.stepTypes.print,
-    builder.selenium2.stepTypes.pause
+    builder.selenium2.stepTypes.pause,
+    builder.selenium2.stepTypes.switchToFrame,
+    builder.selenium2.stepTypes.switchToFrameByIndex,
+    builder.selenium2.stepTypes.switchToWindow,
+    builder.selenium2.stepTypes.switchToDefaultContent,
+    builder.selenium2.stepTypes.answerAlert,
+    builder.selenium2.stepTypes.acceptAlert,
+    builder.selenium2.stepTypes.dismissAlert
   ]],
-  ["Assertion", [
+  [_t('assertion_sel2_cat'), [
     builder.selenium2.stepTypes.assertCurrentUrl,
     builder.selenium2.stepTypes.assertTitle,
     builder.selenium2.stepTypes.assertText,
     builder.selenium2.stepTypes.assertTextPresent,
     builder.selenium2.stepTypes.assertBodyText,
     builder.selenium2.stepTypes.assertPageSource,
+    builder.selenium2.stepTypes.assertElementPresent,
     builder.selenium2.stepTypes.assertElementSelected,
     builder.selenium2.stepTypes.assertElementAttribute,
     builder.selenium2.stepTypes.assertElementValue,
     builder.selenium2.stepTypes.assertCookiePresent,
-    builder.selenium2.stepTypes.assertCookieByName
+    builder.selenium2.stepTypes.assertCookieByName,
+    builder.selenium2.stepTypes.assertAlertText,
+    builder.selenium2.stepTypes.assertAlertPresent,
+    builder.selenium2.stepTypes.assertEval
   ]],
-  ["Verify", [
+  [_t('verify_sel2_cat'), [
     builder.selenium2.stepTypes.verifyCurrentUrl,
     builder.selenium2.stepTypes.verifyTitle,
     builder.selenium2.stepTypes.verifyText,
     builder.selenium2.stepTypes.verifyTextPresent,
     builder.selenium2.stepTypes.verifyBodyText,
     builder.selenium2.stepTypes.verifyPageSource,
+    builder.selenium2.stepTypes.verifyElementPresent,
     builder.selenium2.stepTypes.verifyElementSelected,
     builder.selenium2.stepTypes.verifyElementAttribute,
     builder.selenium2.stepTypes.verifyElementValue,
     builder.selenium2.stepTypes.verifyCookiePresent,
-    builder.selenium2.stepTypes.verifyCookieByName
+    builder.selenium2.stepTypes.verifyCookieByName,
+    builder.selenium2.stepTypes.verifyAlertText,
+    builder.selenium2.stepTypes.verifyAlertPresent,
+    builder.selenium2.stepTypes.verifyEval
   ]],
-  ["Wait", [
+  [_t('wait_sel2_cat'), [
     builder.selenium2.stepTypes.waitForCurrentUrl,
     builder.selenium2.stepTypes.waitForTitle,
     builder.selenium2.stepTypes.waitForText,
     builder.selenium2.stepTypes.waitForTextPresent,
     builder.selenium2.stepTypes.waitForBodyText,
     builder.selenium2.stepTypes.waitForPageSource,
+    builder.selenium2.stepTypes.waitForElementPresent,
     builder.selenium2.stepTypes.waitForElementSelected,
     builder.selenium2.stepTypes.waitForElementAttribute,
     builder.selenium2.stepTypes.waitForElementValue,
     builder.selenium2.stepTypes.waitForCookiePresent,
-    builder.selenium2.stepTypes.waitForCookieByName
+    builder.selenium2.stepTypes.waitForCookieByName,
+    builder.selenium2.stepTypes.waitForAlertText,
+    builder.selenium2.stepTypes.waitForAlertPresent,
+    builder.selenium2.stepTypes.waitForEval
   ]],
-  ["Store", [
+  [_t('store_sel2_cat'), [
     builder.selenium2.stepTypes.store,
     builder.selenium2.stepTypes.storeCurrentUrl,
     builder.selenium2.stepTypes.storeTitle,
@@ -193,6 +251,9 @@ builder.selenium2.categories = [
     builder.selenium2.stepTypes.storeElementAttribute,
     builder.selenium2.stepTypes.storeElementValue,
     builder.selenium2.stepTypes.storeCookiePresent,
-    builder.selenium2.stepTypes.storeCookieByName
+    builder.selenium2.stepTypes.storeCookieByName,
+    builder.selenium2.stepTypes.storeAlertText,
+    builder.selenium2.stepTypes.storeAlertPresent,
+    builder.selenium2.stepTypes.storeEval
   ]]
 ];

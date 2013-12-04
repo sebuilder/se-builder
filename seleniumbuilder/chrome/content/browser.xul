@@ -5,7 +5,14 @@
         <script src="seleniumBuilder2.js" />
         <script src="seleniumBuilderExtensions.js" />
 
-        <menupopup id="menu_ToolsPopup"> 
+        <menupopup id="menuWebDeveloperPopup"> 
+            <menuitem
+                label="&runseleniumbuilder;"
+                key="selenium-builder-run-key"
+                oncommand="bridge.boot()" />
+        </menupopup>
+        
+        <menupopup id="appmenu_webDeveloper_popup"> 
             <menuitem
                 label="&runseleniumbuilder;"
                 key="selenium-builder-run-key"
@@ -30,7 +37,7 @@
         <toolbarpalette id="BrowserToolbarPalette">
             <toolbarbutton id="selenium-builder-toolbar-button"
                 label="Selenium Builder"
-                image="chrome://seleniumbuilder/skin/toolbar.png"
+                image="chrome://seleniumbuilder/skin/statusbar.png"
                 tooltiptext="&runseleniumbuilder;"
                 oncommand="bridge.boot()" />
         </toolbarpalette>

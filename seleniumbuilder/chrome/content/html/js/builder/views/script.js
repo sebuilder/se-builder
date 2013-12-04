@@ -6,11 +6,51 @@ builder.views.script.clearResults = function() {
     jQuery('#' + script.steps[i].id + '-content').css('background-color', 'white');
     jQuery('#' + script.steps[i].id + '-error').hide();
     jQuery('#' + script.steps[i].id + '-message').hide();  
+    script.steps[i].outcome = null;
+    script.steps[i].runmessage = null;
+    script.steps[i].failureMessage = null;
   }
   jQuery('#edit-clearresults-span').hide();
   for (var i = 0; i < builder.views.script.clearResultsListeners.length; i++) {
     builder.views.script.clearResultsListeners[i]();
   }
+};
+
+builder.views.script.onStartRCPlayback = function() {
+  jQuery('#steps-top')[0].scrollIntoView(false);
+  jQuery('#edit-rc-playing').show();
+  jQuery('#edit-rc-stopping').hide();
+  builder.views.script.clearResults();
+  jQuery('#edit-clearresults-span').show();
+  jQuery('#edit-rc-connecting').show();
+};
+
+builder.views.script.onConnectionEstablished = function() {
+  jQuery('#edit-rc-connecting').hide();
+};
+
+builder.views.script.onEndRCPlayback = function() {
+  jQuery('#edit-rc-connecting').hide();
+  jQuery('#edit-rc-playing').hide();
+  jQuery('#edit-rc-stopping').hide();
+};
+
+builder.views.script.onStartLocalPlayback = function() {
+  jQuery('#edit-continue-local-playback').hide();
+  jQuery('#steps-top')[0].scrollIntoView(false);
+  jQuery('#edit-editing').hide();
+  jQuery('#edit-local-playing').show();
+  builder.views.script.clearResults();
+  jQuery('#edit-clearresults-span').show();
+};
+
+builder.views.script.onEndLocalPlayback = function() {
+  jQuery('#edit-editing').show();
+  jQuery('#edit-local-playing').hide();
+};
+
+builder.views.script.onPauseLocalPlayback = function() {
+  jQuery('#edit-continue-local-playback').show();
 };
 
 builder.views.script.clearResultsListeners = [];
@@ -62,8 +102,19 @@ builder.registerPostLoadHook(function() {
     builder.getScript().seleniumVersion.playback.stopTest();
   });
   jQuery('#edit-stop-rc-playback').click(function() {
-    builder.getScript().seleniumVersion.rcPlayback.stopTest();
+    var runs = builder.getScript().seleniumVersion.rcPlayback.getTestRuns();
+    if (runs.length > 0) {
+      jQuery('#edit-rc-playing').hide();
+      jQuery('#edit-rc-stopping').show();
+      builder.getScript().seleniumVersion.rcPlayback.stopTest(runs[0]);
+    }
   });
+  
+  // Continue playback buttons
+  jQuery('#edit-continue-local-playback').click(function() {
+    builder.getScript().seleniumVersion.playback.continueTestBetween();
+    jQuery('#edit-continue-local-playback').hide();
+  }).hide();
 
   // Clear play results:
   jQuery('#edit-clearresults').click(function() {

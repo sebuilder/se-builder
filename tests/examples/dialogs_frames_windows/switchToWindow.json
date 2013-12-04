@@ -1,0 +1,23 @@
+{
+  "type": "script",
+  "seleniumVersion": "2",
+  "formatVersion": 1,
+  "steps": [
+    {
+      "type": "get",
+      "url": "http://sebuilder.github.com/se-builder/test/window.html"
+    },
+    {
+      "type": "pause",
+      "waitTime": "1000"
+    },
+    {
+      "type": "switchToWindow",
+      "name": "win2"
+    },
+    {
+      "type": "assertTitle",
+      "title": "Spawned window"
+    }
+  ]
+}

@@ -12,7 +12,7 @@ builder.selenium2.io.formats.java_info = {
     "import org.openqa.selenium.*;\n" +
     "import static org.openqa.selenium.OutputType.*;\n" +
     "\n" +
-    "public class {name} {\n" +
+    "public class {scriptName} {\n" +
     "    public static void main(String[] args) {\n" +
     "        FirefoxDriver wd = new FirefoxDriver();\n" +
     "        wd.manage().timeouts().implicitlyWait(60, TimeUnit.SECONDS);\n",
@@ -52,6 +52,8 @@ builder.selenium2.io.formats.java_info = {
       "        }\n",
     "doubleClickElement":
       "        new Actions(wd).doubleClick(wd.findElement(By.{locatorBy}({locator}))).build().perform();\n",
+    "mouseOverElement":
+      "        new Actions(wd).moveToElement(wd.findElement(By.{locatorBy}({locator}))).build().perform();\n",
     "dragToAndDropElement":
       "        new Actions(wd).dragAndDrop(wd.findElement(By.{locatorBy}({locator})), wd.findElement(By.{locator2By}({locator2}))).build().perform();\n",
     "clickAndHoldElement":
@@ -74,7 +76,7 @@ builder.selenium2.io.formats.java_info = {
           var kv = opts[i].trim().split("=");
           if (kv.length == 1) { continue; }
           if (kv[0] == "path") {
-            r += ".path(\"" + escapeValue(step.type, kv[1]) + "\")";
+            r += ".path(" + escapeValue(step.type, kv[1]) + ")";
           }
           if (kv[0] == "max_age") {
             r += ".expiresOn(new Date(new Date().getTime() + " + parseInt(kv[1]) * 1000 + "l))";
@@ -208,25 +210,25 @@ builder.selenium2.io.formats.java_info = {
     "storeElementValue":
       "        ${{variable}:String} = wd.findElement(By.{locatorBy}({locator})).getAttribute(\"value\");\n",
     "assertElementAttribute":
-      "        if ({posNot}{value}.equals(wd.findElement(By.{locatorBy}({locator})).getAttribute({attributeName}))) {\n" +
+      "        if ({posNot}({value}).equals(wd.findElement(By.{locatorBy}({locator})).getAttribute({attributeName}))) {\n" +
       "            wd.close();\n" +
-      "            throw new RuntimeException(\"{negNot}assertElementValue failed\");\n" +
+      "            throw new RuntimeException(\"{negNot}assertElementAttribute failed\");\n" +
       "        }\n",
     "verifyElementAttribute":
-    "        if ({posNot}{value}.equals(wd.findElement(By.{locatorBy}({locator})).getAttribute({attributeName}))) {\n" +
-      "            System.err.println(\"{negNot}verifyElementValue failed\");\n" +
+    "        if ({posNot}({value}).equals(wd.findElement(By.{locatorBy}({locator})).getAttribute({attributeName}))) {\n" +
+      "            System.err.println(\"{negNot}verifyElementAttribute failed\");\n" +
       "        }\n",
     "waitForElementAttribute":
       "",
     "storeElementAttribute":
       "        ${{variable}:String} = wd.findElement(By.{locatorBy}({locator})).getAttribute({attributeName});\n",
     "assertCookieByName":
-      "        if ({posNot}{value}.equals(wd.manage().getCookieNamed({name}).getValue())) {\n" +
+      "        if ({posNot}({value}).equals(wd.manage().getCookieNamed({name}).getValue())) {\n" +
       "            wd.close();\n" +
       "            throw new RuntimeException(\"{negNot}assertCookieByName failed\");\n" +
       "        }\n",
     "verifyCookieByName":
-      "        if ({posNot}{value}.equals(wd.manage().getCookieNamed({name}).getValue())) {\n" +
+      "        if ({posNot}({value}).equals(wd.manage().getCookieNamed({name}).getValue())) {\n" +
       "            System.err.println(\"{negNot}verifyCookieByName failed\");\n" +
       "        }\n",
     "waitForCookieByName":
@@ -247,7 +249,15 @@ builder.selenium2.io.formats.java_info = {
     "storeCookiePresent":
       "        ${{variable}:boolean} = wd.manage().getCookieNamed({name}) != null;\n",
     "saveScreenshot":
-      "        wd.getScreenshotAs(FILE).renameTo(new File({file}));\n"
+      "        wd.getScreenshotAs(FILE).renameTo(new File({file}));\n",
+    "switchToFrame":
+      "        wd = (FirefoxDriver) wd.switchTo().frame({identifier});\n",
+    "switchToFrameByIndex":
+      "        wd = (FirefoxDriver) wd.switchTo().frame({index});\n",
+    "switchToWindow":
+      "        wd = (FirefoxDriver) wd.switchTo().window({name});\n",
+    "switchToDefaultContent":
+      "        wd = (FirefoxDriver) wd.switchTo().switchToDefaultContent();\n"
   },
   locatorByForType: function(stepType, locatorType, locatorIndex) {
     if ({"select.select":1, "select.deselect":1}[stepType.name] && locatorIndex == 2) {
@@ -279,6 +289,7 @@ builder.selenium2.io.formats.java_info = {
    */
   escapeValue: function(stepType, value, pName) {
     if (stepType.name.startsWith("store") && pName == "variable") { return value; }
+    if (stepType.name == "switchToFrameByIndex" && pName == "index") { return value; }
     // This function takes a string literal and escapes it and wraps it in quotes.
     var esc = function(v) { return "\"" + v.replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + "\""; }
     
@@ -344,5 +355,3 @@ builder.selenium2.io.formats.java_info = {
   usedVar: function(varName, varType) { return varName; },
   unusedVar: function(varName, varType) { return varType + " " + varName; }
 };
-
-builder.selenium2.io.formats.push(builder.selenium2.io.createLangFormatter(builder.selenium2.io.formats.java_info));

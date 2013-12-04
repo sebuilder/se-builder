@@ -29,8 +29,8 @@ builder.dialogs.exportscript.show = function(node) {
       append(newNode('p', cancel_b));
   
   // Option to overwrite the already-saved file.
-  if (builder.getScript().path &&
-      builder.getScript().path.where === "local")
+  if (builder.getScript().exportpath &&
+      builder.getScript().exportpath.where === "local")
   {
     jQuery(format_list).append(create_overwrite_li());
   }
@@ -40,12 +40,15 @@ builder.dialogs.exportscript.show = function(node) {
       jQuery(format_list).append(create_sel2_format_li(builder.selenium2.io.formats[i]));
     }
   } else {
+    var formats = builder.selenium1.adapter.availableFormats();
+    for (var i = 0; i < formats.length; i++) {
+      jQuery(format_list).append(create_sel1_format_li(formats[i]));
+    }
     if (builder.versionconverter.canConvert(builder.getScript(), builder.selenium2)) {
       jQuery(format_list).append(newNode("span", "Selenium 2:"));
       for (var i = 0; i < builder.selenium2.io.formats.length; i++) {
         jQuery(format_list).append(create_sel2_format_li(builder.selenium2.io.formats[i]));
       }
-      jQuery(format_list).append(newNode("span", "Selenium 1:"));
     } else {
       var iList = builder.versionconverter.nonConvertibleStepNames(builder.getScript(), builder.selenium2);
       var inconvertibles = "";
@@ -53,10 +56,6 @@ builder.dialogs.exportscript.show = function(node) {
         inconvertibles += iList[i] + " ";
       }
       jQuery(format_list).append(newNode("span", _t('sel2_unsaveable_steps') + ":", newNode("br"), inconvertibles));
-    }
-    var formats = builder.selenium1.adapter.availableFormats();
-    for (var i = 0; i < formats.length; i++) {
-      jQuery(format_list).append(create_sel1_format_li(formats[i]));
     }
   }
 };
@@ -78,15 +77,19 @@ builder.dialogs.exportscript.do_export_sel1 = function(myFormat, hostPort, brows
     builder.getScript(),
     myFormat);
   if (file) {
-    builder.suite.setCurrentScriptSaveRequired(false);
-    builder.getScript().path = 
-      {
-        where: "local",
-        path: file.path,
-        format: myFormat
-      };
+    var path = {
+      where: "local",
+      path: file.path,
+      format: myFormat
+    };
+    if (myFormat.name == "HTML") {
+      builder.getScript().path = path;
+      builder.suite.setCurrentScriptSaveRequired(false);
+    } else {
+      builder.getScript().exportpath = path;
+      builder.suite.broadcastScriptChange();
+    }
     builder.gui.suite.update();
-    builder.suite.broadcastScriptChange();
   }
   builder.dialogs.exportscript.hide();
 };
@@ -96,14 +99,18 @@ builder.dialogs.exportscript.do_export_sel1 = function(myFormat, hostPort, brows
  * @param format The format to export with.
  */
 function create_sel1_format_li(myFormat) {
+  var liName = builder.selenium1.io.isSaveFormat(myFormat) ? _t('save_as_X', myFormat.name) : myFormat.name;
   var li_node = newNode('li',
-    newNode('a', myFormat.name, {
+    newNode('a', liName, {
       click: function(event) {
+        builder.dialogs.exportscript.hide();
         if (myFormat.name === "HTML") {
           builder.dialogs.exportscript.do_export_sel1(myFormat);
         } else {
-          builder.dialogs.rc.show(builder.dialogs.exportscript.node, null, function(hostPort, browserString) {
-              builder.dialogs.exportscript.do_export_sel1(myFormat, hostPort, browserString);
+          builder.dialogs.rc.show(builder.dialogs.exportscript.node, null, function(versionToSettings) {
+              var hostPort = versionToSettings[builder.selenium1].hostPort;
+              var browserstring = versionToSettings[builder.selenium1].browserstring;
+              builder.dialogs.exportscript.do_export_sel1(myFormat, hostPort, browserstring);
             }, _t('save'));
         }
       },
@@ -131,14 +138,20 @@ function create_sel2_format_li(myFormat) {
     }
     return newNode('li', newNode('strike', myFormat.name), " " + _t('unsupported_steps') + ": " + l);
   }
+  var liName = builder.selenium2.io.isSaveFormat(myFormat) ? _t('save_as_X', myFormat.name) : myFormat.name;
   var li_node = newNode('li',
-    newNode('a', myFormat.name, {
+    newNode('a', liName, {
       click: function(event) {
-        if (builder.selenium2.io.saveScript(script, myFormat)) {
-          builder.getScript().path = script.path;
-          builder.suite.setCurrentScriptSaveRequired(false);
-          builder.gui.suite.update();
-        }
+        builder.selenium2.io.saveScript(script, myFormat, null, function(success) {
+          if (success) {
+            if (builder.selenium2.io.isSaveFormat(myFormat)) {
+              builder.suite.setCurrentScriptSaveRequired(false);
+            } else {
+              builder.suite.broadcastScriptChange();
+            }
+            builder.gui.suite.update();
+          }
+        });
         builder.dialogs.exportscript.hide();
       },
       href: '#export-sel2'
@@ -150,8 +163,8 @@ function create_sel2_format_li(myFormat) {
 /** Creates a li node for overwriting the existing file. */
 function create_overwrite_li() {
   var script = builder.getScript();
-  var path = script.path;
-  return newNode('li', newNode('a', _t('save_as_X_to_Y', path.format.name, path.path), {
+  var path = script.exportpath;
+  return newNode('li', newNode('a', _t('export_as_X_to_Y', path.format.name, path.path), {
     click: function(event) {
       if (builder.getScript().seleniumVersion === builder.selenium1) {
         if (builder.selenium2.io.formats.indexOf(path.format) !== -1) {
@@ -168,13 +181,54 @@ function create_overwrite_li() {
         }
       }
       if (script.seleniumVersion === builder.selenium2) {
-        if (builder.selenium2.io.saveScript(script, path.format, path.path)) {
-          builder.suite.setCurrentScriptSaveRequired(false);
-          builder.gui.suite.update();
-        }
+        builder.selenium2.io.saveScript(script, path.format, path.path, function(success) {
+          if (success) {
+            builder.suite.setCurrentScriptSaveRequired(false);
+            builder.gui.suite.update();
+          }
+        });
       }
       builder.dialogs.exportscript.hide();
     },
     href: '#export-overwrite'
   }));
 }
+
+builder.dialogs.exportscript.save = function() {
+  var script = builder.getScript();
+  if (!script.path) {
+    builder.dialogs.exportscript.saveAs();
+    return;
+  }
+  if (script.seleniumVersion == builder.selenium1) {
+    var file = builder.selenium1.adapter.exportScriptWithFormatToPath(
+      script,
+      script.path.format,
+      script.path.path);
+    if (file) {
+      builder.suite.setCurrentScriptSaveRequired(false);
+      builder.gui.suite.update();
+    }
+  } else {
+    builder.selenium2.io.saveScript(script, script.path.format, script.path.path, function(success) {
+      if (success) {
+        builder.suite.setCurrentScriptSaveRequired(false);
+        builder.gui.suite.update();
+      }
+    });
+  }
+};
+
+builder.dialogs.exportscript.saveAs = function() {
+  var script = builder.getScript();
+  if (script.seleniumVersion == builder.selenium1) {
+    builder.dialogs.exportscript.do_export_sel1(builder.selenium1.adapter.availableFormats()[0]);
+  } else {
+    builder.selenium2.io.saveScript(script, builder.selenium2.io.formats[0], null, function(success) {
+      if (success) {
+        builder.suite.setCurrentScriptSaveRequired(false);
+        builder.gui.suite.update();
+      }
+    });
+  }
+};

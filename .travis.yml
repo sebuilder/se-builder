@@ -1,0 +1,13 @@
+---
+language: node_js
+node_js:
+- 0.8
+script:
+- node tests/exporters.js
+- node tests/saucelabs.js
+env:
+  global:
+  - secure: |-
+      E66UrRuEMMleB5OKk+ZqOxvMYUKEOqe24Qv7hLdmmXLycEMg99lViu65K2+BWBmXlQ0s80juexjxc7/woWx2UlBlYm1hHVdjE+pxcW7/AwhSVmWvuDZ+UhHUaD/P0O2LyyHp7srhSwgCNOMQz2j1fU1389hjwK8G7G7V5tBhCA4=
+  - secure: |-
+      E+oUk17FnUljJ0CGNchdjE52vbL6HaI04/7dWpLcnKe8DPMf7UV1W0c05cnbViAAB46j5QQ72PEwUHoxP71fVcARFAWXmAXTwAUS0+y5MsmG1bZf3JRgSB6e8AUdBzvavpFqdYP8kd8UD3s8VMr/uOgLeF7MEdnrRFvT1c1Pask=

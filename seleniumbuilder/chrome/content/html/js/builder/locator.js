@@ -12,12 +12,13 @@ builder.locator = {};
  * the idea of an xpath locator.
  */
 builder.locator.methods = {
-  id:    {toString: function() { return "id"; }},
-  name:  {toString: function() { return "name"; }},
-  link:  {toString: function() { return "link"; }},
-  css:   {toString: function() { return "css"; }},
-  xpath: {toString: function() { return "xpath"; }},
-  full_xpath: {toString: function() { return "full_xpath"; }}
+  id:         {toString: function() { return "id"; }},
+  name:       {toString: function() { return "name"; }},
+  link:       {toString: function() { return "link"; }},
+  css:        {toString: function() { return "css"; }},
+  xpath:      {toString: function() { return "xpath"; }},
+  dom:        {toString: function() { return "dom"; }},
+  identifier: {toString: function() { return "identifier"; }}
 };
 
 builder.locator.methods.id[builder.selenium1] = "id";
@@ -30,6 +31,8 @@ builder.locator.methods.css[builder.selenium1] = "css";
 builder.locator.methods.css[builder.selenium2] = "css selector";
 builder.locator.methods.xpath[builder.selenium1] = "xpath";
 builder.locator.methods.xpath[builder.selenium2] = "xpath";
+builder.locator.methods.dom[builder.selenium1] = "dom";
+builder.locator.methods.identifier[builder.selenium1] = "identifier";
 
 builder.locator.methodForName = function(seleniumVersion, name) {
   for (var k in builder.locator.methods) {
@@ -99,7 +102,103 @@ builder.locator.empty = function() {
   return new builder.locator.Locator(builder.locator.methods.id);
 };
 
-builder.locator.fromElement = function(element) {
+builder.locator.getNodeNbr = function(current) {
+  var childNodes = current.parentNode.childNodes;
+  var total = 0;
+  var index = -1;
+  for (var i = 0; i < childNodes.length; i++) {
+    var child = childNodes[i];
+    if (child.nodeName == current.nodeName) {
+      if (child == current) {
+        index = total;
+      }
+      total++;
+    }
+  }
+  return index;
+};
+
+builder.locator.prevHighlightMethod = null;
+builder.locator.prevHighlightValue = null;
+builder.locator.prevHighlightOriginalStyle = null;
+
+builder.locator.deHighlight = function(callback) {
+  if (!builder.locator.prevHighlightMethod) { callback(); return; }
+  if (builder.getScript().seleniumVersion == builder.selenium1) {
+    var win = window.bridge.getRecordingWindow();
+    var node = new MozillaBrowserBot(win).findElementBy(builder.locator.prevHighlightMethod[builder.selenium1], builder.locator.prevHighlightValue, win.document, win);
+    if (node) {
+      node.style.border = builder.locator.prevHighlightOriginalStyle;
+    }
+    builder.locator.prevHighlightMethod = null;
+    callback();
+  } else {
+    function done() {
+      builder.selenium2.playback.shutdown();
+      builder.locator.prevHighlightMethod = null;
+      callback();
+    }
+    builder.selenium2.playback.startSession(function() {
+      builder.selenium2.playback.execute('findElement', {using: builder.locator.prevHighlightMethod[builder.selenium2], value: builder.locator.prevHighlightValue}, function(result) {
+        builder.selenium2.playback.execute('executeScript', { 'script': "arguments[0].setAttribute('style', '" + builder.locator.prevHighlightOriginalStyle + "');", 'args': [result.value] }, done, done);
+      }, done);
+    });
+  }
+};
+
+builder.locator.highlight = function(method, value) {
+  bridge.focusRecordingTab();
+  builder.locator.deHighlight(function() {
+    builder.locator.prevHighlightMethod = method;
+    builder.locator.prevHighlightValue = value;
+    if (builder.getScript().seleniumVersion == builder.selenium1) {
+      var win = window.bridge.getRecordingWindow();
+      var node = new MozillaBrowserBot(win).findElementBy(method[builder.selenium1], value, win.document, win);
+      if (node) {
+        builder.locator.prevHighlightOriginalStyle = node.style.border;
+        node.style.border = "2px solid red";
+      }
+    } else {
+      builder.selenium2.playback.startSession(function() {
+        builder.selenium2.playback.execute('findElement', {using: method[builder.selenium2], value: value}, function(result) {
+          builder.selenium2.playback.execute('getElementAttribute', {id: result.value.ELEMENT, name: 'style'}, function(result2) {
+            builder.locator.prevHighlightOriginalStyle = result2.value;
+            builder.selenium2.playback.execute('executeScript', { 'script': "arguments[0].setAttribute('style', 'border: 2px solid red;');", 'args': [result.value] }, builder.selenium2.playback.shutdown(), builder.selenium2.playback.shutdown);
+          }, builder.selenium2.playback.shutdown);
+        }, builder.selenium2.playback.shutdown);
+      });
+    }
+  });
+};
+
+builder.locator.getCSSSubPath = function(e) {
+  var css_attributes = ['id', 'name', 'class', 'type', 'alt', 'title', 'value'];
+  for (var i = 0; i < css_attributes.length; i++) {
+    var attr = css_attributes[i];
+    var value = e.getAttribute(attr);
+    if (value) {
+      if (attr == 'id')
+        return '#' + value;
+      if (attr == 'class')
+        return e.nodeName.toLowerCase() + '.' + value.replace(" ", ".").replace("..", ".");
+      return e.nodeName.toLowerCase() + '[' + attr + '="' + value + '"]';
+    }
+  }
+  if (builder.locator.getNodeNbr(e)) {
+    return e.nodeName.toLowerCase() + ':nth-of-type(' + builder.locator.getNodeNbr(e) + ')';
+  } else {
+    return e.nodeName.toLowerCase();
+  }
+};
+
+/**
+ * Generates a best-guess locator from an element.
+ * @param element The element to create a locator for
+ * @param applyTextTransforms Whether to apply CSS text-transforms for link texts, which is what
+ *        Webdriver wants but Selenium 1 doesn't.
+ * @return A locator
+ */
+builder.locator.fromElement = function(element, applyTextTransforms) {
   var values = {};
   var preferredMethod = null;
 
@@ -130,12 +229,31 @@ builder.locator.fromElement = function(element) {
   if ((element.tagName.toUpperCase() === "A") ||
       (element.parentNode.tagName && element.parentNode.tagName.toUpperCase() === "A")) 
   {
-    var link = removeHTMLTags(element.innerHTML);
+    var el = element.tagName.toUpperCase() === "A" ? element : element.parentNode;
+    var link = removeHTMLTags(el.innerHTML);
     if (link) {
-      values[builder.locator.methods.link] = [link];
-      if (!preferredMethod && findNode("link", link) === element) {
+      values[builder.locator.methods.link] = [applyTextTransforms ? getCorrectCaseText(el): link];
+      if (!preferredMethod && findNode("link", link) === el) {
         preferredMethod = builder.locator.methods.link;
       }
+    }
+  }
+  
+  // Locate by CSS
+  var current = element;
+  var sub_path = builder.locator.getCSSSubPath(element);
+  while (findNode("css", sub_path) != element && current.nodeName.toLowerCase() != 'html') {
+    sub_path = builder.locator.getCSSSubPath(current.parentNode) + ' > ' + sub_path;
+    current = current.parentNode;
+  }
+  if (findNode("css", sub_path) == element) {
+    if (values[builder.locator.methods.css]) {
+      values[builder.locator.methods.css].push(sub_path);
+    } else {
+      values[builder.locator.methods.css] = [sub_path];
+    }
+    if (!preferredMethod) {
+      preferredMethod = builder.locator.methods.css;
     }
   }
   
@@ -332,5 +450,28 @@ function removeHTMLTags(str){
   });
   var strTagStrippedText = str.replace(/<\/?[^>]+(>|$)/g, "");
   strTagStrippedText = strTagStrippedText.replace(/&nbsp;/g,"");
-  return strTagStrippedText;
+  return strTagStrippedText.trim();
+}
+
+// From http://stackoverflow.com/questions/2332811/capitalize-words-in-string
+String.prototype.capitalize = function() {
+    return this.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+};
+
+var transforms = {"uppercase": "toUpperCase", "lowercase": "toLowerCase", "capitalize": "capitalize", "none": "toString"};
+
+/** Given an element, returns its text with CSS text-transforms applies. */
+function getCorrectCaseText(el, style) {
+  try {
+    style = jQuery(el).css('text-transform');
+  } catch (e) {}
+  style = transforms[style] ? style : "none";
+  if (el.nodeType == 3) {
+    return el.textContent[transforms[style]]();
+  }
+  var bits = [];
+  for (var i = 0; i < el.childNodes.length; i++) {
+    bits.push(getCorrectCaseText(el.childNodes[i], style));
+  }
+  return bits.join("");
 }

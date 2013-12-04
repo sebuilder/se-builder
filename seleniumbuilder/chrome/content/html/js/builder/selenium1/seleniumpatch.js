@@ -18,3 +18,10 @@ builder.selenium1.originalSelMembers = {};
 for (var m in Selenium.prototype) {
   builder.selenium1.originalSelMembers[m] = true;
 }
+
+
+// Same with PageBot.
+builder.selenium1.originalPBMembers = {};
+for (var m in PageBot.prototype) {
+  builder.selenium1.originalPBMembers[m] = true;
+}

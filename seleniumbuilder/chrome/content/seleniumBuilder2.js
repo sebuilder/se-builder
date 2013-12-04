@@ -50,7 +50,7 @@ bridge.getBrowser = function() {
 /** Shuts down SeBuilder. */
 bridge.shutdown = function() {
   if (bridge.recordingTab) {
-    bridge.recordingTab.style.setProperty("background-color", null, null);
+    bridge.recordingTab.style.setProperty("background-color", "", "");
   }
   if (bridge.recorderWindow) {
     bridge.recorderWindow.close();
@@ -121,6 +121,22 @@ bridge.boot = function() {
       clearInterval(bridge.booter);
     }
   }, 100);
+};
+
+bridge.getInternalFile = function(path, callback) {
+  var MY_ID = "seleniumbuilder@saucelabs.com";
+  try {
+    // We may be on FF 4 or later
+    Components.utils.import("resource://gre/modules/AddonManager.jsm");
+    AddonManager.getAddonByID(MY_ID, function(addon) {
+      callback(addon.getResourceURI(path).QueryInterface(Components.interfaces.nsIFileURL).file);
+    });
+  } catch (e) {
+    // We're on Firefox < 4, so we can use nsIExtensionManager.
+    var em = Components.classes["@mozilla.org/extensions/manager;1"].
+        getService(Components.interfaces.nsIExtensionManager);
+    callback(em.getInstallLocation(MY_ID).getItemFile(MY_ID, path));
+  }
 };
 
 /**
@@ -197,4 +213,60 @@ bridge.writeBinaryFile = function(path, data) {
   outputStream.init(file, -1, -1, 0);
   outputStream.write(data, data.length);
   outputStream.close();
+};
+
+// Import the Services module for future use, if we're not in a
+// a browser window where it's already loaded.
+Components.utils.import('resource://gre/modules/Services.jsm');
+
+// Create a constructor for the builtin supports-string class.
+const nsSupportsString = Components.Constructor("@mozilla.org/supports-string;1", "nsISupportsString");
+function SupportsString(str) {
+  // Create an instance of the supports-string class
+  var res = nsSupportsString();
+
+  // Store the JavaScript string that we want to wrap in the new nsISupportsString object
+  res.data = str;
+  return res;
+}
+
+// Create a constructor for the builtin transferable class
+const nsTransferable = Components.Constructor("@mozilla.org/widget/transferable;1", "nsITransferable");
+
+// Create a wrapper to construct a nsITransferable instance and set its source to the given window, when necessary
+function Transferable(source) {
+  var res = nsTransferable();
+  if ('init' in res) {
+    // When passed a Window object, find a suitable provacy context for it.
+    if (source instanceof Ci.nsIDOMWindow) {
+      // Note: in Gecko versions >16, you can import the PrivateBrowsingUtils.jsm module
+      // and use PrivateBrowsingUtils.privacyContextFromWindow(sourceWindow) instead
+      source = source.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation);
+    }
+    res.init(source);
+  }
+  return res;
+}
+
+bridge.getClipboardString = function() {
+  var trans = Transferable();
+  trans.addDataFlavor("text/unicode");
+  Services.clipboard.getData(trans, Services.clipboard.kGlobalClipboard);
+  var str       = {};
+  var strLength = {};
+  trans.getTransferData("text/unicode", str, strLength);
+  if (str) {
+    return str.value.QueryInterface(Ci.nsISupportsString).data;
+  } else {
+    return null;
+  }
+};
+
+bridge.setClipboardString = function(dataString) {
+  var trans = Transferable(window);
+  trans.addDataFlavor("text/unicode");
+  // We multiply the length of the string by 2, since it's stored in 2-byte UTF-16
+  // format internally.
+  trans.setTransferData("text/unicode", SupportsString(dataString), dataString.length * 2);
+  Services.clipboard.setData(trans, null, Services.clipboard.kGlobalClipboard);
 };

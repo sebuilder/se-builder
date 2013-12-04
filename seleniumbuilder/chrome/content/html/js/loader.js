@@ -1,10 +1,28 @@
 var builder = {};
-builder.version = "2.0.1";
+builder.version = "2.1.0";
 
 builder.loader = {};
 
 builder.loader.ds = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties);
 builder.loader.ios = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService);
+
+builder.loader.showProgressBar = function() {
+  document.getElementById('booting-done').style.display = 'block';
+  document.getElementById('booting-notdone').style.display = 'block';
+};
+
+builder.loader.hideProgressBar = function() {
+  document.getElementById('booting-done').style.display = 'none';
+  document.getElementById('booting-notdone').style.display = 'none';
+};
+
+builder.loader.setProgressBar = function(halfPercents, text) {
+  document.getElementById('booting-file').innerHTML = text;
+  document.getElementById('booting-done').style.width = halfPercents + 'px';
+  document.getElementById('booting-notdone').style.width = (201 - halfPercents) + 'px';
+  document.getElementById('booting-notdone').style.left = halfPercents + 'px';
+  builder.loader.showProgressBar();
+};
 
 builder.loader.getProfilePath = function(relativePath) {
   var els = relativePath.split("/");
@@ -17,33 +35,51 @@ builder.loader.getProfilePath = function(relativePath) {
 };
 
 builder.loader.loadScripts = function() {
-  for (var i = 0; i < arguments.length; i++) {
-    var script = document.createElement('script');
-    script.setAttribute('type', 'text/javascript');
-    var path = arguments[i];
-    if (path.charAt(0) == "%") {
-      script.setAttribute('src', builder.loader.getProfilePath(path.substring(1)) + "?" + Math.random());
-    }
-    else {
-      // Force no caching.
-      script.setAttribute('src', "js/" + path + "?" + Math.random());
-    }
-    // Above line may not work due to security reasons, so let's try a different
-    // way too.
-    document.getElementsByTagName('head')[0].appendChild(script);
-  }
+  builder.loader.loadNextScript(arguments, 0);
 };
 
-builder.loader.loadListOfScripts = function(scripts) {
-  for (var i = 0; i < scripts.length; i++) {
-    var script = document.createElement('script');
-    script.setAttribute('type', 'text/javascript');
-    // Force no caching.
-    script.setAttribute('src', scripts[i] + "?" + Math.random());
-    // Above line may not work due to security reasons, so let's try a different
-    // way too.
-    document.getElementsByTagName('head')[0].appendChild(script);
+builder.loader.loadNextScript = function(l, index) {
+  var script = document.createElement('script');
+  script.setAttribute('type', 'text/javascript');
+  var path = l[index];
+  if (path.charAt(0) == "%") {
+    script.setAttribute('src', builder.loader.getProfilePath(path.substring(1)) + "?" + Math.random());
   }
+  else {
+    // Force no caching.
+    script.setAttribute('src', "js/" + path + "?" + Math.random());
+  }
+  // Above line may not work due to security reasons, so let's try a different
+  // way too.
+  document.getElementsByTagName('head')[0].appendChild(script);
+  builder.loader.setProgressBar(200 * index / l.length, path);
+  window.setTimeout(function() {
+    if (index < l.length - 1) {
+      builder.loader.loadNextScript(l, index + 1);
+    }
+  }, 3);
+};
+
+builder.loader.loadListOfScripts = function(scripts, callback) {
+  builder.loader.loadNextListScript(scripts, 0, callback);
+}
+
+builder.loader.loadNextListScript = function(scripts, index, callback) {
+  var script = document.createElement('script');
+  script.setAttribute('type', 'text/javascript');
+  // Force no caching.
+  script.setAttribute('src', scripts[index] + "?" + Math.random());
+  // Above line may not work due to security reasons, so let's try a different
+  // way too.
+  document.getElementsByTagName('head')[0].appendChild(script);
+  builder.loader.setProgressBar(200 * index / scripts.length, scripts[index]);
+  window.setTimeout(function() {
+    if (index < scripts.length - 1) {
+      builder.loader.loadNextListScript(scripts, index + 1, callback);
+    } else {
+      if (callback) { callback(); }
+    }
+  }, 3);
 };
 
 
@@ -92,9 +128,11 @@ builder.loader.loadScripts(
   // Load Selenium Builder
   "builder/utils.js",
   "builder/i18n/translate.js",
-  "builder/i18n/en-US.js",
+  "builder/i18n/en.js",
   "builder/i18n/de.js",
   "builder/i18n/fr.js",
+  "builder/i18n/jp.js",
+  "builder/i18n/pt-br.js",
   "builder/io.js",
   "builder/url.js",
   "builder/script.js",
@@ -129,11 +167,18 @@ builder.loader.loadScripts(
   "builder/selenium2/io/io.js",
   "builder/selenium2/io/formats/json.js",
   "builder/selenium2/io/formats/java.js",
+  "builder/selenium2/io/formats/java_new.js",
+  "builder/selenium2/io/formats/java_junit.js",
+  "builder/selenium2/io/formats/java_testng.js",
   "builder/selenium2/io/formats/ruby.js",
   "builder/selenium2/io/formats/python.js",
+  "builder/selenium2/io/formats/python_unittest.js",
+  "builder/selenium2/io/formats/phpunit.js",
   "builder/selenium2/io/formats/php.js",
   "builder/selenium2/io/formats/node-wd.js",
-  "builder/selenium2/io/formats/csharp.js",
+  "builder/selenium2/io/formats/node-mocha.js",
+  "builder/selenium2/io/formats/csharp_new.js",
+  "builder/selenium2/io/formats/csharp_new_nunit.js",
   "builder/selenium2/io/formats/english.js",
   "builder/locator.js",
   "builder/suite2.js",
@@ -146,10 +191,15 @@ builder.loader.loadScripts(
   "builder/dialogs/dialogs.js",
   "builder/dialogs/convert.js",
   "builder/dialogs/exportscript.js",
+  "builder/dialogs/exportsuite.js",
   "builder/dialogs/rc.js",
   "builder/dialogs/record.js",
   "builder/dialogs/runall.js",
+  "builder/dialogs/variables.js",
   "builder/gui/stepstable.js",
   "builder/gui/translate.js",
+  "builder/datasource/sources.js",
+  "builder/datasource/none.js",
+  "builder/datasource/manual.js",
   "builder/ignition.js"
 );

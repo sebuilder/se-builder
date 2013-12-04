@@ -4,8 +4,8 @@
 builder.dialogs.runall = {};
 builder.dialogs.runall.node = null;
 builder.dialogs.runall.dialog = null;
-builder.dialogs.runall.hostPort = null;
-builder.dialogs.runall.browserString = null;
+
+builder.dialogs.runall.versionToSettings = {};
 
 builder.dialogs.runall.currentScriptIndex = -1;
 builder.dialogs.runall.scriptNames = [];
@@ -19,10 +19,11 @@ builder.dialogs.runall.rc = false;
 builder.dialogs.runall.requestStop = false;
 builder.dialogs.runall.currentPlayback = null;
 
-builder.dialogs.runall.runRC = function(node, hostPort, browserString) {
+builder.dialogs.runall.running = false;
+
+builder.dialogs.runall.runRC = function(node, versionToSettings) {
   builder.dialogs.runall.node = node;
-  builder.dialogs.runall.hostPort = hostPort;
-  builder.dialogs.runall.browserString = browserString;
+  builder.dialogs.runall.versionToSettings = versionToSettings;
   builder.dialogs.runall.rc = true;
   builder.dialogs.runall.run();
 };
@@ -33,6 +34,18 @@ builder.dialogs.runall.runLocally = function(node) {
   builder.dialogs.runall.run();
 };
 
+function makeScriptEntry(name, scriptIndex) {
+  return newNode('span', {
+    style: "cursor: pointer;",
+    click: function() {
+      if (!builder.dialogs.runall.running) {
+        builder.suite.switchToScript(scriptIndex);
+        builder.stepdisplay.update();
+      }
+    }
+  }, name);
+}
+
 function makeViewResultLink(sid) {
   return newNode('a', {'class':"step-view", id:sid + "-view", style:"display: none", click: function(e) {
     window.bridge.getRecordingWindow().location = this.href;
@@ -42,8 +55,10 @@ function makeViewResultLink(sid) {
 }
 
 builder.dialogs.runall.run = function() {
+  builder.dialogs.runall.hide();
   jQuery('#edit-suite-editing').hide();
   builder.dialogs.runall.requestStop = false;
+  builder.dialogs.runall.running = true;
   
   builder.dialogs.runall.scriptNames = builder.suite.getScriptNames();
   
@@ -59,7 +74,7 @@ builder.dialogs.runall.run = function() {
     builder.dialogs.runall.scriptlist.appendChild(
       newNode('div', {id: sid, 'class': 'b-suite-playback-script'},
         newNode('div',
-          newNode('span', {}, name),
+          makeScriptEntry(name, i),
           makeViewResultLink(sid)
         ),
         newNode('div', {'class':"step-error", id:sid + "-error", style:"display: none"})
@@ -111,6 +126,9 @@ builder.dialogs.runall.stoprun = function() {
     // In case we haven't actually started or have already finished, we don't really care if this
     // goes wrong.
   }
+  setTimeout(function() {
+    builder.dialogs.runall.running = false;
+  }, 100);
 };
 
 builder.dialogs.runall.processResult = function(result) {
@@ -142,16 +160,22 @@ builder.dialogs.runall.runNextRC = function() {
     jQuery("#script-num-" + builder.dialogs.runall.currentScriptIndex).css('background-color', '#ffffaa');
     builder.suite.switchToScript(builder.dialogs.runall.currentScriptIndex);
     builder.stepdisplay.update();
+    builder.views.script.onStartRCPlayback();
     builder.dialogs.runall.currentPlayback = builder.getScript().seleniumVersion.rcPlayback;
     builder.dialogs.runall.currentPlayback.run(
-      builder.dialogs.runall.hostPort,
-      builder.dialogs.runall.browserString,
-      builder.dialogs.runall.processRCResult);
+      builder.dialogs.runall.versionToSettings[builder.getScript().seleniumVersion],
+      function(result) {
+        builder.views.script.onEndRCPlayback();
+        builder.dialogs.runall.processRCResult(result);
+      },
+      builder.views.script.onConnectionEstablished,
+      builder.stepdisplay.updateStepPlaybackState);
   } else {
     jQuery('#suite-playback-stop').hide();
     jQuery('#suite-playback-close').show();
     jQuery(builder.dialogs.runall.info_p).html(_t('done_exclamation'));
     jQuery('#edit-suite-editing').show();
+    builder.dialogs.runall.running = false;
   }
 };
 
@@ -170,12 +194,16 @@ builder.dialogs.runall.runNextLocal = function() {
     builder.suite.switchToScript(builder.dialogs.runall.currentScriptIndex);
     builder.stepdisplay.update();
     builder.dialogs.runall.currentPlayback = builder.getScript().seleniumVersion.playback;
-    builder.dialogs.runall.currentPlayback.runTest(builder.dialogs.runall.processLocalResult);
+    builder.dialogs.runall.currentPlayback.runTest(function(result) {
+      builder.views.script.onEndLocalPlayback(result);
+      builder.dialogs.runall.processLocalResult(result);
+    }, builder.views.script.onStartLocalPlayback, builder.stepdisplay.updateStepPlaybackState, builder.views.script.onPauseLocalPlayback);
   } else {
     jQuery('#suite-playback-stop').hide();
     jQuery('#suite-playback-close').show();
     jQuery(builder.dialogs.runall.info_p).html("Done!");
     jQuery('#edit-suite-editing').show();
+    builder.dialogs.runall.running = false;
   }
 };
 

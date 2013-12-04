@@ -150,6 +150,7 @@ builder.record.startRecording = function(urlText, seleniumVersion) {
         builder.record.recording = true;    
         builder.gui.switchView(builder.views.script);
         builder.suite.addScript(new builder.Script(seleniumVersion));
+        builder.getScript().saveRequired = true;
         if (seleniumVersion === builder.selenium1) {
           builder.getScript().addStep(new builder.Step(builder.selenium1.stepTypes.open, url.href()));
           builder.record.recordStep(new builder.Step(builder.selenium1.stepTypes.waitForPageToLoad, "60000"));

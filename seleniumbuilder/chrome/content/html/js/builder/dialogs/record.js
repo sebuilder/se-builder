@@ -24,13 +24,11 @@ builder.dialogs.record.show = function (node) {
               click: function(e) {
                 builder.record.startRecording(jQuery("#startup-url-2").val(), builder.selenium1);
                 node.html('');
-                builder.gui.menu.updateRunSuiteOnRC();
               }}),
             newNode('input', {type:'submit', value:'Selenium 2', 'class':'button',
               click: function(e) {
                 builder.record.startRecording(jQuery("#startup-url-2").val(), builder.selenium2);
                 node.html('');
-                builder.gui.menu.updateRunSuiteOnRC();
               }}),
             newNode('a', _t('cancel'), {
                 'class': 'button',

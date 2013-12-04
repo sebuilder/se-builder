@@ -50,7 +50,7 @@ builder.selenium2.Recorder.prototype = {
    * Create an event from a received click on any element.
    */
   writeJsonClicks: function(e) {
-    var locator = builder.locator.fromElement(e.target);
+    var locator = builder.locator.fromElement(e.target, /*applyTextTransforms*/ true);
     var lastStep = builder.getScript().getLastStep();
     
     // Selects are handled via change events, so clicks on them can be ignored.
@@ -121,7 +121,7 @@ builder.selenium2.Recorder.prototype = {
   },
   /** Record change events, e.g. typing, selecting, radio buttons. */
   writeJsonChange: function(e) {
-    var locator = builder.locator.fromElement(e.target);
+    var locator = builder.locator.fromElement(e.target, /*applyTextTransforms*/ true);
     var lastStep = builder.getScript().getLastStep();
         
     // Under some circumstances, for example when the user presses an arrow key, an event can
@@ -162,7 +162,7 @@ builder.selenium2.Recorder.prototype = {
     // Selecting
     if (e.target.type.toLowerCase() == 'select' || e.target.type.toLowerCase() == 'select-one') {
       var vals = {};
-      vals[builder.locator.methods.xpath] = [locator.getValueForMethod(builder.locator.methods.xpath) + "/option[" + (e.target.selectedIndex + 1) + "]"];
+      vals[builder.locator.methods.xpath] = [locator.getValueForMethod(builder.locator.methods.xpath) + "//option[" + (e.target.selectedIndex + 1) + "]"];
       var optLoc = new builder.locator.Locator(builder.locator.methods.xpath, 0, vals);
       
       // Add select
@@ -182,7 +182,7 @@ builder.selenium2.Recorder.prototype = {
         }
         if (newlyAdded) {
           var vals = {};
-          vals[builder.locator.methods.xpath] = [locator.getValueForMethod(builder.locator.methods.xpath) + "/option[normalize-space(.)='" + builder.normalizeWhitespace(currentVal[c]) + "']"];
+          vals[builder.locator.methods.xpath] = [locator.getValueForMethod(builder.locator.methods.xpath) + "/option[@value='" + currentVal[c] + "']"];
           var optLoc = new builder.locator.Locator(builder.locator.methods.xpath, 0, vals);
           
           this.recordStep(new builder.Step(builder.selenium2.stepTypes.setElementSelected, optLoc));
@@ -197,7 +197,7 @@ builder.selenium2.Recorder.prototype = {
         }
         if (!stillThere) {
           var vals = {};
-          vals[builder.locator.methods.xpath] = [locator.getValueForMethod(builder.locator.methods.xpath) + "/option[normalize-space(.)='" + builder.normalizeWhitespace(oldVal[o]) + "']"];
+          vals[builder.locator.methods.xpath] = [locator.getValueForMethod(builder.locator.methods.xpath) + "/option[@value='" + oldVal[o] + "']"];
           var optLoc = new builder.locator.Locator(builder.locator.methods.xpath, 0, vals);
           
           this.recordStep(new builder.Step(builder.selenium2.stepTypes.setElementNotSelected, optLoc));
@@ -237,7 +237,7 @@ builder.selenium2.Recorder.prototype = {
    * However it has the advantage of providing the selectors needed for closer modification.
    */
   writeJsonType: function(e) {
-    var locator = builder.locator.fromElement(e.target);
+    var locator = builder.locator.fromElement(e.target, /*applyTextTransforms*/ true);
     var lastStep = builder.getScript().getLastStep();
     if (lastStep.type == builder.selenium2.stepTypes.sendKeysToElement) {
       if (e.which >= 32 || e.which == 9 || e.which == 10) {
@@ -256,7 +256,7 @@ builder.selenium2.Recorder.prototype = {
    * Record exact position of clicks for elements where it might be important (e.g canvas tags).
    */
   writeJsonClickAt: function(e) {
-    var locator = builder.locator.fromElement(e.target);
+    var locator = builder.locator.fromElement(e.target, /*applyTextTransforms*/ true);
     var lastStep = builder.getScript().getLastStep();
     var offset = jQuery(e.target).offset();
     var coordString = (e.clientX - offset.left) + "," + (e.clientY - offset.top);
@@ -308,7 +308,7 @@ builder.selenium2.Recorder.prototype = {
           }
           recordStep(new builder.Step(
             builder.selenium2.stepTypes.sendKeysToElement,
-            builder.locator.fromElement(e.target),
+            builder.locator.fromElement(e.target, /*applyTextTransforms*/ true),
             "\\13"));
         }
       }, 100);

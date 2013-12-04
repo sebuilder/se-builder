@@ -2,6 +2,7 @@
  * Functions for interfacing with the code from Selenium IDE in the selenium-ide folder.
  */
 builder.selenium1.adapter = {};
+builder.selenium1.io = {};
 
 // Load in bits and pieces evidently required to get export to work. Taken from test-api-doc.js in
 // Selenium IDE and modified mildly.
@@ -22,50 +23,63 @@ builder.selenium1.adapter.availableFormats = function() {
   return builder.selenium1.adapter.formatCollection().presetFormats;
 };
 
-/**
- * Allows user to parse a suite.
- * @return A suiteInfo object, or null on failure.
- * SuiteInfo structure:
- * {
- *    suitePath: path to the suite file,
- *    scripts: list of script objects with path set
- * }
- */
-builder.selenium1.adapter.parseSuite = function(file) {
+builder.selenium1.io.isSaveFormat = function(format) {
+  return format && format.name == "HTML";
+};
+
+builder.selenium1.adapter.parseSuite = function(text, path, callback) {
+  var format = builder.selenium1.adapter.formatCollection().findFormat('default');
+  var si = { 'scripts': [], 'path': {'path': path.path, 'where': path.where, 'format': format } };
+  var ts = null;
   try {
-    var format = builder.selenium1.adapter.formatCollection().findFormat('default');
-    var ts = TestSuite.loadFile(file);
-    var si = { scripts: [], path: ts.file.path };
-    for (var i = 0; i < ts.tests.length; i++) {
-      var fileToLoad = ts.tests[i].getFile();
-      if (!endsWith(fileToLoad.leafName, ".html")) {
-        fileToLoad.leafName += ".html";
-      }
-      var script = null
-      try {
-        script = builder.selenium1.adapter.convertTestCaseToScript(
-          format.loadFile(fileToLoad),
-          format);
-      } catch (e) { /* ignore */ }
-      if (script === null) {
-        alert(_t('sel1_could_not_open_suite_script', fileToLoad.path));
-        return null;
-      }
-      si.scripts.push(script);
-    }
-    return si;
+    ts = TestSuite.loadString(text);
   } catch (e) {
-    return null;
+    callback(null, e);
+    return;
   }
+  if (!ts || ts.tests.length == 0) {
+    callback(null, _t('could_not_open_suite'));
+    return;
+  }
+  function loadScript(i) {
+    var filename = ts.tests[i].filename;
+    if (!endsWith(filename, ".html")) {
+      filename += ".html";
+    }
+    builder.io.loadPath({'where': path.where, 'path': filename}, path, function(scriptInfo, error) {
+      var script = null;
+      if (scriptInfo) {
+        script = builder.selenium1.adapter.parseScript(scriptInfo.text, scriptInfo.path);
+      }
+      if (script != null) {
+        si.scripts.push(script);
+      }
+      if (i < ts.tests.length - 1) {
+        loadScript(i + 1);
+      } else {
+        callback(si);
+      }
+    });
+  }
+  loadScript(0);
 };
 
 builder.selenium1.loadSuite = builder.selenium1.adapter.importSuite;
 
+builder.selenium1.io.getSuiteExportFormatsFor = function(format) {
+  if (format && format.getFormatter && format.getFormatter().formatSuite) {
+    return [format];
+  } else {
+    return [];
+  }
+};
+
 /**
- * Allows user to export a suite.
+ * Allows user to save a suite.
  * @return The path saved to, or null.
  */
-builder.selenium1.adapter.exportSuite = function(scripts, path) {
+builder.selenium1.adapter.saveSuite = function(scripts, path) {
+  var format = builder.selenium1.adapter.formatCollection().findFormat('default');
   try {
     var ts = new TestSuite();
     for (var i = 0; i < scripts.length; i++) {
@@ -74,35 +88,84 @@ builder.selenium1.adapter.exportSuite = function(scripts, path) {
       ts.addTestCaseFromContent(tc);
     }
     if (path) {
-      ts.file = FileUtils.getFile(path);
+      ts.file = FileUtils.getFile(path.path);
     }
     if (ts.save(false)) {
-      return ts.file.path;
+      return { 'path': ts.file.path, 'where': 'local', 'format': format };
     } else {
       return null;
     }
   } catch (e) {
-    alert(_t('sel1_couldnt_save_suite'));
+    alert(_t('sel1_couldnt_save_suite', e + ""));
     return null;
   }
+};
+
+/**
+ * Allows user to export a suite to the given format.
+ * @return The path saved to, or null.
+ */
+builder.selenium1.adapter.exportSuite = function(scripts, format) {
+  try {
+    var ts = new TestSuite();
+    for (var i = 0; i < scripts.length; i++) {
+      var script = scripts[i];
+      var tc = builder.selenium1.adapter.convertScriptToTestCase(script, true);
+      ts.addTestCaseFromContent(tc);
+    }
+    if (format.saveSuiteAsNew(ts) && ts.file) {
+      return { 'path': ts.file.path, 'where': local, 'format': format };
+    } else {
+      return null;
+    }
+  } catch (e) {
+    alert(_t('sel1_couldnt_save_suite', e + ""));
+    return null;
+  }
+};
+
+builder.selenium1.io.makeSuiteExportFunction = function(format) {
+  return function(scripts, path) {
+    return builder.selenium1.adapter.exportSuite(scripts, format);
+  };
+};
+
+builder.selenium1.io.getSuiteExportFormats = function(path) {
+  var fs = [];
+  if (path) {
+    fs.push({'name': "Save to " + path.path, 'save': builder.selenium1.adapter.saveSuite});
+  }
+  fs.push({'name': "Save as HTML", 'save': function(scripts, path) {
+    return builder.selenium1.adapter.saveSuite(scripts, null);
+  }});
+  var afs = builder.selenium1.adapter.availableFormats();
+  for (var i = 0; i < afs.length; i++) {
+    if (afs[i].getFormatter().formatSuite) {
+      fs.push({'name': "Export as " + afs[i].name, 'save': builder.selenium1.io.makeSuiteExportFunction(afs[i])});
+    }
+  }
+  return fs;
 };
 
 /**
  * Allows user to parse a script in the default format.
  * @return A script, or null on failure.
  */
-builder.selenium1.adapter.parseScript = function(file) {
+builder.selenium1.adapter.parseScript = function(text, path) {
   try {
     var format = builder.selenium1.adapter.formatCollection().findFormat('default');
-    return builder.selenium1.adapter.convertTestCaseToScript(format.loadFile(file, false), format);
+    var testCase = new TestCase();
+    format.getFormatter().parse(testCase, text);
+    return builder.selenium1.adapter.convertTestCaseToScript(testCase, format, path);
   } catch (e) {
     return null;
   }
 };
 
-builder.selenium1.io = {};
 builder.selenium1.io.parseScript = builder.selenium1.adapter.parseScript;
 builder.selenium1.io.parseSuite = builder.selenium1.adapter.parseSuite;
+builder.selenium1.io.saveSuite = builder.selenium1.adapter.saveSuite;
+builder.selenium1.io.exportSuite = builder.selenium1.adapter.exportSuite;
   
 /**
  * Exports the given script using the default format.
@@ -111,9 +174,18 @@ builder.selenium1.io.parseSuite = builder.selenium1.adapter.parseSuite;
 builder.selenium1.adapter.exportScript = function(script) {
   return builder.selenium1.adapter.exportScriptWithFormat(
     script,
-    formatCollection().findFormat('default')
+    builder.selenium1.adapter.formatCollection().findFormat('default')
   );
 };
+
+builder.selenium1.adapter.getScriptDefaultRepresentation = function(script, name) {
+  var format = builder.selenium1.adapter.formatCollection().findFormat('default');
+  var testCase = builder.selenium1.adapter.convertScriptToTestCase(script);
+  return format.getFormatter().format(testCase, name, '', true);
+};
+
+builder.selenium1.io.getScriptDefaultRepresentation = builder.selenium1.adapter.getScriptDefaultRepresentation;
+builder.selenium1.io.defaultRepresentationExtension = ".html";
 
 /**
  * Exports the given script using the given format.
@@ -124,7 +196,7 @@ builder.selenium1.adapter.exportScript = function(script) {
 builder.selenium1.adapter.exportScriptWithFormat = function(script, format, extraOptions) {
   var formatter = format.getFormatter();
   try {
-    var testCase = builder.selenium1.adapter.convertScriptToTestCase(script);
+    var testCase = builder.selenium1.adapter.convertScriptToTestCase(script, true);
     if (format.saveAs(testCase)) {
       return testCase.file;
     } else {
@@ -145,7 +217,7 @@ builder.selenium1.adapter.exportScriptWithFormat = function(script, format, extr
  */
 builder.selenium1.adapter.exportScriptWithFormatToPath = function(script, format, path, extraOptions) {
   try {
-    var testCase = builder.selenium1.adapter.convertScriptToTestCase(script);
+    var testCase = builder.selenium1.adapter.convertScriptToTestCase(script, true);
     if (format.saveAs(testCase, path, false)) {
       return testCase.file;
     } else {
@@ -170,7 +242,7 @@ builder.selenium1.adapter.findBaseUrl = function(script) {
   return "http://localhost"; // qqDPS A bit of a desparation move.
 };
 
-builder.selenium1.adapter.convertScriptToTestCase = function(script) {
+builder.selenium1.adapter.convertScriptToTestCase = function(script, useExportName) {
   var testCase = new TestCase();
   testCase.setBaseURL(builder.selenium1.adapter.findBaseUrl(script));
   for (var i = 0; i < script.steps.length; i++) {
@@ -198,19 +270,32 @@ builder.selenium1.adapter.convertScriptToTestCase = function(script) {
     }
     testCase.commands.push(new Command(name, params[0], params[1]));
   }
-  if (script.path && script.path.where === "local") {
-    testCase.file = FileUtils.getFile(script.path.path);
+  if (useExportName) {
+    if (script.exportpath) {
+      var title = script.exportpath.path.split("/");
+      title = title[title.length - 1].split(".")[0];
+      testCase.title = title;
+    }
+  } else {
+    if (script.path && script.path.where === "local") {
+      testCase.file = FileUtils.getFile(script.path.path);
+    }
+    if (script.path) {
+      var title = script.path.path.split("/");
+      title = title[title.length - 1].split(".")[0];
+      testCase.title = title;
+    }
   }
   return testCase;
 };
 
-builder.selenium1.adapter.convertTestCaseToScript = function(testCase, originalFormat) {
+builder.selenium1.adapter.convertTestCaseToScript = function(testCase, originalFormat, path) {
   if (!testCase) { return null; }
   var script = new builder.Script(builder.selenium1);
   script.path = {
-    where: "local",
-    path: (testCase.file ? testCase.file.path : null),
-    format: originalFormat
+    'where': path.where,
+    'path': path.path,
+    'format': originalFormat
   };
   var baseURL = testCase.baseURL;
   for (var i = 0; i < testCase.commands.length; i++) {
@@ -233,9 +318,23 @@ builder.selenium1.adapter.convertTestCaseToScript = function(testCase, originalF
       } else {
         var p = testCase.commands[i][["target", "value"][j]];
         if (stepType.getParamType(pNames[j]) === "locator") {
-          var lType = p.substring(0, p.indexOf("="));
-          var lValue = p.substring(p.indexOf("=") + 1);
+          var lType = "unknown";
+          var lValue = "";
+          if (p.indexOf("=") != -1) {
+            lType = p.substring(0, p.indexOf("="));
+            lValue = p.substring(p.indexOf("=") + 1);
+          }
           var locMethod = builder.locator.methodForName(builder.selenium1, lType);
+          if (!locMethod) {
+            lValue = p;
+            if (p.startsWith("//")) {
+              locMethod = builder.locator.methodForName(builder.selenium1, "xpath");
+            } else if (p.startsWith("document.")) {
+              locMethod = builder.locator.methodForName(builder.selenium1, "dom");
+            } else {
+              locMethod = builder.locator.methodForName(builder.selenium1, "identifier");
+            }
+          }
           var locValues = {};
           locValues[locMethod] = [lValue];
           params.push(new builder.locator.Locator(locMethod, 0, locValues));
@@ -245,9 +344,11 @@ builder.selenium1.adapter.convertTestCaseToScript = function(testCase, originalF
       }
     }
     try {
-      // Internally we don't have base URLs, so we have to put them straight in here.
+      // Internally we don't have base URLs, so we have to put them straight in here if the provided URL isn't already absolute.
       if (stepType == builder.selenium1.stepTypes.open) {
-        if (params[0].startsWith("/") && endsWith(baseURL, "/")) {
+        if (params[0].match('^(http|https)://')) {
+          // leave already absolute params[0] alone
+        } else if (params[0].startsWith("/") && endsWith(baseURL, "/")) {
           params[0] = baseURL + params[0].substring(1);
         } else {
           params[0] = baseURL + params[0];
@@ -263,4 +364,12 @@ builder.selenium1.adapter.convertTestCaseToScript = function(testCase, originalF
     script.steps.push(step);
   }
   return script;
+};
+
+builder.selenium1.io.getSaveFormat = function() {
+  return builder.selenium1.adapter.formatCollection().findFormat('default');
+};
+
+builder.selenium1.io.getSaveSuiteFormat = function() {
+  return builder.selenium1.adapter.formatCollection().findFormat('default');
 };

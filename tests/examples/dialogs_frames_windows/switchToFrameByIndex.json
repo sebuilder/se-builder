@@ -1,0 +1,26 @@
+{
+  "type": "script",
+  "seleniumVersion": "2",
+  "formatVersion": 1,
+  "steps": [
+    {
+      "type": "get",
+      "url": "http://sebuilder.github.com/se-builder/test/frames.html"
+    },
+    {
+      "type": "switchToFrameByIndex",
+      "index": "1"
+    },
+    {
+      "type": "clickElement",
+      "locator": {
+        "type": "link text",
+        "value": "Next"
+      }
+    },
+    {
+      "type": "assertTextPresent",
+      "text": "Content Two"
+    }
+  ]
+}

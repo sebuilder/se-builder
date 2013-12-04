@@ -1,0 +1,23 @@
+{
+  "type": "script",
+  "seleniumVersion": "2",
+  "formatVersion": 1,
+  "steps": [
+    {
+      "type": "get",
+      "url": "http://sebuilder.github.com/se-builder/test/prompt.html"
+    },
+    {
+      "type": "answerAlert",
+      "text": "yes"
+    },
+    {
+      "type": "waitForAlertText",
+      "text": "yes"
+    },
+    {
+      "type": "assertAlertText",
+      "text": "yes"
+    }
+  ]
+}

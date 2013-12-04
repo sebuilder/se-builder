@@ -36,7 +36,7 @@ builder.views.plugins.getIcon = function(info) {
   if (info.installedInfo && info.installedInfo.icon) {
     return builder.plugins.getResourcePath(info.identifier, info.installedInfo.icon);
   } else {
-    return info.repositoryInfo.icon;
+    return info.repositoryInfo ? info.repositoryInfo.icon : "";
   }
 };
 
@@ -57,8 +57,21 @@ builder.views.plugins.getStatus = function(info) {
       "TO_UPDATE"     : _t('plugin_to_update')
     }[info.installState];
   }
+  if (info.installState == "NOT_INSTALLED") {
+    if (builder.plugins.isPluginTooNew(info)) {
+      state += _t('cant_install_builder_too_old');
+    } else if (builder.plugins.isPluginTooOld(info)) {
+      state += _t('cant_install_builder_too_new');
+    }
+  }
   if (builder.plugins.isUpdateable(info)) {
-    state += _t('plugin_update_available', info.repositoryInfo.browsers[bridge.browserType()].pluginVersion);
+    if (builder.plugins.isPluginTooNew(info)) {
+      state += _t('cant_update_builder_too_old', info.repositoryInfo.browsers[bridge.browserType()].pluginVersion);
+    } else if (builder.plugins.isPluginTooOld(info)) {
+      state += _t('cant_update_builder_too_new', info.repositoryInfo.browsers[bridge.browserType()].pluginVersion);
+    } else {
+      state += _t('plugin_update_available', info.repositoryInfo.browsers[bridge.browserType()].pluginVersion);
+    }
   }
   return state;
 };
@@ -100,14 +113,11 @@ builder.views.plugins.makePluginEntry = function(info) {
         newNode('span', {'class': 'pluginStatus', 'id': info.identifier + '-status'}, builder.views.plugins.getStatus(info))
       ),
       newNode('div', {'class': 'pluginDescription'}, builder.views.plugins.getDescription(info)),
-      newNode('span', {'id': info.identifier + '-s-install'}, newNode('a', {'href': '#', 'class': 'button', 'id': info.identifier + '-install'  }, _t('plugin_install'))),
-      newNode('span', {'id': info.identifier + '-s-cancel-install'}, newNode('a', {'href': '#', 'class': 'button', 'id': info.identifier + '-cancel-install'  }, _t('plugin_cancel_install'))),
-      newNode('a', {'href': '#', 'class': 'button', 'id': info.identifier + '-uninstall'}, _t('plugin_uninstall')),
-      newNode('a', {'href': '#', 'class': 'button', 'id': info.identifier + '-cancel-uninstall'}, _t('plugin_cancel_uninstall')),
-      newNode('a', {'href': '#', 'class': 'button', 'id': info.identifier + '-update'   }, _t('plugin_update')),
-      newNode('a', {'href': '#', 'class': 'button', 'id': info.identifier + '-cancel-update' }, _t('plugin_cancel_update')),
-      newNode('a', {'href': '#', 'class': 'button', 'id': info.identifier + '-enable' }, _t('plugin_enable')),
-      newNode('a', {'href': '#', 'class': 'button', 'id': info.identifier + '-disable'  }, _t('plugin_disable'))
+      newNode('span', {'id': info.identifier + '-s-install-and-reboot'}, newNode('a', {'href': '#', 'class': 'button', 'id': info.identifier + '-install-and-reboot'}, _t('plugin_install'))),
+      newNode('a', {'href': '#', 'class': 'button', 'id': info.identifier + '-uninstall-and-reboot'}, _t('plugin_uninstall')),
+      newNode('a', {'href': '#', 'class': 'button', 'id': info.identifier + '-update-and-reboot'}, _t('plugin_update')),
+      newNode('a', {'href': '#', 'class': 'button', 'id': info.identifier + '-enable-and-reboot' }, _t('plugin_enable')),
+      newNode('a', {'href': '#', 'class': 'button', 'id': info.identifier + '-disable-and-reboot'  }, _t('plugin_disable'))
   ));
     
   return entry;
@@ -117,67 +127,65 @@ builder.views.plugins.updatePluginEntry = function(info) {
   jQuery('#' + info.identifier + '-entry').removeClass().addClass(builder.views.plugins.getEntryClass(info));
   jQuery('#' + info.identifier + '-status').text(builder.views.plugins.getStatus(info));
   
-  jQuery('#' + info.identifier + '-install').toggle(info.installState == builder.plugins.NOT_INSTALLED);
-  jQuery('#' + info.identifier + '-cancel-install').toggle(info.installState == builder.plugins.TO_INSTALL);
-  jQuery('#' + info.identifier + '-uninstall').toggle(info.installState == builder.plugins.INSTALLED);
-  jQuery('#' + info.identifier + '-cancel-uninstall').toggle(info.installState == builder.plugins.TO_UNINSTALL);
-  jQuery('#' + info.identifier + '-update').toggle(info.installState == builder.plugins.INSTALLED && builder.plugins.isUpdateable(info));
-  jQuery('#' + info.identifier + '-cancel-update').toggle(info.installState == builder.plugins.TO_UPDATE);
-  jQuery('#' + info.identifier + '-enable').toggle(info.installState == builder.plugins.INSTALLED && (info.enabledState == builder.plugins.DISABLED || info.enabledState == builder.plugins.TO_DISABLE));
-  jQuery('#' + info.identifier + '-disable').toggle(info.installState == builder.plugins.INSTALLED && (info.enabledState == builder.plugins.ENABLED || info.enabledState == builder.plugins.TO_ENABLE));
+  jQuery('#' + info.identifier + '-install-and-reboot').toggle(info.installState == builder.plugins.NOT_INSTALLED && !builder.plugins.isPluginTooNew(info) && !builder.plugins.isPluginTooOld(info));
+  jQuery('#' + info.identifier + '-uninstall-and-reboot').toggle(info.installState == builder.plugins.INSTALLED);
+  jQuery('#' + info.identifier + '-update-and-reboot').toggle(info.installState == builder.plugins.INSTALLED && builder.plugins.isUpdateable(info) && !builder.plugins.isPluginTooNew(info) && !builder.plugins.isPluginTooOld(info));
+  jQuery('#' + info.identifier + '-enable-and-reboot').toggle(info.installState == builder.plugins.INSTALLED && (info.enabledState == builder.plugins.DISABLED || info.enabledState == builder.plugins.TO_DISABLE));
+  jQuery('#' + info.identifier + '-disable-and-reboot').toggle(info.installState == builder.plugins.INSTALLED && (info.enabledState == builder.plugins.ENABLED || info.enabledState == builder.plugins.TO_ENABLE));
+};
+
+builder.views.plugins.getLicense = function(info) {
+  return (info.repositoryInfo && info.repositoryInfo.license) ? info.repositoryInfo.license : null;
 };
 
 builder.views.plugins.wirePluginEntry = function(info) {
-  jQuery('#' + info.identifier + '-install').click(function() {
+  jQuery('#' + info.identifier + '-install-and-reboot').click(function() {
+    var license = builder.views.plugins.getLicense(info);
+    if (license && !confirm(license)) { return; }
     builder.plugins.setInstallState(info.identifier, builder.plugins.TO_INSTALL);
     info.installState = builder.plugins.TO_INSTALL;
     builder.views.plugins.updatePluginEntry(info);
-    builder.plugins.performDownload(info.identifier, info.repositoryInfo.browsers[bridge.browserType()].downloadUrl);
-  });  
-  
-  jQuery('#' + info.identifier + '-cancel-install').click(function() {
-    builder.plugins.setInstallState(info.identifier, builder.plugins.NOT_INSTALLED);
-    info.installState = builder.plugins.NOT_INSTALLED;
-    builder.views.plugins.updatePluginEntry(info);
+    builder.plugins.performDownload(info.identifier, info.repositoryInfo.browsers[bridge.browserType()].downloadUrl, function() {
+      builder.plugins.setGotoPluginsView(true);
+      builder.reboot();
+    });
   });
   
-  jQuery('#' + info.identifier + '-uninstall').click(function() {
+  jQuery('#' + info.identifier + '-uninstall-and-reboot').click(function() {
     builder.plugins.setInstallState(info.identifier, builder.plugins.TO_UNINSTALL);
     info.installState = builder.plugins.TO_UNINSTALL;
     builder.views.plugins.updatePluginEntry(info);
+    builder.plugins.setGotoPluginsView(true);
+    builder.reboot();
   });
   
-  jQuery('#' + info.identifier + '-cancel-uninstall').click(function() {
-    builder.plugins.setInstallState(info.identifier, builder.plugins.INSTALLED);
-    info.installState = builder.plugins.INSTALLED;
-    builder.views.plugins.updatePluginEntry(info);
-  });
-  
-  jQuery('#' + info.identifier + '-update').click(function() {
+  jQuery('#' + info.identifier + '-update-and-reboot').click(function() {
+    var license = builder.views.plugins.getLicense(info);
+    if (license && !confirm(license)) { return; }
     builder.plugins.setInstallState(info.identifier, builder.plugins.TO_UPDATE);
     info.installState = builder.plugins.TO_UPDATE;
     builder.views.plugins.updatePluginEntry(info);
     builder.plugins.performDownload(info.identifier, info.repositoryInfo.browsers[bridge.browserType()].downloadUrl);
+    builder.plugins.setGotoPluginsView(true);
+    builder.reboot();
   });
   
-  jQuery('#' + info.identifier + '-cancel-update').click(function() {
-    builder.plugins.setInstallState(info.identifier, builder.plugins.INSTALLED);
-    info.installState = builder.plugins.INSTALLED;
-    builder.views.plugins.updatePluginEntry(info);
-  });
-  
-  jQuery('#' + info.identifier + '-enable').click(function() {
+  jQuery('#' + info.identifier + '-enable-and-reboot').click(function() {
     var newEnabled = info.enabledState == builder.plugins.DISABLED ? builder.plugins.TO_ENABLE : builder.plugins.ENABLED;
     builder.plugins.setEnabledState(info.identifier, newEnabled);
     info.enabledState = newEnabled;
     builder.views.plugins.updatePluginEntry(info);
+    builder.plugins.setGotoPluginsView(true);
+    builder.reboot();
   });
   
-  jQuery('#' + info.identifier + '-disable').click(function() {
+  jQuery('#' + info.identifier + '-disable-and-reboot').click(function() {
     var newEnabled = info.enabledState == builder.plugins.ENABLED ? builder.plugins.TO_DISABLE : builder.plugins.DISABLED;
     builder.plugins.setEnabledState(info.identifier, newEnabled);
     info.enabledState = newEnabled;
     builder.views.plugins.updatePluginEntry(info);
+    builder.plugins.setGotoPluginsView(true);
+    builder.reboot();
   });
 }
 
@@ -186,10 +194,14 @@ builder.views.plugins.refresh = function() {
   jQuery('#plugins-list').html('');
   builder.plugins.getListAsync(function(result, error) {
     jQuery('#plugins-loading').hide();
-    for (var i = 0; i < result.length; i++) {
-      jQuery('#plugins-list').append(builder.views.plugins.makePluginEntry(result[i]));
-      builder.views.plugins.wirePluginEntry(result[i]);
-      builder.views.plugins.updatePluginEntry(result[i]);
+    if (error) {
+      alert(error);
+    } else {
+      for (var i = 0; i < result.length; i++) {
+        jQuery('#plugins-list').append(builder.views.plugins.makePluginEntry(result[i]));
+        builder.views.plugins.wirePluginEntry(result[i]);
+        builder.views.plugins.updatePluginEntry(result[i]);
+      }
     }
   });
 };

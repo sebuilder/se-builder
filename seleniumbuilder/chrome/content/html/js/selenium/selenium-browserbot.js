@@ -555,31 +555,47 @@ BrowserBot.prototype.getCurrentPage = function() {
     return this;
 };
 
+BrowserBot.enableInterception = false; // qqDPS Adding flag to enable/disable popup overriding.
+
 BrowserBot.prototype.modifyWindowToRecordPopUpDialogs = function(windowToModify, browserBot) {
     var self = this;
-
     windowToModify.seleniumAlert = windowToModify.alert;
 
+    var oldAlert = windowToModify.alert;
     windowToModify.alert = function(alert) {
-        browserBot.recordedAlerts.push(alert);
-        self.relayBotToRC.call(self, "browserbot.recordedAlerts");
+        if (BrowserBot.enableInterception) {
+            browserBot.recordedAlerts.push(alert);
+            self.relayBotToRC.call(self, "browserbot.recordedAlerts");
+        } else {
+            oldAlert(alert);
+        }
     };
-
+    
+    var oldConfirm = windowToModify.confirm;
     windowToModify.confirm = function(message) {
-        browserBot.recordedConfirmations.push(message);
-        var result = browserBot.nextConfirmResult;
-        browserBot.nextConfirmResult = true;
-        self.relayBotToRC.call(self, "browserbot.recordedConfirmations");
-        return result;
+        if (BrowserBot.enableInterception) {
+            browserBot.recordedConfirmations.push(message);
+            var result = browserBot.nextConfirmResult;
+            browserBot.nextConfirmResult = true;
+            self.relayBotToRC.call(self, "browserbot.recordedConfirmations");
+            return result;
+        } else {
+            return oldConfirm(message);
+        }
     };
 
+    var oldPrompt = windowToModify.prompt;
     windowToModify.prompt = function(message) {
-        browserBot.recordedPrompts.push(message);
-        var result = !browserBot.nextConfirmResult ? null : browserBot.nextPromptResult;
-        browserBot.nextConfirmResult = true;
-        browserBot.nextPromptResult = '';
-        self.relayBotToRC.call(self, "browserbot.recordedPrompts");
-        return result;
+        if (BrowserBot.enableInterception) {
+            browserBot.recordedPrompts.push(message);
+            var result = !browserBot.nextConfirmResult ? null : browserBot.nextPromptResult;
+            browserBot.nextConfirmResult = true;
+            browserBot.nextPromptResult = '';
+            self.relayBotToRC.call(self, "browserbot.recordedPrompts");
+            return result;
+        } else {
+            return oldPrompt(message);
+        }
     };
 
     // Keep a reference to all popup windows by name
@@ -596,21 +612,25 @@ BrowserBot.prototype.modifyWindowToRecordPopUpDialogs = function(windowToModify,
     var openedWindows = this.openedWindows;
 
     var newOpen = function(url, windowName, windowFeatures, replaceFlag) {
-        var myOriginalOpen = originalOpen;
-        if (isHTA) {
-            myOriginalOpen = this[originalOpenReference];
+        if (BrowserBot.enableInterception) {
+            var myOriginalOpen = originalOpen;
+            if (isHTA) {
+                myOriginalOpen = this[originalOpenReference];
+            }
+            if (windowName == "" || windowName == "_blank") {
+                windowName = "selenium_blank" + Math.round(100000 * Math.random());
+                LOG.warn("Opening window '_blank', which is not a real window name.  Randomizing target to be: " + windowName);
+            }
+            var openedWindow = myOriginalOpen(url, windowName, windowFeatures, replaceFlag);
+            LOG.debug("window.open call intercepted; window ID (which you can use with selectWindow()) is \"" +  windowName + "\"");
+            if (windowName!=null) {
+                openedWindow["seleniumWindowName"] = windowName;
+            }
+            openedWindows[windowName] = openedWindow;
+            return openedWindow;
+        } else {
+            return originalOpen(url, windowName, windowFeatures, replaceFlag);
         }
-        if (windowName == "" || windowName == "_blank") {
-            windowName = "selenium_blank" + Math.round(100000 * Math.random());
-            LOG.warn("Opening window '_blank', which is not a real window name.  Randomizing target to be: " + windowName);
-        }
-        var openedWindow = myOriginalOpen(url, windowName, windowFeatures, replaceFlag);
-        LOG.debug("window.open call intercepted; window ID (which you can use with selectWindow()) is \"" +  windowName + "\"");
-        if (windowName!=null) {
-            openedWindow["seleniumWindowName"] = windowName;
-        }
-        openedWindows[windowName] = openedWindow;
-        return openedWindow;
     };
 
     if (browserVersion.isHTA) {

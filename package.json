@@ -1,0 +1,15 @@
+{ 
+  "name": "se-builder",
+  "description": "Foo for bar",
+  "version": "0.0.1",
+  "dependencies": {
+    "coloured-log": "",
+    "path": "",
+    "wd": "",
+    "underscore": "",
+    "uuid-js": "",
+    "q": "",
+    "request": ""
+  },
+  "private": true
+}

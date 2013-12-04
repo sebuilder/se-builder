@@ -2908,10 +2908,14 @@ function getPreferenceFromProfile(a, b) {
   return c
 }
 function shouldAcceptUntrustedCerts() {
-  return getPreferenceFromProfile("webdriver_accept_untrusted_certs", !0)
+  //return getPreferenceFromProfile("webdriver_accept_untrusted_certs", !0)
+  // qqDPSWD Default to FALSE!!!
+  return getPreferenceFromProfile("webdriver_accept_untrusted_certs", false);
 }
 function shouldAssumeUntrustedIssuer() {
-  return getPreferenceFromProfile("webdriver_assume_untrusted_issuer", !0)
+  //return getPreferenceFromProfile("webdriver_assume_untrusted_issuer", !0)
+  // qqDPSWD Default to FALSE!!!
+  return getPreferenceFromProfile("webdriver_assume_untrusted_issuer", false);
 }
 var WdCertOverrideService = function() {
   this.acceptAll = shouldAcceptUntrustedCerts();

@@ -5,19 +5,22 @@
     <Description about="urn:mozilla:install-manifest">
         <em:id>seleniumbuilder@saucelabs.com</em:id>
         <em:name>Selenium Builder</em:name>
-        <em:version>2.0</em:version>
+        <em:version>2.1.0</em:version>
         <em:type>2</em:type>
         <em:creator>Sauce Labs</em:creator>
+        <em:developer>Adam Christian</em:developer>
+        <em:developer>David Stark</em:developer>
         <em:description>Create automated cross-browser functional tests easily and quickly.</em:description>
-     	<em:iconURL>chrome://seleniumbuilder/content/html/img/builder-logo.png</em:iconURL>
-        <em:homepageURL>http://www.saucelabs.com/</em:homepageURL>
+      	<em:iconURL>chrome://seleniumbuilder/content/html/img/builder-logo.png</em:iconURL>
+        <em:homepageURL>http://www.sebuilder.com/</em:homepageURL>
+        <em:updateURL>https://saucelabs.com/addons/update.rdf</em:updateURL>
         <em:unpack>true</em:unpack>
 
         <em:targetApplication>
             <Description>
                 <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
                 <em:minVersion>3.6</em:minVersion>
-                <em:maxVersion>15.*</em:maxVersion>
+                <em:maxVersion>25.*</em:maxVersion>
             </Description>
         </em:targetApplication>
         

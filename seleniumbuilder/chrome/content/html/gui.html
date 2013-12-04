@@ -83,6 +83,7 @@
   
   <!-- The steps -->
   <div id="steplist" style="display:none;">
+    <span id="selenium-version-display" class="selenium-version-display"></span>
     <div id="panels">
       <div id="suite-panel" style="display: none;" class="panel">
         <div id="suite-saverequired" style="display: none"></div>
@@ -92,14 +93,15 @@
 
       <div id="edit-panel" style="display: none;" class="panel">
         <span id="edit-local-playing" style="display: none;">
-          <a href="#" id="edit-stop-local-playback" class="button"></a>
+          <a id="edit-stop-local-playback" class="button"></a>
+          <a id="edit-continue-local-playback" class="button"></a>
         </span>
         <span id="edit-rc-playing" style="display: none;">
-          <a href="#" id="edit-stop-rc-playback" class="button"></a>
+          <a id="edit-stop-rc-playback" class="button"></a>
         </span>
         <span id="edit-rc-stopping" style="display: none;"></span>
         <span id="edit-clearresults-span" style="display: none;">
-          <a href="#" id="edit-clearresults" class="button"></a>
+          <a id="edit-clearresults" class="button"></a>
         </span>
         <span id="edit-rc-connecting" style="display: none; float: right;">
           <span id="edit-rc-connecting-text"></span> <img src="img/loading.gif" />
@@ -128,6 +130,10 @@
   <div id="booting">
     <div id="loadMessage">
       Starting Up...
+    </div>
+    <div id="booting-file"></div>
+    <div id="booting-progress">
+      <div id="booting-done"></div><div id="booting-notdone"></div>
     </div>
   </div>
 </body>

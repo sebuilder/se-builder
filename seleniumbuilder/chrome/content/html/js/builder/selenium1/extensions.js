@@ -20,11 +20,27 @@ for (var m in Selenium.prototype) {
       addToCategory(WAIT, "extensions", m);
       addToCategory(STORE, "extensions", m);
     }
-    /*if (m.startsWith("locateElementBy")) {
-      builder.locator_types.push(decapitate(m, "locateElementBy"));
-    }*/ // qqDPS disabled
   }
 }
+
+builder.registerPostLoadHook(function() {
+  var makeLoc = function(name) {
+    var loc = {
+      'toString': function() { return name; },
+    };
+    loc[builder.selenium1] = name;
+    return loc;
+  }
+  
+  for (var m in PageBot.prototype) {
+    if (!builder.selenium1.originalPBMembers[m]) {
+      if (m.startsWith("locateElementBy")) {
+        var name = decapitate(m, "locateElementBy");
+        builder.locator.methods[name] = makeLoc(name);
+      }
+    }
+  }
+});
 
 /**
  * Adds a new entry to the registry of methods (see methods.js).

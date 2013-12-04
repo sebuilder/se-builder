@@ -68,7 +68,7 @@ builder.VerifyExplorer.prototype = {
     window.focus();
 
     // Setup the params
-    var locator = builder.locator.fromElement(e.target);
+    var locator = builder.locator.fromElement(e.target, /*applyTextTransforms*/ this.seleniumVersion == builder.selenium2);
     if (this.justReturnLocator) { this.recordStep(locator); return; }
 
     var tag = e.target.nodeName.toUpperCase();
@@ -140,7 +140,7 @@ builder.VerifyExplorer.prototype = {
       return;
     }
     if (e.target.textContent != "") {
-      var text = e.target.textContent;
+      var text = this.seleniumVersion == builder.selenium2 ? getCorrectCaseText(e.target) : e.target.textContent;
       if (text.length > 200) {
         var nextSpace = text.indexOf(' ', 200);
         if (nextSpace > -1 && nextSpace < 250) {

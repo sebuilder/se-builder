@@ -16,12 +16,22 @@
 
 package com.sebuilder.interpreter;
 
+import com.sebuilder.interpreter.factory.ScriptFactory;
+import com.sebuilder.interpreter.factory.ScriptFactory.SuiteException;
+import com.sebuilder.interpreter.factory.StepTypeFactory;
+import com.sebuilder.interpreter.factory.TestRunFactory;
+import com.sebuilder.interpreter.webdriverfactory.Firefox;
+import com.sebuilder.interpreter.webdriverfactory.WebDriverFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.PriorityQueue;
 
 /**
  * An interpreter for Builder JSON tests. Given one or more JSON script files, it plays them back
@@ -29,37 +39,99 @@ import org.apache.commons.logging.LogFactory;
  * @author zarkonnen
  */
 public class SeInterpreter {
+	public static WebDriverFactory DEFAULT_DRIVER_FACTORY = new Firefox();
+	
 	public static void main(String[] args) {
 		if (args.length == 0) {
-			System.out.println("Usage: Specify one or more paths to Selenium 2 JSON files to run them.");
+			System.out.println("Usage: [--driver=<drivername] [--driver.<configkey>=<configvalue>...] [--implicitlyWait=<ms>] [--pageLoadTimeout=<ms>] [--stepTypePackage=<package name>] <script path>...");
 			System.exit(0);
 		}
 		
 		Log log = LogFactory.getFactory().getInstance(SeInterpreter.class);
+		
+		WebDriverFactory wdf = DEFAULT_DRIVER_FACTORY;
+		ScriptFactory sf = new ScriptFactory();
+		StepTypeFactory stf = new StepTypeFactory();
+		sf.setStepTypeFactory(stf);
+		TestRunFactory trf = new TestRunFactory();
+		sf.setTestRunFactory(trf);
+
+		ArrayList<String> paths = new ArrayList<String>();
+		HashMap<String, String> driverConfig = new HashMap<String, String>();
+		for (String s : args) {
+			if (s.startsWith("--")) {
+				String[] kv = s.split("=", 2);
+				if (kv.length < 2) {
+					log.fatal("Driver configuration option \"" + s + "\" is not of the form \"--driver=<name>\" or \"--driver.<key>=<value\".");
+					System.exit(1);
+				}
+				if (s.startsWith("--implicitlyWait")) {
+					trf.setImplicitlyWaitDriverTimeout(Integer.parseInt(kv[1]));
+				} else if (s.startsWith("--pageLoadTimeout")) {
+					trf.setPageLoadDriverTimeout(Integer.parseInt(kv[1]));
+				} else if (s.startsWith("--stepTypePackage")) {
+					stf.setPrimaryPackage(kv[1]);
+				} else if (s.startsWith("--driver.")) {
+					driverConfig.put(kv[0].substring("--driver.".length()), kv[1]);
+				} else if (s.startsWith("--driver")) {
+					try {
+						wdf = (WebDriverFactory) Class.forName("com.sebuilder.interpreter.webdriverfactory." + kv[1]).newInstance();
+					} catch (ClassNotFoundException e) {
+						log.fatal("Unknown WebDriverFactory: " + "com.sebuilder.interpreter.webdriverfactory." + kv[1], e);
+					} catch (InstantiationException e) {
+						log.fatal("Could not instantiate WebDriverFactory " + "com.sebuilder.interpreter.webdriverfactory." + kv[1], e);
+					} catch (IllegalAccessException e) {
+						log.fatal("Could not instantiate WebDriverFactory " + "com.sebuilder.interpreter.webdriverfactory." + kv[1], e);
+					}
+				} else {
+					paths.add(s);
+				}
+			} else {
+				paths.add(s);
+			}
+		}
+		
+		if (paths.isEmpty()) {
+			log.info("Configuration successful but no paths to scripts specified. Exiting.");
+			System.exit(0);
+		}
+		
 		try {
-			for (String s : args) {
+			//use a queue instead of iterating over the paths, as we may be adding to the paths if the script file is of type 'suite'
+            PriorityQueue<String> queue = new PriorityQueue<String>(paths);
+            while (queue.size() != 0) {
+                String s = queue.remove();
 				File f = new File(s);
 				if (!f.exists() || f.isDirectory()) {
 					throw new RuntimeException("The file " + f + " does not exist!");
 				}
 				BufferedReader br = null;
 				try {
-					Script script = IO.read(br = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8")));
+					Script script = sf.parse(br = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8")));
+					HashMap<String, String> cfg = new HashMap<String, String>(driverConfig);
+					if (!cfg.containsKey("name")) {
+						cfg.put("name", f.getName());
+					}
 					try {
-						if (script.run()) {
+						if (script.run(log, wdf, cfg)) {
 							log.info(s + " succeeded");
 						} else {
 							log.info(s + " failed");
 						}
 					} catch (Exception e) {
-						log.info(s + " failed");
+						log.info(s + " failed", e);
 					}
+				} catch (SuiteException e) {
+					queue.addAll(e.getPaths());
 				} finally {
-					if (br != null) { br.close(); }
+					if (br != null) {
+						br.close();
+					}
 				}
 			}
 		} catch (Exception e) {
 			log.fatal("Run error.", e);
+			System.exit(1);
 		}
 	}	
 }

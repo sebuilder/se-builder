@@ -11,7 +11,7 @@ builder.selenium1.StepType = function(name, baseFunction, negator, baseName) {
     {
       this.params.push("pattern");
     }
-    if (this.baseName.startsWith("get") && this.name.startsWith("store")) {
+    if ((this.baseName.startsWith("get") || this.baseName.startsWith("is")) && this.name.startsWith("store")) {
       this.params.push("variableName");
     }
   } catch (e) {
@@ -27,10 +27,16 @@ builder.selenium1.StepType.prototype = {
   /** @return Whether the given parameter is a "locator" or "string". */
   getParamType: function(paramName) {
     if (paramName == "optionLocator") { return "string"; }
+    if ({"selectFrame": 1, "selectFrameAndWait": 1}[this.name]) {
+      return "string"
+    }
+    if (paramName == "optionLocator") { return "string"; }
     return paramName.toLowerCase().indexOf("locator") == -1 ? "string" : "locator";
   },
   /** @return Whether setting negated to true on a step of this type is valid. */
-  getNegatable: function() { return this.negatable; }
+  getNegatable: function() { return this.negatable; },
+  /** @return The note text for this step type, if any. */
+  getNote: function() { return null; }
 };
 
 /**
@@ -74,7 +80,7 @@ for (var catIndex = 0; catIndex < builder.selenium1.__methodRegistry.length; cat
   var reg_cat = builder.selenium1.__methodRegistry[catIndex];
   for (var subCatIndex = 0; subCatIndex < reg_cat.categories.length; subCatIndex++) {
     var reg_subcat = reg_cat.categories[subCatIndex];
-    var catcat = [reg_subcat.name, []];
+    var catcat = [_t(reg_cat.name + '_cat') + ": " + _t(reg_subcat.name + '_cat'), []];
     builder.selenium1.categories.push(catcat);
     for (var methodIndex = 0; methodIndex < reg_subcat.contents.length; methodIndex++) {
       var baseName = reg_subcat.contents[methodIndex];

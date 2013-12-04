@@ -19,11 +19,23 @@ package com.sebuilder.interpreter.steptype;
 import com.sebuilder.interpreter.StepType;
 import com.sebuilder.interpreter.TestRun;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import org.openqa.selenium.OutputType;
 
 public class SaveScreenshot implements StepType {
 	@Override
 	public boolean run(TestRun ctx) {
-		return ctx.driver().getScreenshotAs(OutputType.FILE).renameTo(new File(ctx.string("file")));
+		try {
+			return ((File) ctx.driver().getClass().getMethod("getScreenshotAs", OutputType.class).invoke(ctx.driver(), OutputType.FILE)).renameTo(new File(ctx.string("file")));
+		} catch (NoSuchMethodException e) {
+			ctx.log().fatal("Driver does not support getScreenshotAs", e);
+			return false;
+		} catch (IllegalAccessException e) {
+			ctx.log().fatal("Driver does not support getScreenshotAs", e);
+			return false;
+		} catch (InvocationTargetException e) {
+			ctx.log().fatal("Driver does not support getScreenshotAs", e);
+			return false;
+		}
 	}
 }

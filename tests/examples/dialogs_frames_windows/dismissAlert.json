@@ -1,0 +1,23 @@
+{
+  "type": "script",
+  "seleniumVersion": "2",
+  "formatVersion": 1,
+  "steps": [
+    {
+      "type": "get",
+      "url": "http://sebuilder.github.com/se-builder/test/confirm.html"
+    },
+    {
+      "type": "dismissAlert"
+    },
+    {
+      "type": "waitForAlertText",
+      "text": "no"
+    },
+    {
+      "type": "assertAlertText",
+      "negated": true,
+      "text": "yes"
+    }
+  ]
+}

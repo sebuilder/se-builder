@@ -28,7 +28,7 @@ builder.selenium1.__methodRegistry = [
         ]
       },
       {
-        name: 'mouse events',
+        name: 'mouse_events',
         contents: [
           'mouseDown',
           'mouseDownAt',
@@ -45,7 +45,7 @@ builder.selenium1.__methodRegistry = [
         ]
       },
       {
-        name: 'keyboard events',
+        name: 'keyboard_events',
         contents: [
           'keyDown',
           'keyDownNative',
@@ -58,7 +58,7 @@ builder.selenium1.__methodRegistry = [
         ]
       },
       {
-        name: 'keyboard modifiers',
+        name: 'keyboard_modifiers',
         contents: [
           'altKeyDown',
           'altKeyUp',
@@ -71,7 +71,7 @@ builder.selenium1.__methodRegistry = [
         ]
       },
       {
-        name: 'form fields',
+        name: 'form_fields',
         contents: [
           'addSelection',
           'check',
@@ -99,7 +99,7 @@ builder.selenium1.__methodRegistry = [
         ]
       },
       {
-        name: 'popups and menus',
+        name: 'popups_and_menus',
         contents: [
           'answerOnNextPrompt',
           'chooseCancelOnNextConfirmation',
@@ -125,7 +125,7 @@ builder.selenium1.__methodRegistry = [
     },
     categories: [
       {
-        name: 'page content',
+        name: 'page_content',
         contents: [
           'getAllLinks',
           'getAttribute',
@@ -140,7 +140,7 @@ builder.selenium1.__methodRegistry = [
         ]
       },
       {
-        name: 'page positioning',
+        name: 'page_positioning',
         contents: [
           'getElementHeight',
           'getElementIndex',
@@ -161,7 +161,7 @@ builder.selenium1.__methodRegistry = [
         ]
       },
       {
-        name: 'browser window',
+        name: 'browser_window',
         contents: [
           'getAllWindowIds',
           'getAllWindowNames',
@@ -172,7 +172,7 @@ builder.selenium1.__methodRegistry = [
         ]
       },
       {
-        name: 'form fields',
+        name: 'form_fields',
         contents: [
           'getAllButtons',
           'getAllFields',
@@ -209,12 +209,12 @@ builder.selenium1.__methodRegistry = [
     ]
   },
   {
-    name: 'wait for condition',
+    name: 'wait',
     variants: [
       function(n) { return n.replace(/^(is|get)/, 'waitFor'); }
     ],
     negator: function(n) {
-      return (/Present/.test(n) ? n.replace("Present", "NotPresent").replace(/^(is|get)/, "waitFor") : n.replace(/^(is|get)/, 'waitForNot'));
+      return (/Present/.test(n) ? n.replace("Present", "NotPresent") : n.replace(/waitFor/, 'waitForNot'));
     },
     categories: [
       {
@@ -235,7 +235,7 @@ builder.selenium1.__methodRegistry = [
     name: 'other',
     categories: [
       {
-        name: 'selenium settings',
+        name: 'selenium_settings',
         contents: [
           'addLocationStrategy',
           'allowNativeXpath',

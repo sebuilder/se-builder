@@ -20,36 +20,46 @@ builder.dialogs.rc.show = function (node, playall, altCallback, altOKText) {
   builder.dialogs.rc.node = node;
   builder.dialogs.rc.playall = playall;
   
-  builder.dialogs.rc.dialog = newNode('div', {'class': 'dialog'});
   var script = builder.getScript();
+  
+  builder.dialogs.rc.showSel1 = playall ? builder.suite.isAnyScriptOfVersion(builder.selenium1) : script.seleniumVersion == builder.selenium1;
+  builder.dialogs.rc.showSel2 = playall ? builder.suite.isAnyScriptOfVersion(builder.selenium2) : script.seleniumVersion == builder.selenium2;
+  
+  builder.dialogs.rc.dialog = newNode('div', {'class': 'dialog'});
   
   var run_b = newNode('a', altOKText || _t('run_script'), {
     'class': 'button',
     'click': function () {
-      var hostPort = jQuery('#rc-hostport').val();
-      var browserString = jQuery('#rc-browserstring').val();
-      script.seleniumVersion.rcPlayback.setHostPort(hostPort);
-      script.seleniumVersion.rcPlayback.setBrowserString(browserString);
-      var browserVersion = null;
-      var platform = null;
-      if (script.seleniumVersion.rcPlayback.browserVersionAndPlatform) {
-        browserVersion = jQuery('#rc-browserversion').val();
-        platform = jQuery('#rc-platform').val();
-        script.seleniumVersion.rcPlayback.setBrowserVersion(browserVersion);
-        script.seleniumVersion.rcPlayback.setPlatform(platform);
+      var versionToSettings = {};
+      if (builder.dialogs.rc.showSel1) {
+        versionToSettings[builder.selenium1] = {
+          hostPort: jQuery('#sel1-hostPort').val(),
+          browserstring: jQuery('#sel1-browserstring').val()
+        };
+        builder.selenium1.rcPlayback.setHostPort(jQuery('#sel1-hostPort').val());
+        builder.selenium1.rcPlayback.setBrowserString(jQuery('#sel1-browserstring').val());
+      }
+      if (builder.dialogs.rc.showSel2) {
+        versionToSettings[builder.selenium2] = {
+          hostPort: jQuery('#sel2-hostPort').val(),
+          browserstring: jQuery('#sel2-browserstring').val(),
+          browserversion: jQuery('#sel2-browserversion').val(),
+          platform: jQuery('#sel2-platform').val()
+        };
+        builder.selenium2.rcPlayback.setHostPort(jQuery('#sel2-hostPort').val());
+        builder.selenium2.rcPlayback.setBrowserString(jQuery('#sel2-browserstring').val());
+        builder.selenium2.rcPlayback.setBrowserVersion(jQuery('#sel2-browserversion').val());
+        builder.selenium2.rcPlayback.setPlatform(jQuery('#sel2-platform').val());
       }
       builder.dialogs.rc.hide();
       if (altCallback) {
-        altCallback(hostPort, browserString);
+        altCallback(versionToSettings);
       } else {
         if (playall) {
-          builder.dialogs.runall.runRC(node, hostPort, browserString);
+          builder.dialogs.runall.runRC(node, versionToSettings);
         } else {
-          if (script.seleniumVersion.rcPlayback.browserVersionAndPlatform) {
-            script.seleniumVersion.rcPlayback.run(hostPort, browserString, browserVersion, platform);
-          } else {
-            script.seleniumVersion.rcPlayback.run(hostPort, browserString);
-          }
+          builder.views.script.onStartRCPlayback();
+          script.seleniumVersion.rcPlayback.run(versionToSettings[script.seleniumVersion], builder.views.script.onEndRCPlayback, builder.views.script.onConnectionEstablished, builder.stepdisplay.updateStepPlaybackState);
         }
       }
     },
@@ -67,16 +77,7 @@ builder.dialogs.rc.show = function (node, playall, altCallback, altOKText) {
   var chooseHeader = newNode('h4', _t('selenium_rc_settings'));
   
   var optDiv = newNode('div', {id: 'options-div'},
-    newNode('table', {style: 'border: none;', id: 'rc-options-table'},
-      newNode('tr',
-        newNode('td', _t('rc_server_host_port') + " "),
-        newNode('td', newNode('input', {id: 'rc-hostport', type: 'text', value: script.seleniumVersion.rcPlayback.getHostPort()}))
-      ),
-      newNode('tr',
-        newNode('td', _t('rc_browser_string') + " "),
-        newNode('td', newNode('input', {id: 'rc-browserstring', type: 'text', value: script.seleniumVersion.rcPlayback.getBrowserString()}))
-      )
-    )
+    newNode('table', {style: 'border: none;', id: 'rc-options-table'})
   );
   
   jQuery(builder.dialogs.rc.dialog).
@@ -86,13 +87,34 @@ builder.dialogs.rc.show = function (node, playall, altCallback, altOKText) {
       
   jQuery(node).append(builder.dialogs.rc.dialog);
   
-  if (script.seleniumVersion.rcPlayback.browserVersionAndPlatform) {
+  if (builder.dialogs.rc.showSel1) {
+    jQuery('#rc-options-table').append(newNode('tr', {'colspan': '2'}, newNode('h4', "Selenium 1")));
+    jQuery('#rc-options-table').append(newNode('tr',
+      newNode('td', _t('rc_server_host_port') + " "),
+      newNode('td', newNode('input', {id: 'sel1-hostPort', type: 'text', value: builder.selenium1.rcPlayback.getHostPort()}))
+    ));
+    jQuery('#rc-options-table').append(newNode('tr',
+      newNode('td', _t('rc_browser_string') + " "),
+      newNode('td', newNode('input', {id: 'sel1-browserstring', type: 'text', value: builder.selenium1.rcPlayback.getBrowserString()}))
+    ));
+  }
+  
+  if (builder.dialogs.rc.showSel2) {
+    jQuery('#rc-options-table').append(newNode('tr', {'colspan': '2'}, newNode('h4', "Selenium 2")));
+    jQuery('#rc-options-table').append(newNode('tr',
+      newNode('td', _t('rc_server_host_port') + " "),
+      newNode('td', newNode('input', {id: 'sel2-hostPort', type: 'text', value: builder.selenium2.rcPlayback.getHostPort()}))
+    ));
+    jQuery('#rc-options-table').append(newNode('tr',
+      newNode('td', _t('rc_browser_string') + " "),
+      newNode('td', newNode('input', {id: 'sel2-browserstring', type: 'text', value: builder.selenium2.rcPlayback.getBrowserString()}))
+    ));
     jQuery('#rc-options-table').append(newNode('tr',
       newNode('td', _t('rc_browser_version') + " "),
-      newNode('td', newNode('input', {id: 'rc-browserversion', type: 'text', value: script.seleniumVersion.rcPlayback.getBrowserVersion()}))
+      newNode('td', newNode('input', {id: 'sel2-browserversion', type: 'text', value: builder.selenium2.rcPlayback.getBrowserVersion()}))
     )).append(newNode('tr',
       newNode('td', _t('rc_platform') + " "),
-      newNode('td', newNode('input', {id: 'rc-platform', type: 'text', value: script.seleniumVersion.rcPlayback.getPlatform()}))
+      newNode('td', newNode('input', {id: 'sel2-platform', type: 'text', value: builder.selenium2.rcPlayback.getPlatform()}))
     ));
   }
 };

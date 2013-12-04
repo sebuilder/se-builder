@@ -16,11 +16,13 @@
 
 package com.sebuilder.interpreter;
 
+import com.sebuilder.interpreter.webdriverfactory.WebDriverFactory;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 /**
  * A single run of a test script.
@@ -29,13 +31,25 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 public class TestRun {
 	HashMap<String, String> vars = new HashMap<String, String>();
 	Script script;
-	int stepIndex = -1;
-	FirefoxDriver driver;
+	protected int stepIndex = -1;
+	RemoteWebDriver driver;
 	Log log;
+	WebDriverFactory webDriverFactory = SeInterpreter.DEFAULT_DRIVER_FACTORY;
+	HashMap<String, String> webDriverConfig = new HashMap<String, String>();
+	Long implicitlyWaitDriverTimeout;
+	Long pageLoadDriverTimeout;
+	public Log getLog() { return log; }
+	public RemoteWebDriver getDriver() { return driver; }
+	public Script getScript() { return script; }
 
 	public TestRun(Script script) {
 		this.script = script;
 		log = LogFactory.getFactory().getInstance(SeInterpreter.class);
+	}
+
+	public TestRun(Script script, int implicitlyWaitDriverTimeout, int pageLoadDriverTimeout) {
+		this(script);
+		setTimeouts(implicitlyWaitDriverTimeout, pageLoadDriverTimeout);
 	}
 	
 	public TestRun(Script script, Log log) {
@@ -43,12 +57,46 @@ public class TestRun {
 		this.log = log;
 	}
 	
+	public TestRun(Script script, Log log, WebDriverFactory webDriverFactory, HashMap<String, String> webDriverConfig) {
+		this(script, log);
+		this.webDriverFactory = webDriverFactory;
+		this.webDriverConfig = webDriverConfig;
+	}
+
+	public TestRun(
+		Script script,
+		Log log,
+		WebDriverFactory webDriverFactory,
+		HashMap<String, String> webDriverConfig,
+		int implicitlyWaitDriverTimeout,
+		int pageLoadDriverTimeout)
+	{
+		this(script, log, webDriverFactory, webDriverConfig);
+		setTimeouts(implicitlyWaitDriverTimeout, pageLoadDriverTimeout);
+	}
+        
+	public TestRun(
+		Script script,
+		WebDriverFactory webDriverFactory,
+		HashMap<String, String> webDriverConfig,
+		int implicitlyWaitDriverTimeout,
+		int pageLoadDriverTimeout)
+	{
+		this(
+			script,
+			LogFactory.getFactory().getInstance(SeInterpreter.class),
+			webDriverFactory,
+			webDriverConfig,
+			implicitlyWaitDriverTimeout,
+			pageLoadDriverTimeout);
+	}
+	
 	/** @return True if there is another step to execute. */
 	public boolean hasNext() {
 		boolean hasNext = stepIndex < script.steps.size() - 1;
 		if (!hasNext && driver != null) {
-			log.debug("Closing FirefoxDriver.");
-			driver.close();
+			log.debug("Quitting driver.");
+			driver.quit();
 		}
 		return hasNext;
 	}
@@ -61,12 +109,11 @@ public class TestRun {
 		if (stepIndex == -1) {
 			log.debug("Starting test run.");
 		}
-		if (driver == null) {
-			log.debug("Initialising FirefoxDriver.");
-			driver = new FirefoxDriver();
-		}
+
+		initRemoteWebDriver();
+
 		log.debug("Running step " + (stepIndex + 2) + ":" +
-				script.steps.get(stepIndex + 1).getClass().getSimpleName() + " step.");
+		script.steps.get(stepIndex + 1).getClass().getSimpleName() + " step.");
 		boolean result = false;
 		try {
 			result = script.steps.get(++stepIndex).type.run(this);
@@ -89,7 +136,7 @@ public class TestRun {
 			return true;
 		}
 	}
-	
+
 	/**
 	 * Resets the script's progress and closes the driver if needed.
 	 */
@@ -97,7 +144,7 @@ public class TestRun {
 		log.debug("Resetting test run.");
 		vars.clear();
 		stepIndex = -1;
-		if (driver != null) { driver.close(); }
+		if (driver != null) { driver.quit(); }
 	}
 	
 	/**
@@ -114,19 +161,19 @@ public class TestRun {
 			}
 		} catch (RuntimeException e) {
 			// If the script terminates, the driver will be closed automatically.
-			try { driver.close(); } catch (Exception e2) {}
+			try { driver.quit(); } catch (Exception e2) {}
 			throw e;
 		}
 		return success;
 	}
 	
 	/** @return The step that is being/has just been executed. */
-	public Script.Step currentStep() { return script.steps.get(stepIndex); }
+	public Step currentStep() { return script.steps.get(stepIndex); }
 	/** @return The driver instance being used. */
-	public FirefoxDriver driver() { return driver; }
+	public RemoteWebDriver driver() { return driver; }
 	/** @return The logger being used. */
 	public Log log() { return log; }
-	/** @return The HashMap of vars. */
+	/** @return The HashMap of variables. */
 	public HashMap<String, String> vars() { return vars; }
 		
 	/**
@@ -163,5 +210,40 @@ public class TestRun {
 			l.value = l.value.replace("${" + v.getKey() + "}", v.getValue());
 		}
 		return l;
+	}
+
+	/**
+	 * Initialises remoteWebDriver by invoking factory and set timeouts when
+	 * needed
+	 */
+	public void initRemoteWebDriver() {
+		if (driver == null) {
+			log.debug("Initialising driver.");
+			try {
+				driver = webDriverFactory.make(webDriverConfig);
+				if (implicitlyWaitDriverTimeout != null) {
+					driver.manage().timeouts().implicitlyWait(implicitlyWaitDriverTimeout, TimeUnit.SECONDS);
+				}
+				if (pageLoadDriverTimeout != null) {
+					driver.manage().timeouts().pageLoadTimeout(pageLoadDriverTimeout, TimeUnit.SECONDS);
+				}
+			} catch (Exception e) {
+				throw new RuntimeException("Test run failed: unable to create driver.", e);
+			}
+		}
+	}
+
+	/**
+	 *
+	 * @param implicitlyWaitDriverTimeout
+	 * @param pageLoadDriverTimeout
+	 */
+	private void setTimeouts(int implicitlyWaitDriverTimeout, int pageLoadDriverTimeout) {
+		if (implicitlyWaitDriverTimeout > 0) {
+			this.implicitlyWaitDriverTimeout = Long.valueOf(implicitlyWaitDriverTimeout);
+		}
+		if (pageLoadDriverTimeout > 0) {
+			this.pageLoadDriverTimeout = Long.valueOf(pageLoadDriverTimeout);
+		}
 	}
 }

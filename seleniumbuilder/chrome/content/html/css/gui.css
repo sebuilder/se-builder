@@ -10,8 +10,8 @@ body, html, ul {
 }
 
 html {   
-	background-color:      rgb(102, 102, 102);
-	background-image:      url(../img/background-gradient.png);
+	background-color:      rgb(126, 126, 126);
+	background-image:      url(../img/background-gradient-light.png);
 	background-attachment: fixed;
 	background-position:   bottom right;
 	background-repeat:     repeat-x;
@@ -30,6 +30,7 @@ ul {
 a {
 	text-decoration: none;
 	color: rgb(96, 120, 67);
+	cursor: pointer; /* Fix up <a>s without a href. */
 }
 
 a:hover {
@@ -81,6 +82,7 @@ a.button {
 	text-decoration: none;
 	border-radius:0.2rem;
 }
+
 input:hover.button,
 a:hover.button
 { 
@@ -120,10 +122,39 @@ div a:last-child
 }
 
 /** Boot */
-#loadMessage {
+#loadMessage, #booting-file {
 	color: white;
-	text-align: center;
+	margin-left: 100px;
+}
+
+#loadMessage {
 	margin-top: 100px;
+}
+
+#booting-progress {
+	margin-left: 100px;
+	margin-top: 5px;
+}
+
+#booting-done {
+	width: 200px;
+	height: 6px;
+	background: #bbbbbb;
+	display: none;
+	border: 1px solid white;
+	border-right: none;
+}
+
+#booting-notdone {
+	width: 0px;
+	height: 6px;
+	background: #333333;
+	position: relative;
+	top: -8px;
+	left: 201px;
+	display: none;
+	border: 1px solid white;
+	border-left: none;
 }
 
 /** Menu */
@@ -409,6 +440,22 @@ texta {
   margin-left: 102px;
 }
 
+.b-step-breakpoint {
+	display: block;
+	position: absolute;
+	left: 16px;
+	top: 8px;
+	width: 5px;
+	height: 5px;
+	background: red;
+	border: 1px solid #880000;
+}
+
+.b-step-breakpoint-disabled {
+	background: #999999;
+	border-color: #555555;
+}
+
 .b-step-number:before {
   position: absolute;
   left: 0;
@@ -470,7 +517,7 @@ texta {
   display: none;
 }
 
-.b-step:hover .b-method:before {
+.b-step .b-tasks-appear-method:before {
   position: absolute;
   left: -12px;
   width:15px;
@@ -484,7 +531,7 @@ texta {
   z-index:1001;
 }
 
-.b-step:hover .b-tasks {
+.b-step .b-tasks-appear {
   background-color:white;
   padding: 3px;
   border-radius: 5px;
@@ -507,6 +554,13 @@ texta {
   border-radius: .2rem;
 }
 
+.b-step-note {
+	margin-top: 2px;
+	padding: 2px;
+	color: #555555;
+	background-color: #ffffaa;
+}
+
 .b-tasks .b-task {
   display: block;
   padding: 2px;
@@ -526,6 +580,7 @@ table.cat-table td {
 
 table.cat-table li {
   list-style: none;
+  white-space: nowrap;
 }
 
 .selected-cat {
@@ -539,7 +594,11 @@ table.cat-table li {
 .cat-list {
   margin: 0px;
   padding: 0px;
-  margin-right: 10px;
+	padding-right: 5px;
+  margin-right: 5px;
+	width: auto;
+	overflow-x: hidden;
+	border-right: 1px solid rgb(128, 128, 128);
 }
 
 .cat-list li {
@@ -570,4 +629,20 @@ table.cat-table li {
 
 #record-spinner {
 	float: right;
+}
+
+.updates-available {
+	font-size: 70%;
+	margin-left: 1.5em;
+	color: rgb(96, 120, 67);
+}
+
+.selenium-version-display {
+  float: right;
+  color: #666666;
+}
+
+a.smallbutton {
+	padding: 0.2rem 0.2rem !important;
+	min-width: 1.5rem !important;
 }

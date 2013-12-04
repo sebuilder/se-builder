@@ -1,36 +1,45 @@
-builder.selenium2.io.formats.push(builder.selenium2.io.createLangFormatter({
-  name: "Php",
+builder.selenium2.io.addLangFormatter({
+  name: "PHP - Webdriver",
   extension: ".php",
   not: "! ",
   start:
-    "<?php\n"+
-    "require_once 'php-webdriver';" +
+  "<?php\n"+
+  "require_once 'php-webdriver';" +
 	"\n" +
 	"$wd = new WebDriver();\n" +
 	"$session = $wd->session();\n"+
 	"\n"+
 	"function cookies_contain($cookies, $name) {\n"+ 
-        "     foreach ($cookies as $arr) {\n"+
-        "         if ($arr['name'] == $name) {\n"+
-        "             return true;\n"+
-        "         }\n"+ 
-        "     }\n"+
-        "     return false;\n"+
-        "}\n"+
+    "    foreach ($cookies as $arr) {\n"+
+    "        if ($arr['name'] == $name) {\n"+
+    "            return true;\n"+
+    "        }\n"+ 
+    "    }\n"+
+    "    return false;\n"+
+    "}\n"+
 	"\n"+
 	"function get_cookie($cookies, $name) {\n"+ 
-        "     foreach ($cookies as $arr) {\n"+
-        "         if ($arr['name'] == $name) {\n"+
-        "             return $arr;\n"+
-        "         }\n"+ 
-        "     }\n"+
-        "     return false;\n"+
-        "}\n"+
+    "    foreach ($cookies as $arr) {\n"+
+    "        if ($arr['name'] == $name) {\n"+
+    "            return $arr;\n"+
+    "        }\n"+ 
+    "    }\n"+
+    "    return false;\n"+
+    "}\n"+
 	"\n"+
-	"function split_keys($toSend){\n"+
-	"      $payload = array(\"value\" => preg_split(\"//u\", $toSend, -1, PREG_SPLIT_NO_EMPTY));\n"+
-	"      return $payload;\n"+
-	"}\n\n",
+	"function alert_present($session) {\n" +
+    "    try {\n" +
+    "        $session->alert_text();\n" +
+    "        return true;\n" +
+    "    } catch (NoAlertOpenWebDriverError $e) {\n" +
+    "       return false;\n" +
+    "    }\n" +
+    "}\n" +
+    "\n" +
+  	"function split_keys($toSend){\n"+
+  	"    $payload = array(\"value\" => preg_split(\"//u\", $toSend, -1, PREG_SPLIT_NO_EMPTY));\n"+
+  	"    return $payload;\n"+
+  	"}\n\n",
   end:
     "\n$session->close();\n"+
 	"?>",
@@ -41,8 +50,12 @@ builder.selenium2.io.formats.push(builder.selenium2.io.createLangFormatter({
       "$session->back();\n",
     "goForward":
       "$session->forward();\n",
+    "refresh":
+      "$session->refresh();\n",
     "clickElement":
       "$session->element({locatorBy}, {locator})->click();\n",
+    "mouseOverElement":
+      "$session->moveto(array(\"element\" => $session->element({locatorBy}, {locator})->getID()));\n",
     "setElementText":
       "$session->element({locatorBy}, {locator})->click();\n" +
       "$session->element({locatorBy}, {locator})->clear();\n" +
@@ -62,141 +75,27 @@ builder.selenium2.io.formats.push(builder.selenium2.io.createLangFormatter({
       "$session->element({locatorBy}, {locator})->submit();\n",
     "close":
       "",
-    "verifyTextPresent":
-      "if ({posNot}(strpos(session->element(\"tag name\", \"html\")->text(), {text}) === false)) {\n" +
-	  "    echo \"{negNot}verifyTextPresent failed\";\n"+
-	  "}\n",
-    "assertTextPresent":
-      "if ({posNot}(strpos(session->element(\"tag name\", \"html\")->text(), {text}) === false)) {\n" +
-	  "    $session->close();\n" +
-	  "    throw new Exception(\"{negNot}assertTextPresent failed\");\n"+
-	  "}\n",
-    "waitForTextPresent":
-      "",
-    "verifyBodyText":
-      "if ({posNot}({text} == $session->element(\"tag_name\", \"html\")->text())) {\n" +
-	  "    echo \"{negNot}verifyBodyText failed\";\n"+
-	  "}\n",
-    "assertBodyText":
-      "if ({posNot}({text} == $session->find_element_by_tag_name(\"html\")->text())) {\n" +
-	  "    $session->close();\n" +
-	  "    raise Exception(\"{negNot}assertBodyText failed\");\n"+
-	  "}\n",
-    "waitForBodyText":
-      "",
-    "verifyElementPresent":
-      "if ({negNot}(strlen($session->element({locatorBy}, {locator})) == 0 )){\n" +
-	  "    echo \"{negNot}verifyElementPresent failed\";\n"+
-	  "}\n",
-    "assertElementPresent":
-      "if ({negNot}(strlen($session->element({locatorBy}, {locator})) == 0 )){\n" +
-	  "    $session->close();\n" +
-	  "    throw Exception(\"{negNot}assertElementPresent failed\");\n"+
-	  "}\n",
-    "waitForElementPresent":
-      "",
-    "verifyPageSource":
-      "if ({posNot}(($session->get_page_source() == {source}))) {\n" +
-	  "    echo \"{negNot}verifyPageSource failed\");\n"+
-	  "}\n",
-    "assertPageSource":
-      "if ({posNot}($session->get_page_source() == {source})) {\n" +
-	  "    $session->close();\n" +
-	  "    throw Exception(\"{negNot}assertPageSource failed\");\n"+
-	  "}\n",
-    "waitForPageSource":
-      "",
-    "verifyText":
-      "if ({posNot}($session->{locatorBy}({locator})->text == {text})) {;\n" +
-      "    echo \"{negNot}verifyText failed\";\n",
-    "assertText":
-      "if ({posNot}($session->{locatorBy}({locator})->text == {text})) {\n" +
-	  "    $session->close();\n" +
-	  "    throw Exception(\"{negNot}assertText failed\");\n"+
-	  "}\n",
-    "waitForText":
-      "",
-    "verifyCurrentUrl":
-      "if ({posNot}($session->url() == {url})) {\n" +
-	  "    echo \"{negNot}verifyCurrentUrl failed\");\n"+
-	  "}\n",
-    "assertCurrentUrl":
-      "if ({posNot}($session->url() == {url})) {\n" +
-	  "    $session->close();\n" +
-	  "    throw Exception(\"{negNot}assertCurrentUrl failed\");\n"+
-	  "}\n",
-    "waitForCurrentUrl":
-      "",
-    "verifyTitle":
-      "if ({posNot}($session->title() == {title})) {\n" +
-	  "    echo \"{negNot}verifyTitle failed\");\n"+
-	  "}\n",
-    "assertTitle":
-      "if ({posNot}($session->title() == {title}) {\n" +
-	  "    $session->close();\n" +
-	  "    throw Exception(\"{negNot}assertTitle failed\");\n"+
-	  "}\n",
-    "waitForTitle":
-      "",
-    "verifyElementSelected":
-      "if {posNot}$session->element({locatorBy}, {locator})->selected() {\n" +
-      "    echo \"{negNot}verifyElementSelected failed\");\n",
-    "assertElementSelected":
-      "if ({posNot}($session->elememt({locatorBy}, {locator})->selected())) {\n" +
-	  "    $session->close();\n" +
-	  "    throw Exception(\"{negNot}assertElementSelected failed\");\n"+
-	  "}\n",
-    "waitForElementSelected":
-      "",
-    "verifyElementValue":
-      "if ({posNot}($session->{locatorBy}({locator})->attribute(value) == {value})) {\n" +
-	  "    echo \"{negNot}verifyElementValue failed\");\n"+
-	  "}\n",
-    "assertElementValue":
-      "if {posNot}$session->{locatorBy}({locator})->attribute(value) == {value} {\n" +
-	  "    $session->close();\n" +
-	  "    throw Exception(\"{negNot}assertElementValue failed\");\n"+
-	  "}\n",
-    "element->waitForValue":
-      "",
-    "verifyCookieByName":
-      "if ({posNot}(get_cookie($session->getAllCookies(), {name}) == {value})) {\n" +
-	  "    echo \"{negNot}verifyCookieByName failed\";\n"+
-	  "}\n",
-    "assertCookieByName":
-      "if ({posNot}(get_cookie($session->getAllCookies(), {name}) == {value})) {\n" +
-	  "    $session->close();\n" +
-	  "    throw Exception(\"{negNot}assertCookieByName failed\");\n"+
-	  "}\n",
-    "waitForCookieByName":
-      "",
-    "verifyCookiePresent":
-      "if ({posNot}($session->getAllCookie({name})) {\n" +
-	  "    echo \"{negNot}verifyCookiePresent failed\");\n"+
-	  "}\n",
-    "assertCookiePresent":
-      "if ({posNot}($session->get_cookie({name}))) {\n" +
-	  "    $session->close();\n" +
-	  "    throw Exception(\"{negNot}assertCookiePresent failed\");\n"+
-	  "}\n",
-    "waitForCookiePresent":
-      "",
-    "storeTitle":
-      "${{variable}} = $session->title();\n"
+    "switchToFrame":
+      "$session->frame(array(\"id\" => {identifier}));\n",
+    "switchToFrameByIndex":
+      "$session->frame(array(\"id\" => {index}));\n",
+    "switchToWindow":
+      "$session->window(array(\"name\" => {name}));\n",
+    "switchToDefaultContent":
+      "$session->frame(array(\"id\" => NULL));\n",
+    "answerAlert":
+      "$session->postalert_text(array(\"text\" => {text}));\n" +
+      "$session->accept_alert();\n",
+    "acceptAlert":
+      "$session->accept_alert();\n",
+    "dismissAlert":
+      "$session->dismiss_alert();\n",
+    "print":
+      "echo {text};\n",
+    "store":
+      "${variable} = {text};\n"
   },
   locatorByForType: function(stepType, locatorType, locatorIndex) {
-    if ({
-      "assertElementPresent": 1,
-      "verifyElementPresent": 1
-    }[stepType.name]) {
-      return {
-        "class": "\"class\"",
-        "id": "\"id\"",
-        "link text": "\"link text\"",
-        "xpath": "\"xpath\"",
-        "css selector": "\"css\"",
-        "name": "\"name\""}[locatorType];
-    }
     return {
         "class": "\"class\"",
         "id": "\"id\"",
@@ -204,6 +103,123 @@ builder.selenium2.io.formats.push(builder.selenium2.io.createLangFormatter({
         "xpath": "\"xpath\"",
         "css selector": "\"css\"",
         "name": "\"name\""}[locatorType];
+  },
+  assert: function(step, escapeValue, doSubs, getter) {
+    if (step.negated) {
+      return doSubs(
+        "if ({getter} == {cmp}) {\n" +
+        "    $session->close();\n" +
+        "    throw new Exception(\"!{stepTypeName} failed\");\n" +
+        "}\n", getter);
+    } else {
+      return doSubs(
+        "if ({getter} != {cmp}) {\n" +
+        "    $session->close();\n" +
+        "    throw new Exception(\"!{stepTypeName} failed\");\n" +
+        "}\n", getter);
+    }
+  },
+  verify: function(step, escapeValue, doSubs, getter) {
+    if (step.negated) {
+      return doSubs(
+        "if ({getter} == {cmp}) {\n" +
+        "    echo \"!{stepTypeName} failed\";\n" +
+        "}\n", getter);
+    } else {
+      return doSubs(
+        "if ({getter} != {cmp}) {\n" +
+        "    echo \"{stepTypeName} failed\";\n" +
+        "}\n", getter);
+    }
+  },
+  waitFor: "",
+  store:
+    "${{variable}} = {getter};\n",
+  boolean_assert:
+    "if ({posNot}{getter}) {\n" +
+    "    $session->close();\n" +
+    "    throw new Exception(\"{negNot}{stepTypeName} failed\");\n" +
+    "}\n",
+  boolean_verify:
+    "if ({posNot}{getter}) {\n" +
+    "    echo \"{negNot}{stepTypeName} failed\";\n" +
+    "}\n",
+  boolean_waitFor: "",
+  boolean_store:
+    "${{variable}} = {getter};\n",
+  boolean_getters: {
+    "TextPresent": {
+      getter: "(strpos($session->element(\"tag name\", \"html\")->text(), {text}) !== false)",
+      vartype: ""
+    },
+    "ElementPresent": {
+      getter: "(strlen($session->element({locatorBy}, {locator})) != 0)",
+      vartype: ""
+    },
+    "ElementSelected": {
+      getter: "($session->element({locatorBy}, {locator})->selected())",
+      vartype: ""
+    },
+    "CookiePresent": {
+      getter: "($session->getAllCookie({name}))",
+      vartype: ""
+    },
+    "AlertPresent": {
+      getter: "alert_present($session)",
+      vartype: ""
+    }
+  },
+  getters: {
+    "BodyText": {
+      getter: "$session->element(\"tag name\", \"html\")->text()",
+      cmp: "{text}",
+      vartype: ""
+    },
+    "PageSource": {
+      getter: "$session->source()",
+      cmp: "{source}",
+      vartype: ""
+    },
+    "Text": {
+      getter: "$session->element({locatorBy}, {locator})->text",
+      cmp: "{text}",
+      vartype: ""
+    },
+    "CurrentUrl": {
+      getter: "$session->url()",
+      cmp: "{url}",
+      vartype: ""
+    },
+    "Title": {
+      getter: "$session->title()",
+      cmp: "{title}",
+      vartype: ""
+    },
+    "ElementValue": {
+      getter: "$session->element({locatorBy}, {locator})->attribute(\"value\")",
+      cmp: "{value}",
+      vartype: ""
+    },
+    "ElementAttribute": {
+      getter: "$session->element({locatorBy}, {locator})->attribute({attributeName})",
+      cmp: "{value}",
+      vartype: "String"
+    },
+    "CookieByName": {
+      getter: "get_cookie($session->getAllCookies(), {name})",
+      cmp: "{value}",
+      vartype: ""
+    },
+    "AlertText": {
+      getter: "$session->alert_text()",
+      cmp: "{text}",
+      vartype: ""
+    },
+    "Eval": {
+      getter: "$session->execute({script})",
+      cmp: "{value}",
+      vartype: ""
+    }
   },
   /**
    * Processes a parameter value into an appropriately escaped expression. Mentions of variables
@@ -217,6 +233,7 @@ builder.selenium2.io.formats.push(builder.selenium2.io.createLangFormatter({
    */
   escapeValue: function(stepType, value, pName) {
     if (stepType.name.startsWith("store") && pName == "variable") { return value; }
+    if (stepType.name == "switchToFrameByIndex" && pName == "index") { return value; }
     // This function takes a string literal and escapes it and wraps it in quotes.
     function esc(v) { return "\"" + v.replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + "\""; }
 
@@ -234,7 +251,7 @@ builder.selenium2.io.formats.push(builder.selenium2.io.createLangFormatter({
           // We've finished reading in the name of a variable.
           // If this isn't the start of the expression, use + to concatenate it.
           if (output.length > 0) { output += " . "; }
-          output += varName;
+          output += "$" + varName;
           insideVar = false;
           hasDollar = false;
           varName = "";
@@ -262,7 +279,7 @@ builder.selenium2.io.formats.push(builder.selenium2.io.createLangFormatter({
           }
         } else {
           // This is the "normal case" - accumulating the letters of a literal. Unless the letter
-          // is a $, in which case this may be the start of a 
+          // is a $, in which case this may be the start of a...
           if (ch == "$") { hasDollar = true; } else { lastChunk += ch; }
         }
       }
@@ -274,6 +291,6 @@ builder.selenium2.io.formats.push(builder.selenium2.io.createLangFormatter({
     }
     return output;
   },
-  usedVar: function(varName) { return varName; },
-  unusedVar: function(varName) { return varName; }
-}));
+  usedVar: function(varName) { return "$" + varName; },
+  unusedVar: function(varName) { return "$" + varName; }
+});
