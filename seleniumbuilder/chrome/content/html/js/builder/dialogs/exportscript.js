@@ -9,6 +9,10 @@ builder.dialogs.exportscript.node = null;
 builder.dialogs.exportscript.dialog = null;
 
 builder.dialogs.exportscript.show = function(node) {
+  // Don't show dialog if it is open
+  if (builder.dialogs.exportscript.dialog) {
+    return;
+  }
   builder.dialogs.exportscript.node = node;
   builder.dialogs.exportscript.dialog = newNode('div', {'class': 'dialog'});
   jQuery(node).append(builder.dialogs.exportscript.dialog);
@@ -62,6 +66,7 @@ builder.dialogs.exportscript.show = function(node) {
 
 builder.dialogs.exportscript.hide = function () {
   jQuery(builder.dialogs.exportscript.dialog).remove();
+  builder.dialogs.exportscript.dialog = null;
 };
 
 builder.dialogs.exportscript.do_export_sel1 = function(myFormat, hostPort, browserString) {
