@@ -12,8 +12,10 @@ builder.selenium2.io.parseScript = function(text, path) {
     'format': builder.selenium2.io.formats[0]
   };
   
-  for (var i = 0; i < scriptJSON.steps.length; i++) {
-    script.steps.push(builder.stepFromJSON(scriptJSON.steps[i], builder.selenium2));
+  if (scriptJSON.steps || (isArray(scriptJSON.steps))){
+    for (var i = 0; i < scriptJSON.steps.length; i++) {
+      script.steps.push(builder.stepFromJSON(scriptJSON.steps[i], builder.selenium2));
+    }
   }
   
   script.timeoutSeconds = scriptJSON.timeoutSeconds || 60;
