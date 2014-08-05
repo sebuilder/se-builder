@@ -17,6 +17,7 @@
 package com.sebuilder.interpreter.factory;
 
 import com.sebuilder.interpreter.DataSource;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -27,13 +28,26 @@ import java.util.Map;
  * @author zarkonnen
  */
 public class DataSourceFactory {
-	public static final String DATA_SOURCE_PACKAGE = "com.sebuilder.interpreter.datasource";
-	
+	public String DATA_SOURCE_PACKAGE = "com.sebuilder.interpreter.datasource";
+
+	private static final String DEFAULT_DATA_SOURCE_PACKAGE = "com.sebuilder.interpreter.datasource";
+
+	/**
+	 * <p>
+	 * Specifies the package name to look for data source implementations
+	 * </p>
+	 *
+	 * @param pkg The full name of the package data sources are defined in
+	 */
+	public void setDataSourcePackage(String pkg) {
+		DATA_SOURCE_PACKAGE = pkg;
+	}
+
 	/**
 	 * Lazily loaded map of data sources.
 	 */
 	private final HashMap<String, DataSource> sourcesMap = new HashMap<String, DataSource>();
-	
+
 	public List<Map<String, String>> getData(String sourceName, Map<String, String> config, File relativeToFile) {
 		if (!sourcesMap.containsKey(sourceName)) {
 			String className = sourceName.substring(0, 1).toUpperCase() + sourceName.substring(1).toLowerCase();
@@ -41,7 +55,14 @@ public class DataSourceFactory {
 			try {
 				c = Class.forName(DATA_SOURCE_PACKAGE + "." + className);
 			} catch (ClassNotFoundException cnfe) {
-				throw new RuntimeException("No implementation class for data source \"" + sourceName + "\" could be found.", cnfe);
+				if (DATA_SOURCE_PACKAGE.equals(DEFAULT_DATA_SOURCE_PACKAGE)) {
+					throw new RuntimeException("No implementation class for data source \"" + sourceName + "\" could be found.", cnfe);
+				}
+				try {
+					c = Class.forName(DEFAULT_DATA_SOURCE_PACKAGE + "." + className);
+				} catch (ClassNotFoundException cnfe2) {
+					throw new RuntimeException("No implementation class for data source \"" + sourceName + "\" could be found.", cnfe2);
+				}
 			}
 			if (c != null) {
 				try {
@@ -56,7 +77,7 @@ public class DataSourceFactory {
 				}
 			}
 		}
-		
+
 		return sourcesMap.get(sourceName).getData(config, relativeToFile);
 	}
 }

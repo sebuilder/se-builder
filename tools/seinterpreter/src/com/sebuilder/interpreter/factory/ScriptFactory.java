@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,6 +41,10 @@ import org.json.JSONTokener;
  * @author jkowalczyk
  */
 public class ScriptFactory {
+
+	private String VARIABLE_START_TOKEN = "${";
+	private String VARIABLE_END_TOKEN = "}";
+
 	StepTypeFactory stepTypeFactory = new StepTypeFactory();
 	TestRunFactory testRunFactory = new TestRunFactory();
 	DataSourceFactory dataSourceFactory = new DataSourceFactory();
@@ -93,6 +99,19 @@ public class ScriptFactory {
 				script.name = f.getPath();
 			}
 			scripts.add(script);
+			if (o.has("data")) {
+				JSONObject data = o.getJSONObject("data");
+				String sourceName = data.getString("source");
+				HashMap<String, String> config = new HashMap<String, String>();
+				if (data.has("configs") && data.getJSONObject("configs").has(sourceName)) {
+					JSONObject cfg = data.getJSONObject("configs").getJSONObject(sourceName);
+					for (Iterator<String> it = cfg.keys(); it.hasNext();) {
+						String key = it.next();
+						config.put(key, cfg.getString(key));
+					}
+				}
+				script.dataRows = dataSourceFactory.getData(sourceName, config, f.getAbsoluteFile().getParentFile());
+			}
 			for (int i = 0; i < stepsA.length(); i++) {
 				JSONObject stepO = stepsA.getJSONObject(i);
 				Step step = new Step(stepTypeFactory.getStepTypeOfName(stepO.getString("type")));
@@ -109,22 +128,11 @@ public class ScriptFactory {
 								stepO.getJSONObject(key).getString("type"),
 								stepO.getJSONObject(key).getString("value")));
 					} else {
-						step.stringParams.put(key, stepO.getString(key));
+						// here the url of a get statement might contain a ${...} sequence
+						String value = stepO.getString(key);
+						step.stringParams.put(key, sanitizeValue(value, script.dataRows));
 					}
 				}
-			}
-			if (o.has("data")) {
-				JSONObject data = o.getJSONObject("data");
-				String sourceName = data.getString("source");
-				HashMap<String, String> config = new HashMap<String, String>();
-				if (data.has("configs") && data.getJSONObject("configs").has(sourceName)) {
-					JSONObject cfg = data.getJSONObject("configs").getJSONObject(sourceName);
-					for (Iterator<String> it = cfg.keys(); it.hasNext();) {
-						String key = it.next();
-						config.put(key, cfg.getString(key));
-					}
-				}
-				script.dataRows = dataSourceFactory.getData(sourceName, config, f.getAbsoluteFile().getParentFile());
 			}
 			return scripts;
 		} catch (JSONException e) {
@@ -206,5 +214,71 @@ public class ScriptFactory {
 		} finally {
 			try { r.close(); } catch (Exception e) {}
 		}
+	}
+
+	/**
+	 * <p>
+	 * Replaces all variables in a field-value with the first available binding
+	 * that matches the given variable name. If the provided value did not
+	 * contain any variables, the origin value is returned.
+	 * </p>
+	 * <p>
+	 * A variable is typically defined in JSON as <code>${variable}</code> where
+	 * <em>variable</em> is the name of the variable. The variable may be
+	 * surrounded by preceding or subsequent characters. The actual syntax of a
+	 * variable can be modified on setting own start- and end-tags via
+	 * {@link #setVariableStartToken(String, String)}.
+	 * </p>
+	 * @param value The origin value which might contain variable declarations
+	 * @param dataRows The data sources to look for the variable name
+	 * @return The replaced value if it contained any variables, else the origin
+	 *         value
+	 */
+	protected String sanitizeValue(String value, List<Map<String, String>> dataRows) {
+		StringBuilder sb = new StringBuilder();
+		while (value.contains(VARIABLE_START_TOKEN) && value.contains(VARIABLE_END_TOKEN)) {
+			String first;
+			int pos = 0;
+			if (!value.startsWith(VARIABLE_START_TOKEN)) {
+				pos = value.indexOf(VARIABLE_START_TOKEN);
+				sb.append(value.substring(0, pos));
+			}
+			boolean found = false;
+			String var = value.substring(pos+VARIABLE_START_TOKEN.length(), value.indexOf(VARIABLE_END_TOKEN));
+			for (Map<String, String> row : dataRows) {
+				if (row.containsKey(var)) {
+					var = row.get(var);
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				throw new RuntimeException("No variable binding for '"+var+"' found");
+			}
+			sb.append(var);
+			sb.append(value.substring(value.indexOf(VARIABLE_END_TOKEN)+VARIABLE_END_TOKEN.length()));
+			value = sb.toString();
+		}
+		return value;
+	}
+
+	/**
+	 * <p>
+	 * Specifies the syntax of a variable declaration. By default
+	 * <code>${</code> is used as a start token while <code>}</code> is used
+	 * to mark the end of a variable declaration.
+	 * </p>
+	 * @param startToken The starting characters of a variable declaration
+	 * @param endToken The end characters of a variable declaration
+	 */
+	public void setVariableStartToken(String startToken, String endToken) {
+		if (startToken == null || "".equals(startToken)) {
+			throw new IllegalArgumentException("Invalid start token for a variable found");
+		}
+		if (endToken == null || "".equals(endToken)) {
+			throw new IllegalArgumentException("Invalid end token for a variable found");
+		}
+		VARIABLE_START_TOKEN = startToken;
+		VARIABLE_END_TOKEN = endToken;
 	}
 }
