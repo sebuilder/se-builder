@@ -12,7 +12,7 @@ function testMethodName(testName) {
 
 notOperator = function() {
   return "not ";
-}
+};
 
 string = function(value) {
   value = value.replace(/\\/g, '\\\\');
@@ -26,7 +26,7 @@ string = function(value) {
     }
   }
   return (unicode ? 'u' : '') + '"' + value + '"';
-}
+};
 
 function assertTrue(expression) {
   return "self.failUnless(" + expression.toString() + ")";
@@ -74,27 +74,27 @@ function assertOrVerifyFailure(line, isAssert) {
 
 Equals.prototype.toString = function() {
   return this.e1.toString() + " == " + this.e2.toString();
-}
+};
 
 Equals.prototype.assert = function() {
   return "self.assertEqual(" + this.e1.toString() + ", " + this.e2.toString() + ")";
-}
+};
 
 Equals.prototype.verify = function() {
   return verify(this.assert());
-}
+};
 
 NotEquals.prototype.toString = function() {
   return this.e1.toString() + " != " + this.e2.toString();
-}
+};
 
 NotEquals.prototype.assert = function() {
   return "self.assertNotEqual(" + this.e1.toString() + ", " + this.e2.toString() + ")";
-}
+};
 
 NotEquals.prototype.verify = function() {
   return verify(this.assert());
-}
+};
 
 RegexpMatch.prototype.toString = function() {
   var str = this.pattern;
@@ -107,14 +107,14 @@ RegexpMatch.prototype.toString = function() {
     str = 'r"' + str + '"';
   }
   return "re.search(" + str + ", " + this.expression + ")";
-}
+};
 
 function pause(milliseconds) {
   return "time.sleep(" + (parseInt(milliseconds) / 1000) + ")";
 }
 
 function echo(message) {
-  return "print(" + xlateArgument(message) + ")"
+  return "print(" + xlateArgument(message) + ")";
 }
 
 function statement(expression) {
@@ -153,7 +153,7 @@ CallSelenium.prototype.toString = function() {
   }
   result += ')';
   return result;
-}
+};
 
 function formatComment(comment) {
   return comment.comment.replace(/.+/mg, function(str) {

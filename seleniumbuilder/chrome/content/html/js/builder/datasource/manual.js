@@ -96,7 +96,7 @@ builder.datasource.manual.makeKVEntry = function(i, k, v) {
       delete builder.datasource.manual.config[k];
     }}, "X"))
   );
-}
+};
 
 builder.datasource.manual.hideConfigDialog = function() {
   jQuery(builder.datasource.manual.dialog).remove();

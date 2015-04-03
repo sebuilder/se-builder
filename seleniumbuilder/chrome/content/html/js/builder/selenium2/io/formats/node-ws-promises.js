@@ -31,7 +31,7 @@ builder.selenium2.io.addLangFormatter({
     "clickElement":
       ".elementBy{locatorBy}({locator}).click()\n",
     "setElementText":
-      ".elementBy{locatorBy}({locator}).clear().type({text})\n" +
+      ".elementBy{locatorBy}({locator}).clear().type({text})\n",
     "doubleClickElement":
       ".elementBy{locatorBy}({locator}).moveTo(0, 0).doubleClick()\n",
     "mouseOverElement":
@@ -41,7 +41,7 @@ builder.selenium2.io.addLangFormatter({
     "releaseElement":
       ".elementBy{locatorBy}({locator}).moveTo(0, 0).buttonUp()\n",
     "sendKeysToElement":
-      ".elementBy{locatorBy}({locator}).type({text})\n" +
+      ".elementBy{locatorBy}({locator}).type({text})\n" ,
     "setElementSelected":
       ".elementBy{locatorBy}({locator})\n" +
       ".then(function (el) { b.isSelected(el)\n" +
@@ -96,7 +96,7 @@ builder.selenium2.io.addLangFormatter({
     "submitElement":
       ".elementBy{locatorBy}({locator}).submit(el)\n",
     "assertTextPresent":
-      ".elementByTagName('html').text().should.eventually.include({text})\n"
+      ".elementByTagName('html').text().should.eventually.include({text})\n",
     "verifyTextPresent":
       ".elementByTagName('html').text().should.eventually.include({text})\n",
     "waitForTextPresent":

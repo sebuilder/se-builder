@@ -133,7 +133,7 @@ builder.registerPostLoadHook(function() {
   });
   
   builder.suite.addScriptChangeListener(function() {
-    if (builder.getScript() == null) { return; }
+    if (builder.getScript() === null) { return; }
     var script = builder.getScript();
     if (script.seleniumVersion == builder.selenium1) {
       builder.gui.menu.hideItem('script-settings');
@@ -148,7 +148,7 @@ builder.registerPostLoadHook(function() {
     
     jQuery('#script-discard').html(builder.suite.getNumberOfScripts() > 1 ? _t('menu_discard_suite') : _t('menu_discard'));
     
-    if (script.path == null) {
+    if (script.path === null) {
       jQuery('#script-save').show().html(_t('menu_save'));
       jQuery('#script-save-as-li').hide();
     } else if (script.path.where == 'local') {

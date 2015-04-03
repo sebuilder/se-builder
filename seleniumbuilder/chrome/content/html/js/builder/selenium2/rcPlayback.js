@@ -84,7 +84,7 @@ builder.selenium2.rcPlayback.getVars = function(r, callback) {
 };
 
 builder.selenium2.rcPlayback.setVar = function(r, k, v, callback) {
-  if (v == null) {
+  if (v === null) {
     delete r.vars[k];
   } else {
     r.vars[k] = v;
@@ -98,13 +98,14 @@ builder.selenium2.rcPlayback.isRunning = function() {
 
 builder.selenium2.rcPlayback.runReusing = function(r, postRunCallback, jobStartedCallback, stepStateCallback, initialVars, pausedCallback, preserveRunSession) {
   var settings = {hostPort:r.hostPort, browserstring:r.browserstring};
+  var k;
   var r2 = builder.selenium2.rcPlayback.makeRun(settings, builder.getScript(), postRunCallback, jobStartedCallback, stepStateCallback, initialVars, pausedCallback, preserveRunSession);
   r2.vars = {};
-  for (var k in r.vars) {
+  for (k in r.vars) {
     r2.vars[k] = r.vars[k];
   }
   if (initialVars) {
-    for (var k in initialVars) {
+    for (k in initialVars) {
       r2.vars[k] = initialVars[k];
     }
   }
@@ -132,7 +133,7 @@ builder.selenium2.rcPlayback.run = function(settings, postRunCallback, jobStarte
   
   var name = _t('sel2_untitled_run');
   if (r.script.path) {
-    var name = r.script.path.path.split("/");
+    name = r.script.path.path.split("/");
     name = name[name.length - 1];
     name = name.split(".")[0];
   }
@@ -167,7 +168,7 @@ builder.selenium2.rcPlayback.run = function(settings, postRunCallback, jobStarte
 builder.selenium2.rcPlayback.fixServerResponse = function(t) {
   var i = 0;
   for (; i < t.length; i++) {
-    if (t.charCodeAt(i) == 0) {
+    if (t.charCodeAt(i) === 0) {
       break;
     }
   }
@@ -177,7 +178,7 @@ builder.selenium2.rcPlayback.fixServerResponse = function(t) {
 
 builder.selenium2.rcPlayback.parseServerResponse = function(t) {
   t = builder.selenium2.rcPlayback.fixServerResponse(t);
-  if (t.length == 0) {
+  if (t.length === 0) {
     return {};
   } else {
     // The response may be some JSON, or it may also be a HTML page.
@@ -358,7 +359,7 @@ builder.selenium2.rcPlayback.param = function(r, pName) {
     var ch = text.substring(i, i + 1);
     if (insideVar) {
       if (ch == "}") {
-        if (r.vars[varName] == undefined) {
+        if (r.vars[varName] === undefined) {
           throw "Variable not set: " + varName + ".";
         }
         output += r.vars[varName];

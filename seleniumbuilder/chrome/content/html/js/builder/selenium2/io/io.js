@@ -14,7 +14,8 @@ builder.selenium2.io.parseScript = function(text, path) {
   
   var known_unknowns = [];
   var ko_string = "";
-  for (var i = 0; i < scriptJSON.steps.length; i++) {
+  var i = 0;
+  for (i = 0; i < scriptJSON.steps.length; i++) {
     var typeName = scriptJSON.steps[i].type;
     if (!builder.selenium2.stepTypes[typeName] && known_unknowns.indexOf(typeName) == -1) {
       if (known_unknowns.length > 0) {
@@ -28,7 +29,7 @@ builder.selenium2.io.parseScript = function(text, path) {
     throw new Error(_t("sel1_no_command_found") + ": " + ko_string);
   }
   
-  for (var i = 0; i < scriptJSON.steps.length; i++) {
+  for (i = 0; i < scriptJSON.steps.length; i++) {
     script.steps.push(builder.stepFromJSON(scriptJSON.steps[i], builder.selenium2));
   }
   
@@ -52,7 +53,7 @@ builder.selenium2.io.jsonToLoc = function(jsonO) {
 
 builder.selenium2.io.loadScriptJSON = function(path) {
   var file = null;
-  if (path == null) {
+  if (path === null) {
     file = bridge.showFilePicker(window, _t('select_a_file'), 
                           Components.interfaces.nsIFilePicker.modeOpen,
                           bridge.Format.TEST_CASE_DIRECTORY_PREF,
@@ -89,7 +90,7 @@ builder.selenium2.io.saveScript = function(script, format, path, callback) {
 builder.selenium2.io.saveScriptWithParams = function(script, format, path, params) {
   try {
     var file = null;
-    if (path == null) {
+    if (path === null) {
       file = bridge.showFilePicker(window, _t('save_as'),
                             Components.interfaces.nsIFilePicker.modeSave,
                             bridge.Format.TEST_CASE_DIRECTORY_PREF,
@@ -98,7 +99,7 @@ builder.selenium2.io.saveScriptWithParams = function(script, format, path, param
     } else {
       file = bridge.SeFileUtils.getFile(path);
     }
-    if (file != null) {
+    if (file !== null) {
       var outputStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance( Components.interfaces.nsIFileOutputStream);
       outputStream.init(file, 0x02 | 0x08 | 0x20, 0644, 0);
       var converter = bridge.SeFileUtils.getUnicodeConverter('UTF-8');
@@ -109,7 +110,7 @@ builder.selenium2.io.saveScriptWithParams = function(script, format, path, param
         outputStream.write(fin, fin.length);
       }
       outputStream.close();
-      var path = {
+      path = {
         where: "local",
         path: file.path,
         format: format
@@ -137,18 +138,19 @@ builder.selenium2.io.isSaveFormat = function(format) {
 
 builder.selenium2.io.makeDoSubs = function(script, step, name, userParams, used_vars, lang_info) {
   var doSubs = function(line, extras) {
+	var k, j;
     if (extras) {
-      for (var k in extras) {
+      for (k in extras) {
         var v = doSubs(extras[k]);
         line = line.replace(new RegExp("\\{" + k + "\\}", "g"), v);
       }
     }
     line = line.replace(new RegExp("\\{stepTypeName\\}", "g"), step.type.name);
-    for (var k in userParams) {
+    for (k in userParams) {
       line = line.replace(new RegExp("\\{" + k + "\\}", "g"), userParams[k]);
     }
     var pNames = step.getParamNames();
-    for (var j = 0; j < pNames.length; j++) {
+    for (j = 0; j < pNames.length; j++) {
       if (step.type.getParamType(pNames[j]) == "locator") {
         line = line.replace(new RegExp("\\{" + pNames[j] + "\\}", "g"), lang_info.escapeValue(step.type, step[pNames[j]].getValue(), pNames[j]));
         line = line.replace(new RegExp("\\{" + pNames[j] + "By\\}", "g"), lang_info.locatorByForType(step.type, step[pNames[j]].getName(builder.selenium2), j + 1));
@@ -165,7 +167,7 @@ builder.selenium2.io.makeDoSubs = function(script, step, name, userParams, used_
       line = line.replace(new RegExp("\\{negNot\\}", "g"), "");
     }
     // Finally, sub in any lang_info keys required.
-    for (var k in lang_info) {
+    for (k in lang_info) {
       line = line.replace(new RegExp("\\{" + k + "\\}", "g"), lang_info[k]);
     }
     // Replace ${foo} with the necessary invocation of the variable, eg "String foo" or "var foo".
@@ -173,7 +175,7 @@ builder.selenium2.io.makeDoSubs = function(script, step, name, userParams, used_
     var hasDollar = false;
     var insideVar = false;
     var varName = "";
-    for (var j = 0; j < line.length; j++) {
+    for (j = 0; j < line.length; j++) {
       var ch = line.substring(j, j + 1);
       if (insideVar) {
         if (ch == "}") {
@@ -216,13 +218,14 @@ builder.selenium2.io.addLangFormatter = function(lang_info) {
 };
 
 builder.selenium2.io.addDerivedLangFormatter = function(original_name, lang_info_diff) {
+  var k;
   var original = builder.selenium2.io.lang_infos[original_name];
   if (original) {
     var new_info = {};
-    for (var k in original) {
+    for (k in original) {
       new_info[k] = original[k];
     }
-    for (var k in lang_info_diff) {
+    for (k in lang_info_diff) {
       new_info[k] = lang_info_diff[k];
     }
     builder.selenium2.io.addLangFormatter(new_info);
@@ -256,11 +259,12 @@ builder.selenium2.io.createLangFormatter = function(lang_info) {
     get_params: lang_info.get_params || null,
     format: function(script, name, userParams) {
       var t = "";
+      var k;
       var start = lang_info.start;
-      for (var k in lang_info) {
+      for (k in lang_info) {
         start = start.replace(new RegExp("\\{" + k + "\\}", "g"), lang_info[k]);
       }
-      for (var k in userParams) {
+      for (k in userParams) {
         start = start.replace(new RegExp("\\{" + k + "\\}", "g"), userParams[k]);
       }
       start = start.replace(/\{scriptName\}/g, name.substr(0, name.indexOf(".")));
@@ -303,10 +307,10 @@ builder.selenium2.io.createLangFormatter = function(lang_info) {
         }
       }
       var end = lang_info.end;
-      for (var k in lang_info) {
+      for (k in lang_info) {
         end = end.replace(new RegExp("\\{" + k + "\\}", "g"), lang_info[k]);
       }
-      for (var k in userParams) {
+      for (k in userParams) {
         end = end.replace(new RegExp("\\{" + k + "\\}", "g"), userParams[k]);
       }
       end = end.replace(/\{scriptName\}/g, name.substr(0, name.indexOf(".")));
@@ -360,7 +364,7 @@ function makeSuiteExportEntry(name, format, path) {
       return builder.selenium2.io.saveSuite(format, scripts, path);
     }
   };
-};
+}
 
 builder.selenium2.io.saveSuite = function(scripts, path) {
   return builder.selenium2.io.saveSuiteAsFormat(builder.selenium2.io.suiteFormats[0], scripts, path);
@@ -373,7 +377,7 @@ builder.selenium2.io.exportSuite = function(scripts, format) {
 builder.selenium2.io.saveSuiteAsFormat = function(format, scripts, path) {
   try {
     var file = null;
-    if (path == null) {
+    if (path === null) {
       file = bridge.showFilePicker(window, _t('save_as'),
                             Components.interfaces.nsIFilePicker.modeSave,
                             bridge.Format.TEST_CASE_DIRECTORY_PREF,
@@ -382,11 +386,11 @@ builder.selenium2.io.saveSuiteAsFormat = function(format, scripts, path) {
     } else {
       file = bridge.SeFileUtils.getFile(path.path);
     }
-    if (file != null) {
+    if (file !== null) {
       var outputStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance( Components.interfaces.nsIFileOutputStream);
       outputStream.init(file, 0x02 | 0x08 | 0x20, 0644, 0);
       var converter = bridge.SeFileUtils.getUnicodeConverter('UTF-8');
-      var path = { 'path': file.path, 'where': 'local', 'format': format };
+      path = { 'path': file.path, 'where': 'local', 'format': format };
       var text = converter.ConvertFromUnicode(format.format(scripts, path));
       outputStream.write(text, text.length);
       var fin = converter.Finish();
@@ -412,7 +416,7 @@ builder.selenium2.io.parseSuite = function(text, path, callback) {
     callback(null, _t('could_not_open_suite'));
     return;
   }
-  if (!suite.type || suite.type !== "suite" || !suite.scripts || suite.scripts.length == 0) {
+  if (!suite.type || suite.type !== "suite" || !suite.scripts || suite.scripts.length === 0) {
     callback(null, _t('could_not_open_suite'));
     return;
   }

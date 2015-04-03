@@ -525,7 +525,7 @@ builder.selenium1.playback.getVars = function() {
 };
 
 builder.selenium1.playback.setVar = function(k, v) {
-  if (v == null) {
+  if (v === null) {
     delete storedVars[k];
   } else {
     storedVars[k] = v;
@@ -533,12 +533,12 @@ builder.selenium1.playback.setVar = function(k, v) {
 };
 
 builder.selenium1.playback.hasPlaybackSession = function() {
-  return builder.selenium1.playback.script != null;
+  return builder.selenium1.playback.script !== null;
 };
 
 builder.selenium1.playback.isRunning = function() {
   return !builder.selenium1.playback.isPaused;
-}
+};
 
 /* Note: The callbacks are only used if there is not yet a playback session underway. Otherwise the callbacks from that session remain in place. */
 builder.selenium1.playback.continueTestBetween = function(start_step_id, end_step_id, thePostPlayCallback, jobStartedCallback, stepStateCallback, runPausedCallback) {
@@ -557,7 +557,7 @@ builder.selenium1.playback.continueTestBetween = function(start_step_id, end_ste
   } else {
     builder.selenium1.playback.runTestBetween(start_step_id, end_step_id, thePostPlayCallback, jobStartedCallback, stepStateCallback, runPausedCallback);
   }
-}
+};
 
 /**
  * Plays the current script from a particular step.
@@ -613,9 +613,9 @@ builder.selenium1.playback.runTestBetween = function(start_step_id, end_step_id,
     }
   }
   
-  if (builder.selenium1.playback.step_index == 0) {
+  if (builder.selenium1.playback.step_index === 0) {
     if (!builder.doShareSuiteState()) {
-      storedVars = new Object();
+      storedVars = {};
     }
     if (initialVars) {
       for (var k in initialVars) {

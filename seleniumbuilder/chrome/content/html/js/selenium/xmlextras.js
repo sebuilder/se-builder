@@ -18,9 +18,10 @@ function getDomDocumentPrefix() {
     try {
       // try to create the objects
       o = new ActiveXObject(prefixes[i] + ".DomDocument");
-      return getDomDocumentPrefix.prefix = prefixes[i];
+      getDomDocumentPrefix.prefix = prefixes[i];
+      return getDomDocumentPrefix.prefix;
     }
-    catch (ex) {};
+    catch (ex) {}
   }
   
   throw new Error("Could not find an installed XML parser");
@@ -36,9 +37,10 @@ function getXmlHttpPrefix() {
     try {
       // try to create the objects
       o = new ActiveXObject(prefixes[i] + ".XmlHttp");
-      return getXmlHttpPrefix.prefix = prefixes[i];
+      getXmlHttpPrefix.prefix = prefixes[i];
+      return getXmlHttpPrefix.prefix;
     }
-    catch (ex) {};
+    catch (ex) {}
   }
   
   throw new Error("Could not find an installed XML parser");
@@ -59,7 +61,7 @@ XmlHttp.create = function () {
       
       // some versions of Moz do not support the readyState property
       // and the onreadystate event so we patch it!
-      if (req.readyState == null) {
+      if (req.readyState === null) {
         req.readyState = 1;
         req.addEventListener("load", function () {
           req.readyState = 4;
@@ -90,7 +92,7 @@ XmlDocument.create = function () {
       
       // some versions of Moz do not support the readyState property
       // and the onreadystate event so we patch it!
-      if (doc.readyState == null) {
+      if (doc.readyState === null) {
         doc.readyState = 1;
         doc.addEventListener("load", function () {
           doc.readyState = 4;

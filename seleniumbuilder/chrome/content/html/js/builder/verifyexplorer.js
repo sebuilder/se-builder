@@ -139,7 +139,7 @@ builder.VerifyExplorer.prototype = {
       }
       return;
     }
-    if (e.target.textContent != "") {
+    if (e.target.textContent !== "") {
       var text = this.seleniumVersion == builder.selenium2 ? getCorrectCaseText(e.target) : e.target.textContent;
       if (text.length > 200) {
         var nextSpace = text.indexOf(' ', 200);

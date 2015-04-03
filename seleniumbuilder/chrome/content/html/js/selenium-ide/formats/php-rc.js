@@ -61,7 +61,7 @@ function assertOrVerifyFailure(line, isAssert) {
         line + "\n" +
         failStatement + "\n" +
         "} catch (Exception $e) {}\n";
-};
+}
 
 Equals.prototype.toString = function() {
     return this.e1.toString() + " == " + this.e2.toString();
@@ -97,15 +97,15 @@ RegexpNotMatch.prototype.toString = function() {
 
 function pause(milliseconds) {
     return "sleep(" + (parseInt(milliseconds) / 1000) + ");";
-};
+}
 
 function echo(message) {
     return "print(" + xlateArgument(message) + ' . "\\n");';
-};
+}
 
 function statement(expression) {
     return expression.toString() + ';';
-};
+}
 
 function array(value) {
     var str = 'array(';
@@ -115,11 +115,11 @@ function array(value) {
     }
     str += ')';
     return str;
-};
+}
 
 function nonBreakingSpace() {
     return "\"\\xa0\"";
-};
+}
 
 CallSelenium.prototype.toString = function() {
     var result = '';

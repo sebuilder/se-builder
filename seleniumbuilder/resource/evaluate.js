@@ -17,10 +17,10 @@ limitations under the License.
 
 (function() {
   var handleEvaluateEvent = function(event) {
-    var script = document.__webdriver_evaluate['script'];
-    var args = document.__webdriver_evaluate['args'];
-    var isAsync = document.__webdriver_evaluate['async'];
-    var timeout = document.__webdriver_evaluate['timeout'];
+    var script = document.__webdriver_evaluate.script;
+    var args = document.__webdriver_evaluate.args;
+    var isAsync = document.__webdriver_evaluate.async;
+    var timeout = document.__webdriver_evaluate.timeout;
     var timeoutId;
 
     function sendResponse(value, status) {
@@ -29,14 +29,14 @@ limitations under the License.
         window.removeEventListener('unload', onunload, false);
       }
 
-      document.__webdriver_evaluate['args'] = null;
-      document.__webdriver_evaluate['async'] = null;
-      document.__webdriver_evaluate['script'] = null;
-      document.__webdriver_evaluate['timeout'] = null;
+      document.__webdriver_evaluate.args = null;
+      document.__webdriver_evaluate.async = null;
+      document.__webdriver_evaluate.script = null;
+      document.__webdriver_evaluate.timeout = null;
 
       // Respond
-      document.__webdriver_evaluate['result'] = value;
-      document.__webdriver_evaluate['code'] = status;
+      document.__webdriver_evaluate.result = value;
+      document.__webdriver_evaluate.code = status;
 
       var response = document.createEvent('Events');
       response.initEvent('webdriver-evaluate-response', true, false);

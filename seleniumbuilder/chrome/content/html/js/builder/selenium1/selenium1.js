@@ -28,7 +28,7 @@ builder.selenium1.StepType.prototype = {
   getParamType: function(paramName) {
     if (paramName == "optionLocator") { return "string"; }
     if ({"selectFrame": 1, "selectFrameAndWait": 1}[this.name]) {
-      return "string"
+      return "string";
     }
     if (paramName == "optionLocator") { return "string"; }
     return paramName.toLowerCase().indexOf("locator") == -1 ? "string" : "locator";

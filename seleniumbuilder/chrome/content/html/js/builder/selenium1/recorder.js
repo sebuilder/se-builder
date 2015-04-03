@@ -192,6 +192,7 @@ builder.selenium1.Recorder.prototype = {
     }
     
     // Selecting
+    var frame, lastTarget;
     if (e.target.type === 'select' || e.target.type === 'select-one') {
       // Replace a click with a select
       if (lastStep && this.isTypeOrClickInSamePlace(lastStep, locator)) {
@@ -203,9 +204,9 @@ builder.selenium1.Recorder.prototype = {
       // Deduplicate selects, as we only need the final state of a sequence of selects.
       // Also, sometimes Firefox issues multiple select events.
       if (lastStep && lastStep.type === builder.selenium1.stepTypes.select) {
-        var frame = findFrame(e.target.ownerDocument);
+        frame = findFrame(e.target.ownerDocument);
         if (frame) {
-          var lastTarget = new MozillaBrowserBot(frame).findElementBy("xpath",
+          lastTarget = new MozillaBrowserBot(frame).findElementBy("xpath",
               lastStep.selectLocator.getValueForMethod(builder.locator.methods.xpath), frame.document, frame);
           if (lastTarget === e.target) {
             lastStep.selectLocator = e.target.options[e.target.selectedIndex].text;
@@ -226,9 +227,9 @@ builder.selenium1.Recorder.prototype = {
       // See if the check is already reported, and if yes, bail. Firefox does multiple events
       // when you select a radio button using a keyboard, so we have to deduplicate.
       if (lastStep && lastStep.type === builder.selenium1.stepTypes.check) {
-        var frame = this.findFrame(e.target.ownerDocument);
+        frame = this.findFrame(e.target.ownerDocument);
         if (frame) {
-          var lastTarget = new MozillaBrowserBot(frame).findElementBy("xpath",
+          lastTarget = new MozillaBrowserBot(frame).findElementBy("xpath",
               lastStep.locator.getValueForMethod(builder.locator.methods.xpath), frame.document, frame);
           if (lastTarget === e.target) {
             return;

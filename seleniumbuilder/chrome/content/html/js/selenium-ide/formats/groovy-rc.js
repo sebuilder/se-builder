@@ -53,9 +53,8 @@ function assignToVariable(type, variable, expression) {
 }
 
 function ifCondition(expression, callback) {
-    return 'if (' + expression.toString() + ") {\n"
-        + indents(1) + callback() + "\n"
-        + '}';
+    return ['if (' , expression.toString() , ") {\n",
+         indents(1) , callback() , "\n", '}'].join('');
 }
 
 function joinExpression(expression) {
@@ -63,50 +62,45 @@ function joinExpression(expression) {
 }
 
 function waitFor(expression) {
-    return "waitFor {\n"
-        + indents(1) + expression.toString() + "\n"
-        + '}';
+    return ["waitFor {\n", indents(1), expression.toString(), "\n", '}'].join('');
 }
 
 function assertOrVerifyFailure(line, isAssert) {
     var message = '"expected failure"';
     var failStatement = "fail(" + message + ")";
-    return "try {\n"
-        + indents(1) + line + "\n"
-        + indents(1) + failStatement + "\n"
-        + "}\n"
-        + 'catch (e) {}';
+    return ["try {\n", indents(1), line, "\n",
+        indents(1), failStatement, "\n", "}\n", 'catch (e) {}'].join('');
 }
 
 Equals.prototype.toString = function() {
     if (this.e1.toString().match(/^\d+$/)) {
         // int
-        return this.e1.toString() + " == " + this.e2.toString();
+        return this.e1.toString() + " === " + this.e2.toString();
     } else {
         // string
         return this.e1.toString() + ".equals(" + this.e2.toString() + ")";
     }
-}
+};
 
 Equals.prototype.assert = function() {
     return "assertEquals(" + this.e1.toString() + ", " + this.e2.toString() + ")";
-}
+};
 
 Equals.prototype.verify = function() {
     return "verifyEquals(" + this.e1.toString() + ", " + this.e2.toString() + ")";
-}
+};
 
 NotEquals.prototype.toString = function() {
     return "! " + this.e1.toString() + ".equals(" + this.e2.toString() + ")";
-}
+};
 
 NotEquals.prototype.assert = function() {
     return "assertNotEquals(" + this.e1.toString() + ", " + this.e2.toString() + ")";
-}
+};
 
 NotEquals.prototype.verify = function() {
     return "verifyNotEquals(" + this.e1.toString() + ", " + this.e2.toString() + ")";
-}
+};
 
 RegexpMatch.prototype.toString = function() {
     if (this.pattern.match(/^\^/) && this.pattern.match(/\$$/)) {
@@ -114,7 +108,7 @@ RegexpMatch.prototype.toString = function() {
     } else {
         return "(" + string(this.pattern) + " =~ " + this.expression + ").find()";
     }
-}
+};
 
 function pause(milliseconds) {
     return "sleep(" + parseInt(milliseconds) + ")";
@@ -165,7 +159,7 @@ CallSelenium.prototype.toString = function() {
     
     result += ')';
     return result;
-}
+};
 
 function formatComment(comment) {
     return comment.comment.replace(/.+/mg, function(str) {
@@ -184,37 +178,36 @@ this.options = {
 
 options.getHeader = function() {
     var timeout = options['global.timeout'] || '30000';
-    return "package ${packageName}\n"
-        + "\n"
-        + "import com.thoughtworks.selenium.*\n"
-        + "\n"
-        + "class ${className} extends ${superClass} {\n\n" 
-        + indents(1) + "@Override\n"
-        + indents(1) + "void setUp() throws Exception {\n"
-        + indents(2) + "super.setUp('${baseURL}', '${environment}')\n"
-        + indents(2) + "setDefaultTimeout(" + timeout + ")\n"
-        + indents(2) + "setCaptureScreenshotOnFailure(false)\n"
-        + indents(1) + "}\n\n"
-        + indents(1) + "void ${methodName}() throws Exception {\n";
-}
+    return ["package ${packageName}\n",
+        "\n",
+        "import com.thoughtworks.selenium.*\n",
+        "\n",
+        "class ${className} extends ${superClass} {\n\n" ,
+        indents(1), "@Override\n",
+        indents(1), "void setUp() throws Exception {\n",
+        indents(2), "super.setUp('${baseURL}', '${environment}')\n",
+        indents(2), "setDefaultTimeout(", timeout, ")\n",
+        indents(2), "setCaptureScreenshotOnFailure(false)\n",
+        indents(1), "}\n\n",
+        indents(1), "void ${methodName}() throws Exception {\n"].join('');
+};
 
-options.footer = indents(1) + "}\n"
-    + "}\n";
+options.footer = [indents(1), "}\n", "}\n"].join('');
 
 this.configForm = 
-  '<description>Variable for Selenium instance</description>' +
-  '<textbox id="options_receiver" />' +
-  '<description>Environment</description>' +
-  '<textbox id="options_environment" />' +
-  '<description>Package</description>' +
-  '<textbox id="options_packageName" />' +
-  '<description>Superclass</description>' +
-  '<textbox id="options_superClass" />' +
-    '<description>Indent</description>' +
-    '<menulist id="options_indent"><menupopup>' +
-    '<menuitem label="Tab" value="tab" />' +
-    '<menuitem label="2 spaces" value="2" />' +
-    '<menuitem label="4 spaces" value="4" />' +
-    '<menuitem label="8 spaces" value="8" />' +
-    '</menupopup></menulist>';
+  ['<description>Variable for Selenium instance</description>',
+  '<textbox id="options_receiver" />',
+  '<description>Environment</description>',
+  '<textbox id="options_environment" />',
+  '<description>Package</description>',
+  '<textbox id="options_packageName" />',
+  '<description>Superclass</description>',
+  '<textbox id="options_superClass" />',
+    '<description>Indent</description>',
+    '<menulist id="options_indent"><menupopup>',
+    '<menuitem label="Tab" value="tab" />',
+    '<menuitem label="2 spaces" value="2" />',
+    '<menuitem label="4 spaces" value="4" />',
+    '<menuitem label="8 spaces" value="8" />',
+    '</menupopup></menulist>'].join('');
 

@@ -1,26 +1,28 @@
+/*global*/
+/*jshint strict:true*/
 // test exporters with SuaceLabs
 
-var assert = require('assert')
-  , convert = require('../tools/convert')
-  , Log = require('coloured-log')
-  , log = new Log(Log.DEBUG)
-  , vm = require("vm")
-  , fs = require('fs')
-  , wd = require('wd')
-  , _ = require('underscore')
-  , q = require('q')
-  , path = require('path')
-  , uuid = require('uuid-js')
-  , request = require('request')
-  , rqst = request.defaults({jar: false})
-  , platforms = [
+var assert = require('assert'),
+  convert = require('../tools/convert'),
+  Log = require('coloured-log'),
+  log = new Log(Log.DEBUG),
+  vm = require("vm"),
+  fs = require('fs'),
+  wd = require('wd'),
+  _ = require('underscore'),
+  q = require('q'),
+  path = require('path'),
+  uuid = require('uuid-js'),
+  request = require('request'),
+  rqst = request.defaults({jar: false}),
+  platforms = [
     { browserName: "firefox", platform: "VISTA" },
     { browserName: "chrome", platform: "Linux" },
     { browserName: "iexplore", platform: "Windows 2008" }
-  ]
-  , login = process.env.SAUCE_USERNAME
-  , accessKey = process.env.SAUCE_ACCESS_KEY
-  , buildId = process.env.TRAVIS_JOB_ID || Math.random().toString(36).slice(2);
+  ],
+  login = process.env.SAUCE_USERNAME,
+  accessKey = process.env.SAUCE_ACCESS_KEY,
+  buildId = process.env.TRAVIS_JOB_ID || Math.random().toString(36).slice(2);
 
 log.info("Testing if exporters really work with Selenium & Sauce Labs");
 
@@ -32,12 +34,14 @@ if (process.env.TRAVIS_PULL_REQUEST !== false) {
 var exporters = ["node-wd"];
 
 var SauceStatus = function(user, key) {
+  "use strict";
   this.user = user;
   this.key = key;
   this.baseUrl = ["https://", this.user, ':', this.key, '@saucelabs.com', '/rest/v1/', this.user].join("");
 };
 
 SauceStatus.prototype.passed = function(jobid, status, callback) {
+  "use strict";
   var _body = JSON.stringify({
     "passed": status
   }),
@@ -57,6 +61,7 @@ SauceStatus.prototype.passed = function(jobid, status, callback) {
 
 var sauceStatus = new SauceStatus(login, accessKey);
 var testExporter = function(exporter, testFile) {
+  "use strict";
   assert.doesNotThrow(function(){
     _.each(platforms, function (caps) {
       caps = _.clone(caps);

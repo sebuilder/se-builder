@@ -27,7 +27,7 @@ builder.Script.prototype = {
     return index == -1 ? null : this.steps[index];
   },
   getLastStep: function() {
-    return this.steps.length == 0 ? null : this.steps[this.steps.length - 1];
+    return this.steps.length === 0 ? null : this.steps[this.steps.length - 1];
   },
   getStepBefore: function(step) {
     var index = this.getStepIndexForID(step.id);

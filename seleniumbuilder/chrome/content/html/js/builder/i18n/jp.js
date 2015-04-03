@@ -12,7 +12,7 @@ m.new_locale_after_restart = "再起動後に言語が変わります";
 // Startup view
 m.open_script_or_suite = "スクリプトかスイートを開く";
 m.view_command_table = "Selenium1と2でサポートされているコマンドの表示";
-m.manage_plugins = "プラグイン管理"
+m.manage_plugins = "プラグイン管理";
 m.start_recording_at = "記録の開始";
 m.cookie_warning = "記録しているすべてのCookieを削除します。";
 

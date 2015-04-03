@@ -34,7 +34,7 @@ function Log(category) {
     this.level = level;
     this.name = name;
     var self = this;
-    log[name.toLowerCase()] = function(msg) { log.log(self, msg) };
+    log[name.toLowerCase()] = function(msg) { log.log(self, msg); };
   }
 
   this.DEBUG = new LogLevel(1, "DEBUG");
@@ -49,7 +49,7 @@ function Log(category) {
                       this._formatDate(new Date()) + " " +
             self.category + ": " + msg);
     }
-  }
+  };
 }
 
 Log.prototype = {
@@ -84,11 +84,11 @@ Log.prototype = {
     _write: function(message) {
         var consoleService = Components.classes["@mozilla.org/consoleservice;1"]
         .getService(Components.interfaces.nsIConsoleService);
-        if (consoleService != null) {
+        if (consoleService !== null) {
             consoleService.logStringMessage(message);
         }
     }
-}
+};
 
 function showFilePicker(window, title, mode, defaultDirPrefName, handler, defaultFileName) {
   var nsIFilePicker = Components.interfaces.nsIFilePicker;
@@ -129,7 +129,7 @@ function openTabOrWindow(url)
 }
 
 function exactMatchPattern(string) {
-  if (string != null && (string.match(/^\w*:/) || string.indexOf('?') >= 0 || string.indexOf('*') >= 0)) {
+  if (string !== null && (string.match(/^\w*:/) || string.indexOf('?') >= 0 || string.indexOf('*') >= 0)) {
     return "exact:" + string;
   } else {
     return string;
@@ -149,7 +149,7 @@ LineReader.prototype.read = function() {
   } else {
     return null;
   }
-}
+};
 
 var StringUtils = {};
 
@@ -157,11 +157,11 @@ StringUtils.underscore = function(text) {
   return text.replace(/[A-Z]/g, function(str) {
       return '_' + str.toLowerCase();
     });
-}
+};
 
 String.prototype.startsWith = function(str) {
-  return (this.match("^" + str) == str)
-}
+  return (this.match("^" + str) == str);
+};
 
 function Message(key, arg) {
     var strings = window.document.getElementById("strings");
@@ -226,18 +226,18 @@ Array.prototype["delete"] = function(value) {
         }
     }
     return false;
-}
+};
 
 function observable(clazz) {
     clazz.prototype.addObserver = function(observer) {
         if (!this.observers) this.observers = [];
         this.observers.push(observer);
-    }
+    };
 
     clazz.prototype.removeObserver = function(observer) {
         if (!this.observers) return;
         this.observers["delete"](observer);
-    }
+    };
 
     clazz.prototype.notify = function(event) {
         if (this.log) {
@@ -248,13 +248,13 @@ function observable(clazz) {
         for (var i = 1; i < arguments.length; i++) {
             args.push(arguments[i]);
         }
-        for (var i = 0; i < this.observers.length; i++) {
+        for (i = 0; i < this.observers.length; i++) {
             var observer = this.observers[i];
             if (observer[event]) {
                 observer[event].apply(observer, args);
             }
         }
-    }
+    };
 }
 
 function defineEnum(clazz, names) {

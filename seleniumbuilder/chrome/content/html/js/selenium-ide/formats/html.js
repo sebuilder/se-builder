@@ -19,7 +19,7 @@ for (var code in XhtmlEntityFromChars) {
 XhtmlEntityChars += "]";
 
 function decodeText(text) {
-    if (text == null) return "";
+    if (text === null) return "";
   text = text.replace(/<br\s*\/?>/gi, "\n");
     text = text.replace(/&(\w+);/g, function(str, p1) {
             var c = XhtmlEntities[p1];
@@ -49,7 +49,7 @@ function decodeText(text) {
 }
 
 function encodeText(text) {
-    if (text == null) return "";
+    if (text === null) return "";
     // & -> &amp;
     // &amp; -> &amp;amp;
     // &quot; -> &amp;quot;
@@ -97,10 +97,8 @@ function parse(testCase, source) {
   var commandRegexp = new RegExp(options.commandLoadPattern, 'i');
   var commentRegexp = new RegExp(options.commentLoadPattern, 'i');
   var commandOrCommentRegexp = new RegExp("((" + options.commandLoadPattern + ")|(" + options.commentLoadPattern + "))", 'ig');
-  var doc = source;
-  var commands = [];
-  var commandFound = false;
-  var lastIndex;
+  var doc = source, commands = [], commandFound = false;
+  var result, lastIndex;
   while (true) {
     //log.debug("doc=" + doc + ", commandRegexp=" + commandRegexp);
     lastIndex = commandOrCommentRegexp.lastIndex;
@@ -110,7 +108,7 @@ function parse(testCase, source) {
         var command = new Command();
         command.skip = docResult.index - lastIndex;
         command.index = docResult.index;
-        var result = commandRegexp.exec(doc.substring(lastIndex));
+        result = commandRegexp.exec(doc.substring(lastIndex));
         eval(options.commandLoadScript);
         convertText(command, decodeText);
         commands.push(command);
@@ -129,7 +127,7 @@ function parse(testCase, source) {
         var comment = new Comment();
         comment.skip = docResult.index - lastIndex;
         comment.index = docResult.index;
-        var result = commentRegexp.exec(doc.substring(lastIndex));
+        result = commentRegexp.exec(doc.substring(lastIndex));
         eval(options.commentLoadScript);
         commands.push(comment);
       }
@@ -169,7 +167,7 @@ function getSourceForCommand(commandObj) {
   var text = template.replace(/\$\{([a-zA-Z0-9_\.]+)\}/g, 
         function(str, p1, offset, s) {
             result = eval(p1);
-            return result != null ? result : '';
+            return result !== null ? result : '';
         });
   return text;
 }
@@ -205,12 +203,11 @@ function format(testCase, name, saveHeaderAndFooter, useDefaultHeaderAndFooter) 
   var i;
   
   for (i = 0; i < testCase.commands.length; i++) {
-    var text = getSourceForCommand(testCase.commands[i]);
+    text = getSourceForCommand(testCase.commands[i]);
     commandsText = commandsText + text;
   }
-  
-  var testText;
-  if (testCase.header == null || testCase.footer == null || useDefaultHeaderAndFooter) {
+
+  if (testCase.header === null || testCase.footer === null || useDefaultHeaderAndFooter) {
     testText = options.testTemplate;
     testText = testText.replace(/\$\{name\}/g, name);
     var encoding = options["global.encoding"];

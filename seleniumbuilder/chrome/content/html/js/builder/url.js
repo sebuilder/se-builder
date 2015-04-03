@@ -38,7 +38,7 @@ builder.Url.prototype = {
     if (!this.base) { return null; }
 
     var attempt = this.base.replace(this.server(), "");
-    if (attempt.indexOf('/') != 0) {
+    if (attempt.indexOf('/') !== 0) {
       attempt = "/" + attempt;
     }
     return attempt;

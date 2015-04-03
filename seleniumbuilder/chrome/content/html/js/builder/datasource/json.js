@@ -23,7 +23,7 @@ builder.datasource.json.fetchRows = function(config, script, callback, failure) 
             callback(JSON.parse(result.text));
           } else {
             // Local absolute path
-            var result = null;
+            result = null;
             try {
               result = JSON.parse(bridge.readPath(config.path));
             } catch (e) {

@@ -23,13 +23,13 @@ builder.datasource.csv.fetchRows = function(config, script, callback, failure) {
             callback(parseCSV(result.text));
           } else {
             // Local absolute path
-            var result = null;
+            result = null;
             try {
               result = parseCSV(bridge.readPath(config.path));
             } catch (e) {
               failure(_t('unable_to_load_file', config.path));
             }
-            if (result != null) { callback(result); }
+            if (result !== null) { callback(result); }
           }
         });
       }
@@ -41,7 +41,7 @@ builder.datasource.csv.fetchRows = function(config, script, callback, failure) {
     } catch (e) {
       failure(_t('unable_to_load_file', config.path));
     }
-    if (result != null) { callback(result); }
+    if (result !== null) { callback(result); }
   }
 };
 

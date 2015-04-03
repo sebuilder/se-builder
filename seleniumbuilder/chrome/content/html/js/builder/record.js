@@ -94,7 +94,7 @@ builder.record.continueRecording = function(insertionIndex) {
     jQuery('#record-do-mouseovers-div').hide();
   }
   
-  if (insertionIndex != undefined) {
+  if (insertionIndex !== undefined) {
     builder.record.insertionIndex = insertionIndex;
   }
   

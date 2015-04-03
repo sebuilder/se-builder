@@ -66,27 +66,27 @@ Equals.prototype.toString = function() {
         // string
       return this.e1.toString() + ".equals(" + this.e2.toString() + ")";
     }
-}
+};
 
 Equals.prototype.assert = function() {
   return "assertEquals(" + this.e1.toString() + ", " + this.e2.toString() + ");";
-}
+};
 
 Equals.prototype.verify = function() {
   return "verifyEquals(" + this.e1.toString() + ", " + this.e2.toString() + ");";
-}
+};
 
 NotEquals.prototype.toString = function() {
   return "!" + this.e1.toString() + ".equals(" + this.e2.toString() + ")";
-}
+};
 
 NotEquals.prototype.assert = function() {
   return "assertNotEquals(" + this.e1.toString() + ", " + this.e2.toString() + ");";
-}
+};
 
 NotEquals.prototype.verify = function() {
   return "verifyNotEquals(" + this.e1.toString() + ", " + this.e2.toString() + ");";
-}
+};
 
 RegexpMatch.prototype.toString = function() {
   if (this.pattern.match(/^\^/) && this.pattern.match(/\$$/)) {
@@ -94,7 +94,7 @@ RegexpMatch.prototype.toString = function() {
   } else {
     return "Pattern.compile(" + string(this.pattern) + ").matcher(" + this.expression + ").find()";
   }
-}
+};
 
 function pause(milliseconds) {
   return "Thread.sleep(" + parseInt(milliseconds) + ");";
@@ -140,7 +140,7 @@ CallSelenium.prototype.toString = function() {
   }
   result += ')';
   return result;
-}
+};
 
 function formatComment(comment) {
   return comment.comment.replace(/.+/mg, function(str) {
@@ -158,27 +158,28 @@ function formatSuite(testSuite, filename) {
     var suiteClass = /^(\w+)/.exec(filename)[1];
     suiteClass = suiteClass[0].toUpperCase() + suiteClass.substring(1);
     
-    var formattedSuite = "import junit.framework.Test;\n"
-        + "import junit.framework.TestSuite;\n"
-        + "\n"
-        + "public class " + suiteClass + " {\n"
-        + "\n"
-        + indents(1) + "public static Test suite() {\n"
-        + indents(2) + "TestSuite suite = new TestSuite();\n";
+    var formattedSuite = ["import junit.framework.Test;\n",
+        "import junit.framework.TestSuite;\n",
+        "\n",
+        "public class ", suiteClass, " {\n",
+        "\n",
+        indents(1), "public static Test suite() {\n",
+        indents(2), "TestSuite suite = new TestSuite();\n"].join('');
         
     for (var i = 0; i < testSuite.tests.length; ++i) {
         var testClass = testSuite.tests[i].getTitle();
-        formattedSuite += indents(2)
-            + "suite.addTestSuite(" + testClass + ".class);\n";
+        formattedSuite += [indents(2),
+            "suite.addTestSuite(",
+            testClass, ".class);\n"].join('');
     }
 
-    formattedSuite += indents(2) + "return suite;\n"
-        + indents(1) + "}\n"
-        + "\n"
-        + indents(1) + "public static void main(String[] args) {\n"
-        + indents(2) + "junit.textui.TestRunner.run(suite());\n"
-        + indents(1) + "}\n"
-        + "}\n";
+    formattedSuite += [indents(2), "return suite;\n",
+        indents(1), "}\n",
+        "\n",
+        indents(1), "public static void main(String[] args) {\n",
+        indents(2), "junit.textui.TestRunner.run(suite());\n",
+        indents(1), "}\n",
+        "}\n"].join('');
     
     return formattedSuite;
 }
@@ -193,27 +194,25 @@ this.options = {
 };
 
 options.header =
-  "package ${packageName};\n" +
-  "\n" +
-  "import com.thoughtworks.selenium.*;\n" +
-  "import java.util.regex.Pattern;\n" +
-  "\n" +
-    "public class ${className} extends ${superClass} {\n" + 
-    "\tpublic void setUp() throws Exception {\n" +
-    '\t\tsetUp("${baseURL}", "${environment}");\n' +
-    "\t}\n" +
-    "\tpublic void ${methodName}() throws Exception {\n";
+  ["package ${packageName};\n",
+  "\n",
+  "import com.thoughtworks.selenium.*;\n",
+  "import java.util.regex.Pattern;\n",
+  "\n",
+    "public class ${className} extends ${superClass} {\n",
+    "\tpublic void setUp() throws Exception {\n",
+    '\t\tsetUp("${baseURL}", "${environment}");\n',
+    "\t}\n",
+    "\tpublic void ${methodName}() throws Exception {\n"].join('');
 
-options.footer =
-  "\t}\n" +
-  "}\n";
+options.footer =  "\t}\n" +  "}\n";
 
 this.configForm = 
-  '<description>Variable for Selenium instance</description>' +
-  '<textbox id="options_receiver" />' +
-  '<description>Environment</description>' +
-  '<textbox id="options_environment" />' +
-  '<description>Package</description>' +
-  '<textbox id="options_packageName" />' +
-  '<description>Superclass</description>' +
-  '<textbox id="options_superClass" />';
+  ['<description>Variable for Selenium instance</description>',
+  '<textbox id="options_receiver" />',
+  '<description>Environment</description>',
+  '<textbox id="options_environment" />',
+  '<description>Package</description>',
+  '<textbox id="options_packageName" />',
+  '<description>Superclass</description>',
+  '<textbox id="options_superClass" />'].join('');

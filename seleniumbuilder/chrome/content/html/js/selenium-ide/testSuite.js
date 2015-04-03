@@ -25,20 +25,20 @@ TestSuite.load = function() {
                           Components.interfaces.nsIFilePicker.modeOpen,
                           TestSuite.TEST_SUITE_DIRECTORY_PREF,
                           function(fp) { return TestSuite.loadFile(fp.file); });
-}
+};
 
 TestSuite.loadFile = function(file) {
     var suite = this.loadInputStream(SeFileUtils.openFileInputStream(file));
     suite.file = file;
     return suite;
-}
+};
 
 TestSuite.loadInputStream = function(input) {
     var content = SeFileUtils.getUnicodeConverter("UTF-8").ConvertToUnicode(input.read(input.available()));
     input.close();
     return this.loadString(content);
-}
-  
+};
+
 TestSuite.loadString = function(content) {
     if (/(<table[\s>][\s\S]*?<\/table>)/i.test(content)) {
         var suite = new TestSuite();
@@ -47,7 +47,7 @@ TestSuite.loadString = function(content) {
         var linkPattern = /<a\s[^>]*href=['"]([^'"]+)['"][^>]*>([\s\S]+)<\/a>/i;
         var rest = tableContent;
         var r;
-        while ((r = pattern.exec(rest)) != null) {
+        while ((r = pattern.exec(rest)) !== null) {
             var row = r[0];
             if (linkPattern.test(row)) {
                 var filename = decodeURIComponent(RegExp.$1);
@@ -58,12 +58,12 @@ TestSuite.loadString = function(content) {
         }
         return suite;
     } else {
-        throw "Failed to load test suite: <table> tag not found"
+        throw "Failed to load test suite: <table> tag not found";
     }
-}
+};
 
 // TODO make this configurable
-TestSuite.header = 
+TestSuite.header =
     '<?xml version="1.0" encoding="UTF-8"?>\n' +
     '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n' +
   '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">\n' +
@@ -73,7 +73,7 @@ TestSuite.header =
     "</head>\n" +
     "<body>\n";
 
-TestSuite.footer = 
+TestSuite.footer =
     "</body>\n</html>\n";
 
 TestSuite.prototype = {
@@ -130,7 +130,7 @@ TestSuite.prototype = {
     },
 
     generateNewTestCaseTitle: function() {
-        if (this.tests.some(function(test) { return /^Untitled/.test(test.getTitle()) })) {
+        if (this.tests.some(function(test) { return /^Untitled/.test(test.getTitle()); })) {
             var max = 1;
             this.tests.forEach(function(test) {
                     if (/^Untitled (\d+)/.test(test.getTitle())) {
@@ -142,23 +142,23 @@ TestSuite.prototype = {
             return "Untitled";
         }
     },
-    
+
     // return a shallow copy of testsuite
     createCopy: function() {
         var copy = new TestSuite();
-        for (prop in this) {
+        for (var prop in this) {
             copy[prop] = this[prop];
         }
         return copy;
     }
-}
+};
 
 TestSuite.TestCase = function(testSuite, filename, title) {
     this.testSuite = testSuite;
     this.filename = filename;
     this.title = title;
     this.testResult = null;
-}
+};
 
 TestSuite.TestCase.prototype = {
     getFile: function() {
@@ -194,7 +194,7 @@ TestSuite.TestCase.prototype = {
         for (var i = from.length - 1; i >= base; i--) {
             result.push("..");
         }
-        for (var i = base; i < to.length; i++) {
+        for (i = base; i < to.length; i++) {
             result.push(to[i]);
         }
         return result.join("/");
@@ -223,11 +223,11 @@ TestSuite.TestCase.prototype = {
             return this.title;
         }
     },
-    
+
     format: function() {
         return "<tr><td><a href=\"" + this.getRelativeFilePath() + "\">" +
             this.getTitle() + "</a></td></tr>\n";
     }
-}
+};
 
 observable(TestSuite);

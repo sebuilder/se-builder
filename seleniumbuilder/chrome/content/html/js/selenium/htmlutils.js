@@ -21,7 +21,7 @@
 function classCreate() {
     return function() {
       this.initialize.apply(this, arguments);
-    }
+    };
 }
 
 function objectExtend(destination, source) {
@@ -58,7 +58,7 @@ function fnBind() {
   var args = sel$A(arguments), __method = args.shift(), object = args.shift();
   var retval = function() {
     return __method.apply(object, args.concat(sel$A(arguments)));
-  }
+  };
   retval.__method = __method;
   return retval;
 }
@@ -67,7 +67,7 @@ function fnBindAsEventListener(fn, object) {
   var __method = fn;
   return function(event) {
     return __method.call(object, event || window.event);
-  }
+  };
 }
 
 function removeClassName(element, name) {
@@ -82,7 +82,7 @@ function addClassName(element, name) {
 function elementSetStyle(element, style) {
     for (var name in style) {
       var value = style[name];
-      if (value == null) value = "";
+      if (value === null) value = "";
       element.style[name] = value;
     }
 }
@@ -118,7 +118,7 @@ String.prototype.ucfirst = function() {
     return this.charAt(0).toUpperCase() + this.substr(1);
 };
 String.prototype.startsWith = function(str) {
-    return this.indexOf(str) == 0;
+    return this.indexOf(str) === 0;
 };
 
 /**
@@ -181,9 +181,10 @@ function getText(element) {
 }
 
 function getTextContent(element, preformatted) {
+	var text;
     if (element.style && (element.style.visibility == 'hidden' || element.style.display == 'none')) return '';
     if (element.nodeType == 3 /*Node.TEXT_NODE*/) {
-        var text = element.data;
+        text = element.data;
         if (!preformatted) {
             text = text.replace(/\n|\r|\t/g, " ");
         }
@@ -191,7 +192,7 @@ function getTextContent(element, preformatted) {
     }
     if (element.nodeType == 1 /*Node.ELEMENT_NODE*/ && element.nodeName != 'SCRIPT') {
         var childrenPreformatted = preformatted || (element.tagName == "PRE");
-        var text = "";
+        text = "";
         for (var i = 0; i < element.childNodes.length; i++) {
             var child = element.childNodes.item(i);
             text += getTextContent(child, childrenPreformatted);
@@ -262,9 +263,9 @@ function xmlDecode(text) {
 
 // Sets the text in this element
 function setText(element, text) {
-    if (element.textContent != null) {
+    if (element.textContent !== null) {
         element.textContent = text;
-    } else if (element.innerText != null) {
+    } else if (element.innerText !== null) {
         element.innerText = text;
     }
 }
@@ -278,7 +279,7 @@ function getInputValue(inputElement) {
             return (inputElement.checked ? 'on' : 'off');
         }
     }
-    if (inputElement.value == null) {
+    if (inputElement.value === null) {
         throw new SeleniumError("This element has no value; is it really a form field?");
     }
     return inputElement.value;
@@ -286,13 +287,14 @@ function getInputValue(inputElement) {
 
 /* Fire an event in a browser-compatible manner */
 function triggerEvent(element, eventType, canBubble, controlKeyDown, altKeyDown, shiftKeyDown, metaKeyDown) {
-    canBubble = (typeof(canBubble) == undefined) ? true : canBubble;
+	var evt;
+    canBubble = (typeof(canBubble) === undefined) ? true : canBubble;
     if (element.fireEvent && element.ownerDocument && element.ownerDocument.createEventObject) { // IE
-        var evt = createEventObject(element, controlKeyDown, altKeyDown, shiftKeyDown, metaKeyDown);        
+        evt = createEventObject(element, controlKeyDown, altKeyDown, shiftKeyDown, metaKeyDown);        
         element.fireEvent('on' + eventType, evt);
     }
     else {
-        var evt = document.createEvent('HTMLEvents');
+        evt = document.createEvent('HTMLEvents');
         
         try {
             evt.shiftKey = shiftKeyDown;
@@ -312,17 +314,17 @@ function triggerEvent(element, eventType, canBubble, controlKeyDown, altKeyDown,
 
 function getKeyCodeFromKeySequence(keySequence) {
     var match = /^\\(\d{1,3})$/.exec(keySequence);
-    if (match != null) {
+    if (match !== null) {
         return match[1];
     }
     match = /^.$/.exec(keySequence);
-    if (match != null) {
+    if (match !== null) {
         return match[0].charCodeAt(0);
     }
     // this is for backward compatibility with existing tests
     // 1 digit ascii codes will break however because they are used for the digit chars
     match = /^\d{2,3}$/.exec(keySequence);
-    if (match != null) {
+    if (match !== null) {
         return match[0];
     }
     throw new SeleniumError("invalid keySequence");
@@ -339,7 +341,7 @@ function createEventObject(element, controlKeyDown, altKeyDown, shiftKeyDown, me
 
 function triggerKeyEvent(element, eventType, keySequence, canBubble, controlKeyDown, altKeyDown, shiftKeyDown, metaKeyDown) {
     var keycode = getKeyCodeFromKeySequence(keySequence);
-    canBubble = (typeof(canBubble) == undefined) ? true : canBubble;
+    canBubble = (typeof(canBubble) === undefined) ? true : canBubble;
     if (element.fireEvent && element.ownerDocument && element.ownerDocument.createEventObject) { // IE
         var keyEvent = createEventObject(element, controlKeyDown, altKeyDown, shiftKeyDown, metaKeyDown);
         keyEvent.keyCode = keycode;
@@ -378,7 +380,7 @@ function addLoadListener(element, command) {
     LOG.debug('Adding loadListenter for ' + element + ', ' + command);
     var augmentedCommand = function() {
         command.call(this, element);
-    }
+    };
     if (window.addEventListener && !browserVersion.isOpera)
         element.addEventListener("load", augmentedCommand, true);
     else if (window.attachEvent)
@@ -419,17 +421,17 @@ function selArrayToString(a) {
         var retval = [];
         for (var i = 0; i < a.length; i++) {
             var item = a[i];
-            var replaced = new String(item).replace(/([,\\])/g, '\\$1');
+            var replaced = String(item).replace(/([,\\])/g, '\\$1');
             retval[i] = replaced;
         }
         return retval;
     }
-    return new String(a);
+    return String(a);
 }
 
 
 function isArray(x) {
-    return ((typeof x) == "object") && (x["length"] != null);
+    return ((typeof x) == "object") && (x.length !== null);
 }
 
 function absolutify(url, baseUrl) {
@@ -471,32 +473,33 @@ function absolutify(url, baseUrl) {
     }
     loc.search = null;
     loc.hash = null;
+    var result;
     
     // if url begins with /, then that's the whole pathname
     if (/^\//.test(url)) {
         loc.pathname = url;
-        var result = reassembleLocation(loc);
+        result = reassembleLocation(loc);
         return result;
     }
     
     // if pathname is null, then we'll just append "/" + the url
     if (!loc.pathname) {
         loc.pathname = "/" + url;
-        var result = reassembleLocation(loc);
+        result = reassembleLocation(loc);
         return result;
     }
     
     // if pathname ends with /, just append url
     if (/\/$/.test(loc.pathname)) {
         loc.pathname += url;
-        var result = reassembleLocation(loc);
+        result = reassembleLocation(loc);
         return result;
     }
     
     // if we're here, then the baseUrl has a pathname, but it doesn't end with /
     // in that case, we replace everything after the final / with the relative url
     loc.pathname = loc.pathname.replace(/[^\/\\]+$/, url);
-    var result = reassembleLocation(loc);
+    result = reassembleLocation(loc);
     return result;
     
 }
@@ -509,10 +512,10 @@ function parseUrl(url) {
     if (!result) {
         throw new SeleniumError("Invalid URL: " + url);
     }
-    var loc = new Object();
+    var loc = {};
     for (var i = 0; i < fields.length; i++) {
         var field = fields[i];
-        if (field == null) {
+        if (field === null) {
             continue;
         }
         loc[field] = result[i];
@@ -560,11 +563,11 @@ function reassembleLocation(loc) {
 function canonicalize(url) {
     if(url == "about:blank")
     {
-  return url;
+        return url;
     }
     var tempLink = window.document.createElement("link");
     tempLink.href = url; // this will canonicalize the href on most browsers
-    var loc = parseUrl(tempLink.href)
+    var loc = parseUrl(tempLink.href);
     if (!/\/\.\.\//.test(loc.pathname)) {
       return tempLink.href;
     }
@@ -585,14 +588,14 @@ function canonicalize(url) {
 }
 
 function extractExceptionMessage(ex) {
-    if (ex == null) return "null exception";
-    if (ex.message != null) return ex.message;
-    if (ex.toString && ex.toString() != null) return ex.toString();
+    if (ex === null) return "null exception";
+    if (ex.message !== null) return ex.message;
+    if (ex.toString && ex.toString() !== null) return ex.toString();
 }
     
 
 function describe(object, delimiter) {
-    var props = new Array();
+    var props = [];
     for (var prop in object) {
         try {
             props.push(prop + " -> " + object[prop]);
@@ -732,7 +735,7 @@ PatternMatcher.regexpFromGlob = function(glob) {
     return "^" + PatternMatcher.convertGlobMetaCharsToRegexpMetaChars(glob) + "$";
 };
 
-if (!this["Assert"]) Assert = {};
+if (!this.Assert) Assert = {};
 
 
 Assert.fail = function(message) {
@@ -765,7 +768,7 @@ Assert.matches = function() {
     Assert.fail(args.comment +
                 "Actual value '" + args.actual +
                 "' did not match '" + args.expected + "'");
-}
+};
 
 /*
 * Assert.notMtches(comment?, pattern, actual)
@@ -778,8 +781,7 @@ Assert.notMatches = function() {
     Assert.fail(args.comment +
                 "Actual value '" + args.actual +
                 "' did match '" + args.expected + "'");
-}
-
+};
 
 // Preprocess the arguments to allow for an optional comment.
 function AssertionArguments(args) {
@@ -805,7 +807,7 @@ function SeleniumError(message) {
     var error = new Error(message);
     if (typeof(arguments.caller) != 'undefined') { // IE, not ECMA
         var result = '';
-        for (var a = arguments.caller; a != null; a = a.caller) {
+        for (var a = arguments.caller; a !== null; a = a.caller) {
             result += '> ' + a.callee.toString() + '\n';
             if (a.caller == a) {
                 result += '*';
@@ -820,7 +822,7 @@ function SeleniumError(message) {
 
 function highlight(element) {
     var highLightColor = "yellow";
-    if (element.originalColor == undefined) { // avoid picking up highlight
+    if (element.originalColor === undefined) { // avoid picking up highlight
         element.originalColor = elementGetStyle(element, "background-color");
     }
     elementSetStyle(element, {"backgroundColor" : highLightColor});
@@ -839,9 +841,9 @@ function highlight(element) {
 
 // for use from vs.2003 debugger
 function o2s(obj) {
-    var s = "";
-    for (key in obj) {
-        var line = key + "->" + obj[key];
+    var s = "", line;
+    for (var key in obj) {
+        line = key + "->" + obj[key];
         line.replace("\n", " ");
         s += line + "\n";
     }
@@ -856,8 +858,8 @@ function openSeparateApplicationWindow(url, suppressMozillaWarning) {
     window.moveTo(window.screenX, 0);
 
     var appWindow = window.open(url + '?start=true', 'selenium_main_app_window');
-    if (appWindow == null) {
-        var errorMessage = "Couldn't open app window; is the pop-up blocker enabled?"
+    if (appWindow === null) {
+        var errorMessage = "Couldn't open app window; is the pop-up blocker enabled?";
         LOG.error(errorMessage);
         throw new Error("Couldn't open app window; is the pop-up blocker enabled?");
     }
@@ -880,7 +882,7 @@ function openSeparateApplicationWindow(url, suppressMozillaWarning) {
     }
 
 
-    if (!suppressMozillaWarning && window.document.readyState == null && !seenReadyStateWarning) {
+    if (!suppressMozillaWarning && window.document.readyState === null && !seenReadyStateWarning) {
         alert("Beware!  Mozilla bug 300992 means that we can't always reliably detect when a new page has loaded.  Install the Selenium IDE extension or the readyState extension available from selenium.openqa.org to make page load detection more reliable.");
         seenReadyStateWarning = true;
     }
@@ -894,15 +896,15 @@ objectExtend(URLConfiguration.prototype, {
     },
     _isQueryParameterTrue: function (name) {
         var parameterValue = this._getQueryParameter(name);
-        if (parameterValue == null) return false;
+        if (parameterValue === null) return false;
         if (parameterValue.toLowerCase() == "true") return true;
         if (parameterValue.toLowerCase() == "on") return true;
         return false;
     },
 
     _getQueryParameter: function(searchKey) {
-        var str = this.queryString
-        if (str == null) return null;
+        var str = this.queryString;
+        if (str === null) return null;
         var clauses = str.split('&');
         for (var i = 0; i < clauses.length; i++) {
             var keyValuePair = clauses[i].split('=', 2);
@@ -916,7 +918,7 @@ objectExtend(URLConfiguration.prototype, {
 
     _extractArgs: function() {
         var str = SeleniumHTARunner.commandLine;
-        if (str == null || str == "") return new Array();
+        if (str === null || str === "") return [];
         var matches = str.match(/(?:\"([^\"]+)\"|(?!\"([^\"]+)\")(\S+))/g);
         // We either want non quote stuff ([^"]+) surrounded by quotes
         // or we want to look-ahead, see that the next character isn't
@@ -925,7 +927,7 @@ objectExtend(URLConfiguration.prototype, {
         // the results "\"foo\"" and "bar"
 
         // So, let's unquote the quoted arguments:
-        var args = new Array;
+        var args = [];
         for (var i = 0; i < matches.length; i++) {
             args[i] = matches[i];
             args[i] = args[i].replace(/^"(.*)"$/, "$1");
@@ -978,7 +980,7 @@ function getTimeoutTime(timeout) {
 function is_IDE() {
     var locstr = window.location.href;
     
-    if (locstr.indexOf('chrome://selenium-ide-testrunner') == 0) {
+    if (locstr.indexOf('chrome://selenium-ide-testrunner') === 0) {
          return false;
     }
     
@@ -1047,7 +1049,7 @@ function getAncestorOrSelfWithJavascriptHref(element) {
     if (hasJavascriptHref(element)) {
         return element;
     }
-    if (element.parentNode == null) {
+    if (element.parentNode === null) {
         return null;
     }
     return getAncestorOrSelfWithJavascriptHref(element.parentNode);
@@ -1114,20 +1116,20 @@ function parse_locator(locator)
 function eval_xpath(xpath, inDocument, opts)
 {
     if (!opts) {
-        var opts = {};
+        opts = {};
     }
-    var contextNode = opts.contextNode
-        ? opts.contextNode : inDocument;
-    var namespaceResolver = opts.namespaceResolver
-        ? opts.namespaceResolver : null;
-    var xpathLibrary = opts.xpathLibrary
-        ? opts.xpathLibrary : null;
-    var allowNativeXpath = (opts.allowNativeXpath != undefined)
-        ? opts.allowNativeXpath : true;
-    var ignoreAttributesWithoutValue = (opts.ignoreAttributesWithoutValue != undefined)
-        ? opts.ignoreAttributesWithoutValue : true;
-    var returnOnFirstMatch = (opts.returnOnFirstMatch != undefined)
-        ? opts.returnOnFirstMatch : false;
+    var contextNode = opts.contextNode ?
+        opts.contextNode : inDocument;
+    var namespaceResolver = opts.namespaceResolver ?
+        opts.namespaceResolver : null;
+    var xpathLibrary = opts.xpathLibrary ?
+        opts.xpathLibrary : null;
+    var allowNativeXpath = (opts.allowNativeXpath !== undefined) ?
+        opts.allowNativeXpath : true;
+    var ignoreAttributesWithoutValue = (opts.ignoreAttributesWithoutValue !== undefined) ?
+        opts.ignoreAttributesWithoutValue : true;
+    var returnOnFirstMatch = (opts.returnOnFirstMatch !== undefined) ?
+        opts.returnOnFirstMatch : false;
 
     // Trim any trailing "/": not valid xpath, and remains from attribute
     // locator.
@@ -1136,7 +1138,7 @@ function eval_xpath(xpath, inDocument, opts)
     }
     // HUGE hack - remove namespace from xpath for IE
     if (browserVersion && browserVersion.isIE) {
-        xpath = xpath.replace(/x:/g, '')
+        xpath = xpath.replace(/x:/g, '');
     }
     
     var nativeXpathAvailable = inDocument.evaluate;
@@ -1154,13 +1156,14 @@ function eval_xpath(xpath, inDocument, opts)
         documentForXpath = inDocument;
     }
     var results = [];
+    var xpathResult;
     
     // this is either native xpath or javascript-xpath via TestRunner.evaluate 
-    if (useDocumentEvaluate) {
+    if (useDocumentEvaluate) {		
         try {
             // Regarding use of the second argument to document.evaluate():
             // http://groups.google.com/group/comp.lang.javascript/browse_thread/thread/a59ce20639c74ba1/a9d9f53e88e5ebb5
-            var xpathResult = documentForXpath
+            xpathResult = documentForXpath
                 .evaluate((contextNode == inDocument ? xpath : '.' + xpath),
                     contextNode, namespaceResolver, 0, null);
         }
@@ -1168,7 +1171,7 @@ function eval_xpath(xpath, inDocument, opts)
             throw new SeleniumError("Invalid xpath [1]: " + extractExceptionMessage(e));
         }
         finally{
-            if (xpathResult == null) {
+            if (xpathResult === null) {
                 // If the result is null, we should still throw an Error.
                 throw new SeleniumError("Invalid xpath [2]: " + xpath); 
             }
@@ -1203,7 +1206,7 @@ function eval_xpath(xpath, inDocument, opts)
     catch (e) {
         throw new SeleniumError("Invalid xpath [3]: " + extractExceptionMessage(e));
     }
-    var xpathResult = xpathObj.evaluate(context);
+    xpathResult = xpathObj.evaluate(context);
     if (xpathResult && xpathResult.value) {
         for (var i = 0; i < xpathResult.value.length; ++i) {
             results.push(xpathResult.value[i]);
@@ -1243,10 +1246,10 @@ function eval_locator(locator, inDocument, opt_contextNode)
     locator = parse_locator(locator);
     
     var pageBot;
-    if (typeof(selenium) != 'undefined' && selenium != undefined) {
+    if (typeof(selenium) != 'undefined' && selenium !== undefined) {
         if (typeof(editor) == 'undefined' || editor.state == 'playing') {
-            safe_log('info', 'Trying [' + locator.type + ']: '
-                + locator.string);
+            safe_log('info', 'Trying [' + locator.type + ']: '+
+                locator.string);
         }
         pageBot = selenium.browserbot;
     }
@@ -1254,7 +1257,7 @@ function eval_locator(locator, inDocument, opt_contextNode)
         if (!UI_GLOBAL.mozillaBrowserBot) {
             // create a browser bot to evaluate the locator. Hand it the IDE
             // window as a dummy window, and cache it for future use.
-            UI_GLOBAL.mozillaBrowserBot = new MozillaBrowserBot(window)
+            UI_GLOBAL.mozillaBrowserBot = new MozillaBrowserBot(window);
         }
         pageBot = UI_GLOBAL.mozillaBrowserBot;
     }
@@ -1272,7 +1275,7 @@ function eval_locator(locator, inDocument, opt_contextNode)
     else {
         var element = pageBot
             .findElementBy(locator.type, locator.string, inDocument);
-        if (element != null) {
+        if (element !== null) {
             results.push(element);
         }
     }
@@ -1301,7 +1304,7 @@ RegExp.escape = (function() {
   
     return function(text) {
         return text.replace(sRE, '\\$1');
-    }
+    };
 })();
 
 /**
@@ -1325,19 +1328,19 @@ function are_equal(a1, a2)
                     return false;
                 for (var i = 0; i < a1.length; ++i) {
                     if (!are_equal(a1[i], a2[i]))
-                        return false
+                        return false;
                 }
             }
             // associative arrays
             else {
-                var keys = {};
-                for (var key in a1) {
+                var keys = {}, key;
+                for (key in a1) {
                     keys[key] = true;
                 }
-                for (var key in a2) {
+                for (key in a2) {
                     keys[key] = true;
                 }
-                for (var key in keys) {
+                for (key in keys) {
                     if (!are_equal(a1[key], a2[key]))
                         return false;
                 }
@@ -1390,13 +1393,13 @@ function print_r(object, maxDepth, indent)
 {
     var parentIndent, attr, str = "";
     if (arguments.length == 1) {
-        var maxDepth = Number.MAX_VALUE;
+        maxDepth = Number.MAX_VALUE;
     } else {
         maxDepth--;
     }
     if (arguments.length < 3) {
-        parentIndent = ''
-        var indent = '    ';
+        parentIndent = '';
+        indent = '    ';
     } else {
         parentIndent = indent;
         indent += '    ';
@@ -1404,15 +1407,15 @@ function print_r(object, maxDepth, indent)
 
     switch(typeof(object)) {
     case 'object':
-        if (object.length != undefined) {
-            if (object.length == 0) {
+        if (object.length !== undefined) {
+            if (object.length === 0) {
                 str += "Array ()\r\n";
             }
             else {
                 str += "Array (\r\n";
                 for (var i = 0; i < object.length; ++i) {
                     str += indent + '[' + i + '] => ';
-                    if (maxDepth == 0)
+                    if (maxDepth === 0)
                         str += "...\r\n";
                     else
                         str += print_r(object[i], maxDepth, indent);
@@ -1424,7 +1427,7 @@ function print_r(object, maxDepth, indent)
             str += "Object (\r\n";
             for (attr in object) {
                 str += indent + "[" + attr + "] => ";
-                if (maxDepth == 0)
+                if (maxDepth === 0)
                     str += "...\r\n";
                 else
                     str += print_r(object[attr], maxDepth, indent);
@@ -1454,11 +1457,11 @@ function print_r(object, maxDepth, indent)
  */
 function keys(object)
 {
-    var keys = [];
+    var mykeys = [];
     for (var k in object) {
-        keys.push(k);
+        mykeys.push(k);
     }
-    return keys;
+    return mykeys;
 }
 
 /**
@@ -1478,7 +1481,7 @@ function keys(object)
 function range(start, end)
 {
     if (arguments.length == 1) {
-        var end = start;
+        end = start;
         start = 0;
     }
     
@@ -1504,9 +1507,9 @@ function range(start, end)
  */
 function parse_kwargs(kwargs)
 {
-    var args = new Object();
+    var args = {}, i;
     var pairs = kwargs.split(/,/);
-    for (var i = 0; i < pairs.length;) {
+    for (i = 0; i < pairs.length;) {
         if (i > 0 && pairs[i].indexOf('=') == -1) {
             // the value string contained a comma. Glue the parts back together.
             pairs[i-1] += ',' + pairs.splice(i, 1)[0];
@@ -1515,7 +1518,7 @@ function parse_kwargs(kwargs)
             ++i;
         }
     }
-    for (var i = 0; i < pairs.length; ++i) {
+    for (i = 0; i < pairs.length; ++i) {
         var splits = pairs[i].split(/=/);
         if (splits.length == 1) {
             continue;
@@ -1541,11 +1544,11 @@ function to_kwargs(args, sortedKeys)
 {
     var s = '';
     if (!sortedKeys) {
-        var sortedKeys = keys(args).sort();
+        sortedKeys = keys(args).sort();
     }
     for (var i = 0; i < sortedKeys.length; ++i) {
         var k = sortedKeys[i];
-        if (args[k] != undefined) {
+        if (args[k] !== undefined) {
             if (s) {
                 s += ', ';
             }
@@ -1605,7 +1608,7 @@ function parseUri (str) {
     });
 
     return uri;
-};
+}
 
 parseUri.options = {
     strictMode: false,

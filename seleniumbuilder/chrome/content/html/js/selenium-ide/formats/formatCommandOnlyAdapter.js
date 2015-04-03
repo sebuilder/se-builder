@@ -17,7 +17,7 @@ function parse(testCase, source) {
 
   var reader = new LineReader(source);
   var line;
-  while ((line = reader.read()) != null) {
+  while ((line = reader.read()) !== null) {
     commands.push(new Line(line));
   }
   testCase.commands = commands;
@@ -92,7 +92,7 @@ function addIndent(lines) {
 
 function formatCommands(commands) {
   commands = filterForRemoteControl(commands);
-  if (this.lastIndent == null) {
+  if (this.lastIndent === null) {
     this.lastIndent = '';
   }
   var result = '';
@@ -103,15 +103,15 @@ function formatCommands(commands) {
       line = command.line;
     } else if (command.type == 'command') {
       line = formatCommand(command);
-      if (line != null) line = addIndent(line);
+      if (line !== null) line = addIndent(line);
       command.line = line;
     } else if (command.type == 'comment' && this.formatComment) {
       line = formatComment(command);
-      if (line != null) line = addIndent(line);
+      if (line !== null) line = addIndent(line);
       command.line = line;
     }
     command.charIndex = this.commandCharIndex;
-    if (line != null) {
+    if (line !== null) {
       updateIndent(line);
       line = line + "\n";
       result += line;

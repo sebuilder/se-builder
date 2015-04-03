@@ -87,6 +87,7 @@ builder.stepdisplay.updateStepPlaybackState = function(run, script, step, stepIn
 };
 
 builder.stepdisplay.update = function() {
+  var i;
   if (!reorderHandlerInstalled) {
     // Make steps sortable by dragging.
     jQuery('#steps').sortable({
@@ -96,7 +97,7 @@ builder.stepdisplay.update = function() {
         var script = builder.getScript();
         var reorderedSteps = jQuery('#steps .b-step').get();
         var reorderedIDs = [];
-        for (var i = 0; i < reorderedSteps.length; i++) {
+        for (i = 0; i < reorderedSteps.length; i++) {
           // Filter out elements that aren't actually steps. (?)
           if (script.getStepIndexForID(reorderedSteps[i].id) != -1) {
             reorderedIDs.push(reorderedSteps[i].id);
@@ -104,7 +105,7 @@ builder.stepdisplay.update = function() {
         }
         script.reorderSteps(reorderedIDs);
         // Then relabel them.
-        for (var i = 0; i < script.steps.length; i++) {
+        for (i = 0; i < script.steps.length; i++) {
           var step = script.steps[i];
           jQuery('#' + step.id + '-name').html(step.step_name || (i + 1) + ".");
         }
@@ -115,7 +116,7 @@ builder.stepdisplay.update = function() {
   builder.stepdisplay.clearDisplay();
   var script = builder.getScript();
   var saveRequired = script.saveRequired;
-  for (var i = 0; i < script.steps.length; i++) {
+  for (i = 0; i < script.steps.length; i++) {
     addStep(script.steps[i]);
   }
   script.saveRequired = saveRequired;
@@ -125,6 +126,7 @@ builder.stepdisplay.updateStep = function(stepID) {
   var script = builder.getScript();
   var step = script.getStepWithID(stepID);
   var paramNames = step.getParamNames();
+  var i;
   if (step.negated) {
     jQuery('#' + stepID + '-type').text(_t('not') + " " + builder.translate.translateStepName(step.type.getName()));
   } else {
@@ -135,7 +137,7 @@ builder.stepdisplay.updateStep = function(stepID) {
   } else {
     jQuery('#' + stepID + '-unplayable').show();
   }
-  for (var i = 0; i < paramNames.length; i++) {
+  for (i = 0; i < paramNames.length; i++) {
     jQuery('#' + stepID + 'edit-p' + i).show();
     jQuery('#' + stepID + 'edit-p' + i + '-name').text(_t('edit_p', builder.translate.translateParamName(paramNames[i], step.type.getName())));
     jQuery('#' + stepID + '-p' + i).show();
@@ -150,14 +152,14 @@ builder.stepdisplay.updateStep = function(stepID) {
     } else {
       jQuery('#' + stepID + '-p' + i).css("display", "inline");
     }
-    if (paramNames.length > 1 || step[paramNames[i]] == "") {
+    if (paramNames.length > 1 || step[paramNames[i]] === "") {
       jQuery('#' + stepID + '-p' + i + '-name').show();
     } else {
       jQuery('#' + stepID + '-p' + i + '-name').hide();
     }
   }
   // Hide the param display elements that aren't needed.
-  for (var i = paramNames.length; i < 3; i++) {
+  for (i = paramNames.length; i < 3; i++) {
     jQuery('#' + stepID + 'edit-p' + i).hide();
     jQuery('#' + stepID + '-p' + i).hide();
   }
@@ -276,7 +278,7 @@ function deleteStep(stepID) {
 function toggleBreakpoint(stepID) {
   var bp = builder.getScript().getStepWithID(stepID).breakpoint;
   if (bp) {
-    jQuery('#' + stepID + '-breakpoint').removeClass('b-step-breakpoint-set b-step-breakpoint-disabled')
+    jQuery('#' + stepID + '-breakpoint').removeClass('b-step-breakpoint-set b-step-breakpoint-disabled');
     jQuery('#' + stepID + 'toggle-breakpoint').text(_t('step_add_breakpoint'));
     builder.getScript().getStepWithID(stepID).breakpoint = false;
   } else {
@@ -347,6 +349,21 @@ function attachSearchers(stepID, pIndex, force) {
   // each window may contain multiple tabs!
   var windowManager = Components.classes['@mozilla.org/appshell/window-mediator;1'].getService(Components.interfaces.nsIWindowMediator);
   var en = windowManager.getEnumerator(null, false);
+  
+  function function_locator(locator) {
+            var originalStep = builder.getScript().getStepWithID(stepID);
+            originalStep[originalStep.getParamNames()[pIndex]] = locator;
+            // Don't immediately stop searchers: this would cause the listener that prevents the
+            // click from actually activating the selected element to be detached prematurely.
+            setTimeout(stopSearchers, 1);
+            window.bridge.focusRecorderWindow();
+            builder.stepdisplay.updateStep(stepID);
+            builder.suite.setCurrentScriptSaveRequired(true);
+            // Update the edit-param view.
+            jQuery('#' + stepID + '-p' + pIndex + '-edit-div').remove();
+            jQuery('#' + stepID + '-p' + pIndex).show();
+            editParam(stepID, pIndex);
+  }
   while (en.hasMoreElements()) {
     var w = en.getNext();
     for (var i = 0; i < w.frames.length; i++) {
@@ -369,20 +386,7 @@ function attachSearchers(stepID, pIndex, force) {
           frame,
           script.seleniumVersion,
           // This function is called when the user selects a new element.
-          function(locator) {
-            var originalStep = builder.getScript().getStepWithID(stepID);
-            originalStep[originalStep.getParamNames()[pIndex]] = locator;
-            // Don't immediately stop searchers: this would cause the listener that prevents the
-            // click from actually activating the selected element to be detached prematurely.
-            setTimeout(stopSearchers, 1);
-            window.bridge.focusRecorderWindow();
-            builder.stepdisplay.updateStep(stepID);
-            builder.suite.setCurrentScriptSaveRequired(true);
-            // Update the edit-param view.
-            jQuery('#' + stepID + '-p' + pIndex + '-edit-div').remove();
-            jQuery('#' + stepID + '-p' + pIndex).show();
-            editParam(stepID, pIndex);
-          },
+          function_locator,
           /* justReturnLocator */ true
         ));
       }
@@ -407,9 +411,10 @@ function updateTypeDivs(stepID, newType) {
   cD[0].__sb_stepType = newType;
   cD.html('');
   tD.html('');
+  var j;
   for (var i = 0; i < script.seleniumVersion.categories.length; i++) {
     var inCat = false;
-    for (var j = 0; j < script.seleniumVersion.categories[i][1].length; j++) {
+    for (j = 0; j < script.seleniumVersion.categories[i][1].length; j++) {
       if (script.seleniumVersion.categories[i][1][j] == newType) {
         inCat = true;
       }
@@ -422,7 +427,7 @@ function updateTypeDivs(stepID, newType) {
           class: 'selected-cat'
         }
       )));
-      for (var j = 0; j < script.seleniumVersion.categories[i][1].length; j++) {
+      for (j = 0; j < script.seleniumVersion.categories[i][1].length; j++) {
         if (script.seleniumVersion.categories[i][1][j] == newType) {
           tD.append(newNode('li', newNode(
             'span',
@@ -491,19 +496,20 @@ function getTypeInfo(type) {
   var paramInfo = "";
   var longParamInfo = newNode('ul', {class: 'type-info-longparam'});
   var pNames = type.getParamNames();
+  var doc;
   for (var i = 0; i < pNames.length; i++) {
     paramInfo += pNames[i];
     if (i != pNames.length - 1) {
       paramInfo += ", ";
     }
-    var doc = builder.translate.translateParamDoc(script.seleniumVersion.shortName, type.getName(), pNames[i], script.seleniumVersion.docs[type.getName()].params[pNames[i]]);
+    doc = builder.translate.translateParamDoc(script.seleniumVersion.shortName, type.getName(), pNames[i], script.seleniumVersion.docs[type.getName()].params[pNames[i]]);
     jQuery(longParamInfo).append(newNode('li',
       newNode('b', builder.translate.translateParamName(pNames[i], type.getName())), ": " + doc));
   }
   if (pNames.length > 0) { paramInfo = " (" + paramInfo + ")"; }
     
   var body = newNode('div', {class: 'type-info-body'});
-  var doc = builder.translate.translateStepDoc(script.seleniumVersion.shortName, type.getName(), script.seleniumVersion.docs[type.getName()].description);
+  doc = builder.translate.translateStepDoc(script.seleniumVersion.shortName, type.getName(), script.seleniumVersion.docs[type.getName()].description);
   jQuery(body).html(doc);
   jQuery(body).append(_t('param_expr_info'));
   
@@ -586,7 +592,7 @@ function editType(stepID) {
     if (e.which == 13) {
       selectFirstSearchResult(stepID);
     } else {
-      doSearch(stepID)
+      doSearch(stepID);
     }
   });
 }
@@ -647,29 +653,14 @@ function doSearch(stepID) {
 }
 
 function editParam(stepID, pIndex) {
-  if (jQuery('#' + stepID + '-p' + pIndex + '-edit-div').length > 0) {
-    return;
-  }
-  var script = builder.getScript();
-  var step = script.getStepWithID(stepID);
-  var pName = step.getParamNames()[pIndex];
-  if (step.type.getParamType(pName) == "locator") {
-    var tdd_id = stepID + '-p' + pIndex + '-locator-type-chooser';
-    var typeDropDown = newNode(
-      'select',
-      {
-        id: tdd_id
-      }
-    );
-    
-    function okf() {
+   function okf() {
       builder.locator.deHighlight(function() {});
       var locMethodName = jQuery('#' + tdd_id).val();
       var locMethod = builder.locator.methodForName(script.seleniumVersion, locMethodName);
       if (locMethod) {
         step[pName].preferredMethod = locMethod;
         step[pName].preferredAlternative = jQuery('#' + stepID + '-p' + pIndex + '-edit-input').data('alt') || 0;
-        if (!step[pName].values[step[pName].preferredMethod] || step[pName].values[step[pName].preferredMethod].length == 0)
+        if (!step[pName].values[step[pName].preferredMethod] || step[pName].values[step[pName].preferredMethod].length === 0)
         {
           step[pName].preferredAlternative = 0;
           step[pName].values[locMethod] = [jQuery('#' + stepID + '-p' + pIndex + '-edit-input').val()];
@@ -684,9 +675,35 @@ function editParam(stepID, pIndex) {
       jQuery('#' + stepID + '-p' + pIndex).show();
       builder.stepdisplay.updateStep(stepID);
       builder.suite.setCurrentScriptSaveRequired(true);
+    }	
+    function okfbis() {
+      step[pName] = deesc(jQuery('#' + stepID + '-p' + pIndex + '-edit-input').val());
+      jQuery('#' + stepID + '-p' + pIndex + '-edit-div').remove();
+      jQuery('#' + stepID + '-p' + pIndex).show();
+      builder.stepdisplay.updateStep(stepID);
+      builder.suite.setCurrentScriptSaveRequired(true);
     }
+	
+	
+  if (jQuery('#' + stepID + '-p' + pIndex + '-edit-div').length > 0) {
+    return;
+  }
+  var script = builder.getScript();
+  var step = script.getStepWithID(stepID);
+  var pName = step.getParamNames()[pIndex];
+  var editDiv;
+  if (step.type.getParamType(pName) == "locator") {
+    var tdd_id = stepID + '-p' + pIndex + '-locator-type-chooser';
+    var typeDropDown = newNode(
+      'select',
+      {
+        id: tdd_id
+      }
+    );
     
-    var editDiv = newNode(
+    
+    
+    editDiv = newNode(
       'div',
       {
         id: stepID + '-p' + pIndex + '-edit-div'
@@ -770,15 +787,8 @@ function editParam(stepID, pIndex) {
       }
     });
   } else {
-    function okf() {
-      step[pName] = deesc(jQuery('#' + stepID + '-p' + pIndex + '-edit-input').val());
-      jQuery('#' + stepID + '-p' + pIndex + '-edit-div').remove();
-      jQuery('#' + stepID + '-p' + pIndex).show();
-      builder.stepdisplay.updateStep(stepID);
-      builder.suite.setCurrentScriptSaveRequired(true);
-    }
-    
-    var editDiv = newNode(
+        
+    editDiv = newNode(
       'div',
       {
         id: stepID + '-p' + pIndex + '-edit-div'
@@ -787,7 +797,7 @@ function editParam(stepID, pIndex) {
       newNode('a', "OK", {
         id: stepID + '-p' + pIndex + '-OK',
         class: 'button',
-        click: function (e) { okf(); }
+        click: function (e) { okfbis(); }
       })
     );
     
@@ -795,7 +805,7 @@ function editParam(stepID, pIndex) {
     jQuery('#' + stepID + '-p' + pIndex).hide();
     jQuery('#' + stepID + '-p' + pIndex + '-edit-input').focus().select().keypress(function (e) {
       if (e.which == 13) {
-        okf();
+        okfbis();
       }
     });
   }
@@ -833,8 +843,8 @@ function saveStepName(stepID) {
   var n = jQuery('#' + stepID + '-name-edit-field').val();
   var script = builder.getScript();
   var step = script.getStepWithID(stepID);
-  step.step_name = n == "" ? null : n;
-  jQuery('#' + stepID + '-name').html(n == "" ? (script.steps.indexOf(step) + 1) + "." : n).show();
+  step.step_name = n === "" ? null : n;
+  jQuery('#' + stepID + '-name').html(n === "" ? (script.steps.indexOf(step) + 1) + "." : n).show();
 }
 
 /** Adds the given step to the GUI. */

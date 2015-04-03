@@ -15,16 +15,16 @@ var originalFormatCommands = formatCommands;
 formatCommands = function(commands) {
   this.tests = 0;
   var lines = originalFormatCommands(commands);
-  if (this.tests == 0) {
+  if (this.tests === 0) {
     lines += addIndent("pass;\n");
   }
   return lines;
-}
+};
 
 var formatter = this;
 
 string = function(value) {
-  if (value != null) {
+  if (value !== null) {
     value = value.replace(/\\/g, '\\\\');
     value = value.replace(/\"/g, '\\"');
     value = value.replace(/\r/g, '\\r');
@@ -35,15 +35,15 @@ string = function(value) {
   } else {
     return '""';
   }
-}
+};
 
 variableName = function(value) {
   return "$" + value;
-}
+};
 
 concatString = function(array) {
   return array.join(" . ");
-}
+};
 
 function assertTrue(expression) {
   if (formatter.assertOrVerifyFailureOnNext) {
@@ -99,11 +99,11 @@ function assertOrVerifyFailure(line, isAssert) {
 
 Equals.prototype.toString = function() {
   return this.e1.toString() + " eq " + this.e2.toString();
-}
+};
 
 NotEquals.prototype.toString = function() {
   return this.e1.toString() + " ne " + this.e2.toString();
-}
+};
 
 Equals.prototype.assert = function() {
   if (formatter.assertOrVerifyFailureOnNext) {
@@ -120,7 +120,7 @@ Equals.prototype.assert = function() {
       return expression.toString() + ";";
     }
   }
-}
+};
 
 Equals.prototype.verify = Equals.prototype.assert;
 
@@ -139,17 +139,17 @@ NotEquals.prototype.assert = function() {
       return expression.toString() + ";";
     }
   }
-}
+};
 
 NotEquals.prototype.verify = NotEquals.prototype.assert;
 
 RegexpMatch.prototype.toString = function() {
   return this.expression + " =~ /" + this.pattern.replace(/\//g, "\\/") + "/";
-}
+};
 
 RegexpNotMatch.prototype.toString = function() {
   return notOperator() + "(" + RegexpMatch.prototype.toString.call(this) + ")";
-}
+};
 
 function ifCondition(expression, callback) {
     return "if (" + expression.toString() + ") {\n" + callback() + "}";
@@ -160,7 +160,7 @@ function pause(milliseconds) {
 }
 
 function echo(message) {
-  return "print(" + xlateArgument(message) + ' . "\\n");'
+  return "print(" + xlateArgument(message) + ' . "\\n");';
 }
 
 function statement(expression) {
@@ -212,7 +212,7 @@ CallSelenium.prototype.toString = function() {
   }
   result += ')';
   return result;
-}
+};
 
 function formatComment(comment) {
   return comment.comment.replace(/.+/mg, function(str) {

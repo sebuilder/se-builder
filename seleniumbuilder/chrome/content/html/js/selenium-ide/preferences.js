@@ -53,7 +53,7 @@ SeleniumIDE.Preferences = {
 
     getArray: function(name) {
         var length = this.getString(name + ".length");
-        if (length == null) return [];
+        if (length === null) return [];
         var value = [];
         for (var i = 0; i < length; i++) {
             value.push(this.getString(name + "." + i));

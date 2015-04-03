@@ -39,24 +39,25 @@ builder.dialogs.exportscript.show = function(node) {
     jQuery(format_list).append(create_overwrite_li());
   }
   
+  var i;
   if (builder.getScript().seleniumVersion === builder.selenium2) {
-    for (var i = 0; i < builder.selenium2.io.formats.length; i++) {
+    for (i = 0; i < builder.selenium2.io.formats.length; i++) {
       jQuery(format_list).append(create_sel2_format_li(builder.selenium2.io.formats[i]));
     }
   } else {
     var formats = builder.selenium1.adapter.availableFormats();
-    for (var i = 0; i < formats.length; i++) {
+    for (i = 0; i < formats.length; i++) {
       jQuery(format_list).append(create_sel1_format_li(formats[i]));
     }
     if (builder.versionconverter.canConvert(builder.getScript(), builder.selenium2)) {
       jQuery(format_list).append(newNode("span", "Selenium 2:"));
-      for (var i = 0; i < builder.selenium2.io.formats.length; i++) {
+      for (i = 0; i < builder.selenium2.io.formats.length; i++) {
         jQuery(format_list).append(create_sel2_format_li(builder.selenium2.io.formats[i]));
       }
     } else {
       var iList = builder.versionconverter.nonConvertibleStepNames(builder.getScript(), builder.selenium2);
       var inconvertibles = "";
-      for (var i = 0; i < iList.length; i++) {
+      for (i = 0; i < iList.length; i++) {
         inconvertibles += iList[i] + " ";
       }
       jQuery(format_list).append(newNode("span", _t('sel2_unsaveable_steps') + ":", newNode("br"), inconvertibles));

@@ -123,6 +123,12 @@ builder.locator.prevHighlightValue = null;
 builder.locator.prevHighlightOriginalStyle = null;
 
 builder.locator.deHighlight = function(callback) {
+    function done() {
+      builder.selenium2.playback.shutdown();
+      builder.locator.prevHighlightMethod = null;
+      callback();
+    }	
+	
   if (!builder.locator.prevHighlightMethod) { callback(); return; }
   if (builder.getScript().seleniumVersion == builder.selenium1) {
     var win = window.bridge.getRecordingWindow();
@@ -132,12 +138,7 @@ builder.locator.deHighlight = function(callback) {
     }
     builder.locator.prevHighlightMethod = null;
     callback();
-  } else {
-    function done() {
-      builder.selenium2.playback.shutdown();
-      builder.locator.prevHighlightMethod = null;
-      callback();
-    }
+  } else {    
     builder.selenium2.playback.startSession(function() {
       builder.selenium2.playback.execute('findElement', {using: builder.locator.prevHighlightMethod[builder.selenium2], value: builder.locator.prevHighlightValue}, function(result) {
         builder.selenium2.playback.execute('executeScript', { 'script': "arguments[0].setAttribute('style', '" + builder.locator.prevHighlightOriginalStyle + "');", 'args': [result.value] }, done, done);

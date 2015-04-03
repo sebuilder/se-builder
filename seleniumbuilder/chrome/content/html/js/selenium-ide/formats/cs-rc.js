@@ -73,31 +73,31 @@ function assertOrVerifyFailure(line, isAssert) {
 
 Equals.prototype.toString = function() {
   return this.e1.toString() + " == " + this.e2.toString();
-}
+};
 
 NotEquals.prototype.toString = function() {
   return this.e1.toString() + " != " + this.e2.toString();
-}
+};
 
 Equals.prototype.assert = function() {
   return "Assert.AreEqual(" + this.e1.toString() + ", " + this.e2.toString() + ");";
-}
+};
 
 Equals.prototype.verify = function() {
   return verify(this.assert());
-}
+};
 
 NotEquals.prototype.assert = function() {
   return "Assert.AreNotEqual(" + this.e1.toString() + ", " + this.e2.toString() + ");";
-}
+};
 
 NotEquals.prototype.verify = function() {
   return verify(this.assert());
-}
+};
 
 RegexpMatch.prototype.toString = function() {
   return "Regex.IsMatch(" + this.expression + ", " + string(this.pattern) + ")";
-}
+};
 
 function pause(milliseconds) {
   return "Thread.Sleep(" + parseInt(milliseconds) + ");";
@@ -143,7 +143,7 @@ CallSelenium.prototype.toString = function() {
   }
   result += ')';
   return result;
-}
+};
 
 function formatComment(comment) {
   return comment.comment.replace(/.+/mg, function(str) {

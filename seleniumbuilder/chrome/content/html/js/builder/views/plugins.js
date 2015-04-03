@@ -187,7 +187,7 @@ builder.views.plugins.wirePluginEntry = function(info) {
     builder.plugins.setGotoPluginsView(true);
     builder.reboot();
   });
-}
+};
 
 builder.views.plugins.refresh = function() {
   jQuery('#plugins-loading').show();

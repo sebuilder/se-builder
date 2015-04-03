@@ -7,7 +7,7 @@ builder.translate.locales = {};
 
 builder.translate.getLocNamePref = function() {
   if (bridge.prefManager.prefHasUserValue("extensions.seleniumbuilder.translate.locName") &&
-      bridge.prefManager.getCharPref("extensions.seleniumbuilder.translate.locName") != "")
+      bridge.prefManager.getCharPref("extensions.seleniumbuilder.translate.locName") !== "")
   {
     return bridge.prefManager.getCharPref("extensions.seleniumbuilder.translate.locName");
   } else {

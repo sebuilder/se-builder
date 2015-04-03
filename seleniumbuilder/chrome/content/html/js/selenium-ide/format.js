@@ -51,7 +51,7 @@ FormatCollection.getFormatDir = function() {
         formatDir.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0755);
     }
     return formatDir;
-}
+};
 
 FormatCollection.loadUserFormats = function(options) {
     var formatFile = FormatCollection.getFormatDir();
@@ -74,7 +74,7 @@ FormatCollection.loadUserFormats = function(options) {
         }
     }
     return formats;
-}
+};
 
 FormatCollection.saveUserFormats = function(formats) {
     var text = '';
@@ -93,11 +93,11 @@ FormatCollection.saveUserFormats = function(formats) {
         stream.write(fin, fin.length);
     }
     stream.close();
-}
+};
 
 // this is called on se-ide startup for the current formatter, or when you change formatters
 FormatCollection.loadFormatter = function(url) {
-    const subScriptLoader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
+    var subScriptLoader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
       .getService(Components.interfaces.mozIJSSubScriptLoader);
     
     var format = {};
@@ -117,33 +117,35 @@ FormatCollection.loadFormatter = function(url) {
       //subScriptLoader.loadSubScript('chrome://selenium-ide/content/formats/' + file, format);
       subScriptLoader.loadSubScript('chrome://seleniumbuilder/content/html/js/selenium-ide/formats/' + file, format);
     }
-  }
+  };
 
-    for (prop in StringUtils) {
+    for (var prop in StringUtils) {
         // copy functions from StringUtils
         format[prop] = StringUtils[prop];
     }
     this.log.debug('loading format from ' + url);
     subScriptLoader.loadSubScript(url, format);
-    if (format.configForm && format.configForm.length > 0) {
-        function copyElement(doc, element) {
-            var copy = doc.createElement(element.nodeName.toLowerCase());
-            var atts = element.attributes;
-            var i;
-            for (i = 0; atts != null && i < atts.length; i++) {
-                copy.setAttribute(atts[i].name, atts[i].value);
-            }
-            var childNodes = element.childNodes;
-            for (i = 0; i < childNodes.length; i++) {
-                if (childNodes[i].nodeType == 1) { // element
-                    copy.appendChild(copyElement(doc, childNodes[i]));
-                } else if (childNodes[i].nodeType == 3) { // text
-                    copy.appendChild(doc.createTextNode(childNodes[i].nodeValue));
-                }
-            }
-            return copy;
+    
+    function copyElement(doc, element) {
+        var copy = doc.createElement(element.nodeName.toLowerCase());
+        var atts = element.attributes;
+        var i;
+        for (i = 0; atts !== null && i < atts.length; i++) {
+            copy.setAttribute(atts[i].name, atts[i].value);
         }
-            
+        var childNodes = element.childNodes;
+        for (i = 0; i < childNodes.length; i++) {
+            if (childNodes[i].nodeType == 1) { // element
+                copy.appendChild(copyElement(doc, childNodes[i]));
+            } else if (childNodes[i].nodeType == 3) { // text
+                copy.appendChild(doc.createTextNode(childNodes[i].nodeValue));
+            }
+        }
+        return copy;
+    }
+    
+    if (format.configForm && format.configForm.length > 0) {
+        
         format.createConfigForm = function(document) {
             var xml = '<vbox id="format-config" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">' + format.configForm + '</vbox>';
             var parser = new DOMParser();
@@ -152,10 +154,10 @@ FormatCollection.loadFormatter = function(url) {
             // when the user clicks on the buttons or textboxes. I haven't figured out the reason, 
             // but as a workaround I'll just re-create the element and make a deep copy.
             return copyElement(document, element);
-        }
+        };
     }
     return format;
-}
+};
 
 
 FormatCollection.prototype.reloadFormats = function() {
@@ -166,7 +168,7 @@ FormatCollection.prototype.reloadFormats = function() {
     // plugin formats
     this.pluginFormats = FormatCollection.loadPluginFormats(this.options);
     this.formats = this.formats.concat(this.pluginFormats);
-}
+};
 
 FormatCollection.prototype.removeUserFormatAt = function(index) {
     this.userFormats.splice(index, 1);
@@ -174,11 +176,11 @@ FormatCollection.prototype.removeUserFormatAt = function(index) {
     
     // plugin formats need adding in here too
     this.formats = this.formats.concat(this.pluginFormats);
-}
+};
 
 FormatCollection.prototype.saveFormats = function() {
     FormatCollection.saveUserFormats(this.userFormats);
-}
+};
 
 FormatCollection.prototype.selectFormat = function(id) {
     var info = this.findFormat(id);
@@ -193,7 +195,7 @@ FormatCollection.prototype.selectFormat = function(id) {
         //this.log.error("failed to select format: " + id);
         return this.formats[0];
     }
-}
+};
 
 FormatCollection.prototype.findFormat = function(id) {
     for (var i = 0; i < this.formats.length; i++) {
@@ -202,11 +204,11 @@ FormatCollection.prototype.findFormat = function(id) {
         }
     }
     return null;
-}
+};
 
 FormatCollection.prototype.getDefaultFormat = function() {
     return this.findFormat("default");
-}
+};
 
 FormatCollection.loadPluginFormats = function(options) {
     var formats = [];
@@ -220,7 +222,7 @@ FormatCollection.loadPluginFormats = function(options) {
         }
     }
     return formats;
-}
+};
 
 /*
  * Format
@@ -236,12 +238,12 @@ Format.prototype.log = Format.log = new Log('Format');
 
 Format.prototype.getUnicodeConverter = function() {
     return SeFileUtils.getUnicodeConverter(this.options.encoding);
-}
+};
 
 Format.prototype.getFormatter = function() {
     if (!this.formatterCache) {
         this.formatterCache = this.loadFormatter();
-        for (name in this.options) {
+        for (var name in this.options) {
             var r = new RegExp('formats\.' + this.id + '\.(.*)').exec(name);
             if (r) {
                 this.formatterCache.options[r[1]] = this.options[name];
@@ -251,7 +253,7 @@ Format.prototype.getFormatter = function() {
         }
     }
     return this.formatterCache;
-}
+};
 
 Format.prototype.save = function(testCase) {
     return this.saveAs(testCase, testCase.file && testCase.file.path, false);
@@ -265,7 +267,7 @@ Format.prototype.saveAs = function(testCase, filename, exportTest) {
     //log.debug("saveAs: filename=" + filename);
     try {
         var file = null;
-        if (filename == null) {
+        if (filename === null) {
             file = showFilePicker(window, "Save as...",
                                   Components.interfaces.nsIFilePicker.modeSave,
                                   exportTest ? Format.TEST_CASE_EXPORT_DIRECTORY_PREF : Format.TEST_CASE_DIRECTORY_PREF,
@@ -274,7 +276,7 @@ Format.prototype.saveAs = function(testCase, filename, exportTest) {
         } else {
             file = SeFileUtils.getFile(filename);
         }
-        if (file != null) {
+        if (file !== null) {
             testCase.file = file;
             // save the directory so we can continue to load/save files from the current suite?
             var outputStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance( Components.interfaces.nsIFileOutputStream);
@@ -311,9 +313,9 @@ Format.prototype.saveAs = function(testCase, filename, exportTest) {
 Format.prototype.saveSuiteAsNew = function(testSuite, exportTest) {
     var formatter = this.getFormatter();
     if (typeof(formatter.formatSuite) != 'function') {
-        var name = formatter.name ? formatter.name : 'default'
+        var name = formatter.name ? formatter.name : 'default';
         alert('Suite export not implemented for the ' + name + ' formatter');
-        return false
+        return false;
     }
     
     try {
@@ -323,7 +325,7 @@ Format.prototype.saveSuiteAsNew = function(testSuite, exportTest) {
             TestSuite.TEST_SUITE_DIRECTORY_PREF,
             function(fp) { return fp.file; });
         
-        if (file != null) {
+        if (file !== null) {
             var filepath = [];
             filepath = SeFileUtils.splitPath(file);
             
@@ -353,11 +355,11 @@ Format.prototype.saveSuiteAsNew = function(testSuite, exportTest) {
 
 Format.prototype.getSourceForTestCase = function(testCase) {
     return this.getFormatter().format(testCase, "New Test", true);
-}
+};
 
 Format.prototype.getSourceForCommands = function(commands) {
     return this.getFormatter().formatCommands(commands);
-}
+};
 
 Format.prototype.setSource = function(testCase, source) {
     try {
@@ -366,7 +368,7 @@ Format.prototype.setSource = function(testCase, source) {
     } catch (err) {
         alert("error: " + err);
     }
-}
+};
 
 Format.prototype.load = function() {
     var self = this;
@@ -374,7 +376,7 @@ Format.prototype.load = function() {
                           Components.interfaces.nsIFilePicker.modeOpen,
                           Format.TEST_CASE_DIRECTORY_PREF,
                           function(fp) { return self.loadFile(fp.file); });
-}
+};
 
 Format.prototype.loadFile = function(file, isURL) {
     this.log.debug("start loading: file=" + file);
@@ -397,8 +399,7 @@ Format.prototype.loadFile = function(file, isURL) {
     }
     
     return testCase;
-}
-
+};
 
 /**
  * Format for preset formats
@@ -413,19 +414,20 @@ function InternalFormat(options, id, name, file, extension) {
     this.url = 'chrome://seleniumbuilder/content/html/js/selenium-ide/formats/' + file;
 }
 
-InternalFormat.prototype = new Format;
+InternalFormat.prototype = Object.create(Format.prototype);
+InternalFormat.prototype.constructor = InternalFormat;
 
 InternalFormat.prototype.loadFormatter = function() {
     return FormatCollection.loadFormatter(this.url);
-}
+};
 
 InternalFormat.prototype.getSource = function() {
     return SeFileUtils.readURL(this.url);
-}
+};
 
 InternalFormat.prototype.getFormatURI = function() {
     return this.url;
-}
+};
 
 /**
  * Format created by users
@@ -441,7 +443,8 @@ function UserFormat(options, id, name) {
     }
 }
 
-UserFormat.prototype = new Format;
+UserFormat.prototype = Object.create(Format.prototype);
+UserFormat.prototype.constructor = UserFormat;
 
 UserFormat.prototype.saveFormat = function(source) {
     var formatDir = FormatCollection.getFormatDir();
@@ -452,7 +455,7 @@ UserFormat.prototype.saveFormat = function(source) {
         while (entries.hasMoreElements()) {
             var file = entries.getNext().QueryInterface(Components.interfaces.nsIFile);
             var r;
-            if ((r = /^(\d+)\.js$/.exec(file.leafName)) != null) {
+            if ((r = /^(\d+)\.js$/.exec(file.leafName)) !== null) {
                 var id = parseInt(r[1]);
                 if (id > max) max = id;
             }
@@ -468,22 +471,22 @@ UserFormat.prototype.saveFormat = function(source) {
     stream.close();
 
     FormatCollection.saveUserFormats(formats);
-}
+};
 
 UserFormat.prototype.getFormatFile = function() {
     var formatDir = FormatCollection.getFormatDir();
     var formatFile = formatDir.clone();
     formatFile.append(this.id + ".js");
     return formatFile;
-}
+};
 
 UserFormat.prototype.getFormatURI = function() {
     return SeFileUtils.fileURI(this.getFormatFile());
-}
+};
 
 UserFormat.prototype.loadFormatter = function() {
     return FormatCollection.loadFormatter(SeFileUtils.fileURI(this.getFormatFile()));
-}
+};
 
 UserFormat.prototype.getSource = function() {
     if (this.id) {
@@ -493,7 +496,7 @@ UserFormat.prototype.getSource = function() {
         //return SeFileUtils.readURL('chrome://selenium-ide/content/formats/blank.js');
         return SeFileUtils.readURL('chrome://seleniumbuilder/content/html/js/selenium-ide/formats/blank.js');
     }
-}
+};
 
 /**
  * Format for plugin provided formats
@@ -505,16 +508,17 @@ function PluginFormat(options, id, name, url) {
     this.url = url;
 }
 
-PluginFormat.prototype = new Format;
+PluginFormat.prototype = Object.create(Format.prototype);
+PluginFormat.prototype.constructor = PluginFormat;
 
 PluginFormat.prototype.loadFormatter = function() {
     return FormatCollection.loadFormatter(this.url);
-}
+};
 
 PluginFormat.prototype.getSource = function() {
     return SeFileUtils.readURL(this.url);
-}
+};
 
 PluginFormat.prototype.getFormatURI = function() {
     return this.url;
-}
+};

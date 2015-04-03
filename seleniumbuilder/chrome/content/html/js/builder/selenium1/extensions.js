@@ -30,7 +30,7 @@ builder.registerPostLoadHook(function() {
     };
     loc[builder.selenium1] = name;
     return loc;
-  }
+  };
   
   for (var m in PageBot.prototype) {
     if (!builder.selenium1.originalPBMembers[m]) {

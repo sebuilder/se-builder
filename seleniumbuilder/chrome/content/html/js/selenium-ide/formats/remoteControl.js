@@ -15,12 +15,12 @@ function formatHeader(testCase) {
     }
   var formatLocal = testCase.formatLocal(this.name);
   methodName = testMethodName(className.replace(/Test$/, "").replace(/^Test/, "").
-                replace(/^[A-Z]/, function(str) { return str.toLowerCase() }));
+                replace(/^[A-Z]/, function(str) { return str.toLowerCase(); }));
   var header = (options.getHeader ? options.getHeader() : options.header).
     replace(/\$\{className\}/g, className).
     replace(/\$\{methodName\}/g, methodName).
     replace(/\$\{baseURL\}/g, baseURL).
-    replace(/\$\{([a-zA-Z0-9_]+)\}/g, function(str, name) { return options[name] });
+    replace(/\$\{([a-zA-Z0-9_]+)\}/g, function(str, name) { return options[name]; });
   this.lastIndent = indents(parseInt(options.initialIndents));
   formatLocal.header = header;
   return formatLocal.header;
@@ -77,7 +77,7 @@ function Equals(e1, e2) {
 
 Equals.prototype.invert = function() {
   return new NotEquals(this.e1, this.e2);
-}
+};
 
 function NotEquals(e1, e2) {
   this.e1 = e1;
@@ -87,7 +87,7 @@ function NotEquals(e1, e2) {
 
 NotEquals.prototype.invert = function() {
   return new Equals(this.e1, this.e2);
-}
+};
 
 function RegexpMatch(pattern, expression) {
   this.pattern = pattern;
@@ -96,15 +96,15 @@ function RegexpMatch(pattern, expression) {
 
 RegexpMatch.prototype.invert = function() {
   return new RegexpNotMatch(this.pattern, this.expression);
-}
+};
 
 RegexpMatch.prototype.assert = function() {
   return assertTrue(this.toString());
-}
+};
 
 RegexpMatch.prototype.verify = function() {
   return verifyTrue(this.toString());
-}
+};
 
 function RegexpNotMatch(pattern, expression) {
   this.pattern = pattern;
@@ -114,19 +114,19 @@ function RegexpNotMatch(pattern, expression) {
 
 RegexpNotMatch.prototype.invert = function() {
   return new RegexpMatch(this.pattern, this.expression);
-}
+};
 
 RegexpNotMatch.prototype.toString = function() {
   return notOperator() + RegexpMatch.prototype.toString.call(this);
-}
+};
 
 RegexpNotMatch.prototype.assert = function() {
   return assertFalse(this.invert());
-}
+};
 
 RegexpNotMatch.prototype.verify = function() {
   return verifyFalse(this.invert());
-}
+};
 
 function seleniumEquals(type, pattern, expression) {
   if (type == 'String[]') {
@@ -150,12 +150,10 @@ function seleniumEquals(type, pattern, expression) {
 function xlateArgument(value) {
   value = value.replace(/^\s+/, '');
   value = value.replace(/\s+$/, '');
-  var r;
+  var r,parts = [],r2;
   if ((r = /^javascript\{([\d\D]*)\}$/.exec(value))) {
     var js = r[1];
-    var parts = [];
     var prefix = "";
-    var r2;
     while ((r2 = /storedVars\['(.*?)'\]/.exec(js))) {
       parts.push(string(prefix + js.substring(0, r2.index) + "'"));
       parts.push(variableName(r2[1]));
@@ -165,11 +163,9 @@ function xlateArgument(value) {
     parts.push(string(prefix + js));
     return new CallSelenium("getEval", [concatString(parts)]);
   } else if ((r = /\$\{/.exec(value))) {
-    var parts = [];
     var regexp = /\$\{(.*?)\}/g;
     var lastIndex = 0;
-    var r2;
-    while (r2 = regexp.exec(value)) {
+    while ((r2 = regexp.exec(value))) {
         if (this.declaredVars && this.declaredVars[r2[1]]) {
           if (r2.index - lastIndex > 0) {
             parts.push(string(value.substring(lastIndex, r2.index)));
@@ -194,14 +190,14 @@ function xlateArgument(value) {
 }
 
 function addDeclaredVar(variable) {
-  if (this.declaredVars == null) {
+  if (this.declaredVars === null) {
     this.declaredVars = {};
   }
   this.declaredVars[variable] = true;
 }
 
 function newVariable(prefix, index) {
-  if (index == null) index = 1;
+  if (index === null) index = 1;
   if (this.declaredVars && this.declaredVars[prefix + index]) {
     return newVariable(prefix, index + 1);
   } else {
@@ -219,7 +215,7 @@ function concatString(array) {
 }
 
 function string(value) {
-  if (value != null) {
+  if (value !== null) {
     //value = value.replace(/^\s+/, '');
     //value = value.replace(/\s+$/, '');
     value = value.replace(/\\/g, '\\\\');
@@ -246,7 +242,7 @@ CallSelenium.prototype.invert = function() {
   call.args = this.args;
   call.negative = !this.negative;
   return call;
-}
+};
 
 function xlateArrayElement(value) {
   return value.replace(/\\(.)/g, "$1");
@@ -278,13 +274,13 @@ function xlateValue(type, value) {
 function formatCommand(command) {
   var line = null;
   if (command.type == 'command') {
-    var def = command.getDefinition();
+    var def = command.getDefinition(),method,eq,call,i;
     if (def && def.isAccessor) {
-      var call = new CallSelenium(def.name);
-      for (var i = 0; i < def.params.length; i++) {
+      call = new CallSelenium(def.name);
+      for (i = 0; i < def.params.length; i++) {
         call.args.push(xlateArgument(command.getParameterAt(i)));
       }
-      var extraArg = command.getParameterAt(def.params.length)
+      var extraArg = command.getParameterAt(def.params.length);
       if (def.name.match(/^is/)) { // isXXX
         if (command.command.match(/^assert/) ||
           (this.assertOrVerifyFailureOnNext && command.command.match(/^verify/))) {
@@ -299,15 +295,15 @@ function formatCommand(command) {
         }
       } else { // getXXX
         if (command.command.match(/^(verify|assert)/)) {
-          var eq = seleniumEquals(def.returnType, extraArg, call);
+          eq = seleniumEquals(def.returnType, extraArg, call);
           if (def.negative) eq = eq.invert();
-          var method = (!this.assertOrVerifyFailureOnNext && command.command.match(/^verify/)) ? 'verify' : 'assert';
+          method = (!this.assertOrVerifyFailureOnNext && command.command.match(/^verify/)) ? 'verify' : 'assert';
           line = eq[method]();
         } else if (command.command.match(/^store/)) {
           addDeclaredVar(extraArg);
           line = statement(assignToVariable(def.returnType, extraArg, call));
         } else if (command.command.match(/^waitFor/)) {
-          var eq = seleniumEquals(def.returnType, extraArg, call);
+          eq = seleniumEquals(def.returnType, extraArg, call);
           if (def.negative) eq = eq.invert();
           line = waitFor(eq);
         }
@@ -325,13 +321,13 @@ function formatCommand(command) {
       var value = optionLocator;
       var r = /^(index|label|value|id)=(.*)$/.exec(optionLocator);
       if (r) {
-        flavor = r[1].replace(/^[a-z]/, function(str) { return str.toUpperCase() });
+        flavor = r[1].replace(/^[a-z]/, function(str) { return str.toUpperCase(); });
         value = r[2];
       }
-      var method = (!this.assertOrVerifyFailureOnNext && command.command.match(/^verify/)) ? 'verify' : 'assert';
-      var call = new CallSelenium("getSelected" + flavor);
+      method = (!this.assertOrVerifyFailureOnNext && command.command.match(/^verify/)) ? 'verify' : 'assert';
+      call = new CallSelenium("getSelected" + flavor);
       call.args.push(xlateArgument(command.target));
-      var eq = seleniumEquals('String', value, call);
+      eq = seleniumEquals('String', value, call);
       line = statement(eq[method]());
     } else if (def) {
       if (def.name.match(/^(assert|verify)(Error|Failure)OnNext$/)) {
@@ -339,12 +335,12 @@ function formatCommand(command) {
         this.assertFailureOnNext = def.name.match(/^assert/);
         this.verifyFailureOnNext = def.name.match(/^verify/);
       } else {
-        var call = new CallSelenium(def.name);
+        call = new CallSelenium(def.name);
                 if ("open" == def.name && options.urlSuffix && !command.target.match(/^\w+:\/\//)) {
                     // urlSuffix is used to translate core-based test
                     call.args.push(xlateArgument(options.urlSuffix + command.target));
                 } else {
-                    for (var i = 0; i < def.params.length; i++) {
+                    for (i = 0; i < def.params.length; i++) {
                         call.args.push(xlateArgument(command.getParameterAt(i)));
                     }
                 }
@@ -353,11 +349,11 @@ function formatCommand(command) {
     } else {
       this.log.info("unknown command: <" + command.command + ">");
       // TODO
-      var call = new CallSelenium(command.command);
-      if ((command.target != null && command.target.length > 0)
-        || (command.value != null && command.value.length > 0)) {
+      call = new CallSelenium(command.command);
+      if ((command.target !== null && command.target.length > 0) ||
+          (command.value !== null && command.value.length > 0)) {
         call.args.push(string(command.target));
-        if (command.value != null && command.value.length > 0) {
+        if (command.value !== null && command.value.length > 0) {
           call.args.push(string(command.value));
         }
       }

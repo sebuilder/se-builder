@@ -22,29 +22,29 @@ builder.gui.stepstable.makeTable = function(showOrphanedSel1Steps) {
   });
   
   // Table of steps that have both Selenium 1 and 2 versions.
-  var sel2Names = {};
-  var i = 0;
+  var sel2Names = {}, sel2Type = null, sel2Name ;
+  var i = 0, j = 0, row, head;
   for (var sel1Name in builder.selenium1.stepTypes) {
-    var sel2Name = builder.versionconverter.sel1ToSel2Steps[sel1Name] || ""; 
+    sel2Name = builder.versionconverter.sel1ToSel2Steps[sel1Name] || ""; 
     if (!sel2Name && !showOrphanedSel1Steps) { continue; }
     
     // Column headers
     if (i++ % 20 === 0) {
-      var head = newNode('tr', {'class': 'labels'},
+        head = newNode('tr', {'class': 'labels'},
         newNode('td', _t('step_name')),
         newNode('td', _t('sel_1_translation')),
         newNode('td', _t('negatable')),
         newNode('td', _t('local_playback_available'))
       );
-      for (var j = 0; j < builder.selenium2.io.formats.length; j++) {
+      for (j = 0; j < builder.selenium2.io.formats.length; j++) {
         jQuery(head).append(newNode('td', builder.selenium2.io.formats[j].name));
       }
       jQuery(table).append(head);
     }
     
     sel2Names[sel2Name] = true;
-    var sel2Type = sel2Name ? builder.selenium2.stepTypes[sel2Name] : null;
-    var row = newNode('tr', {'class': "r" + (i % 2)},
+    sel2Type = sel2Name ? builder.selenium2.stepTypes[sel2Name] : null;
+    row = newNode('tr', {'class': "r" + (i % 2)},
       // Selenium 2 step name, if available
       newNode('td', {}, sel2Name),
       // Selenium 1 step name, if available
@@ -54,32 +54,32 @@ builder.gui.stepstable.makeTable = function(showOrphanedSel1Steps) {
       // Can play back locally
       newNode('td', {}, sel2Name ? (builder.selenium2.playback.canPlayback(sel2Type) ? newNode('span', {'class':'yes'}, _t("yes")) : newNode('span', {'class':'no'}, _t("no"))) : "")
     );
-    for (var j = 0; j < builder.selenium2.io.formats.length; j++) {
+    for (j = 0; j < builder.selenium2.io.formats.length; j++) {
       jQuery(row).append(newNode('td', {}, sel2Name ? (builder.selenium2.io.formats[j].canExport(sel2Type) ? newNode('span', {'class':'yes'}, _t("yes")) : newNode('span', {'class':'no'}, _t("no"))) : ""));   
     }
     jQuery(table).append(row);
   }
   
   // Table of steps that have only Selenium 2 versions.
-  for (var sel2Name in builder.selenium2.stepTypes) {
+  for (sel2Name in builder.selenium2.stepTypes) {
     if (sel2Names[sel2Name]) { continue; }
     
     // Column headers
     if (i++ % 20 === 0) {
-      var head = newNode('tr', {'class': 'labels'},
+        head = newNode('tr', {'class': 'labels'},
         newNode('td', _t('step_name')),
         newNode('td', _t('sel_1_translation')),
         newNode('td', _t('negatable')),
         newNode('td', _t('local_playback_available'))
       );
-      for (var j = 0; j < builder.selenium2.io.formats.length; j++) {
+      for (j = 0; j < builder.selenium2.io.formats.length; j++) {
         jQuery(head).append(newNode('td', builder.selenium2.io.formats[j].name));
       }
       jQuery(table).append(head);
     }
     
-    var sel2Type = sel2Name ? builder.selenium2.stepTypes[sel2Name] : null;
-    var row = newNode('tr', {'class': "r" + (i % 2)},
+    sel2Type = sel2Name ? builder.selenium2.stepTypes[sel2Name] : null;
+    row = newNode('tr', {'class': "r" + (i % 2)},
       // Selenium 2 step name, if available
       newNode('td', {}, sel2Name),
       // No Selenium 1 step name
@@ -89,7 +89,7 @@ builder.gui.stepstable.makeTable = function(showOrphanedSel1Steps) {
       // Can play back locally
       newNode('td', {}, sel2Name ? (builder.selenium2.playback.canPlayback(sel2Type) ? newNode('span', {'class':'yes'}, _t("yes")) : newNode('span', {'class':'no'}, _t("no"))) : "")
     );
-    for (var j = 0; j < builder.selenium2.io.formats.length; j++) {
+    for (j = 0; j < builder.selenium2.io.formats.length; j++) {
       jQuery(row).append(newNode('td', {}, sel2Name ? (builder.selenium2.io.formats[j].canExport(sel2Type) ? newNode('span', {'class':'yes'}, _t("yes")) : newNode('span', {'class':'no'}, _t("no"))) : ""));
     }
     jQuery(table).append(row);

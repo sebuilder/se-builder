@@ -124,7 +124,7 @@ builder.versionconverter.convertStep = function(step, sourceVersion, targetVersi
     return builder.versionconverter.conversionHooks[key](step, sourceVersion, targetVersion);
   }
   return builder.versionconverter.defaultConvertStep(step, sourceVersion, targetVersion);
-}
+};
 
 builder.versionconverter.defaultConvertStep = function(step, sourceVersion, targetVersion) {
   var newStep = null;
@@ -134,7 +134,7 @@ builder.versionconverter.defaultConvertStep = function(step, sourceVersion, targ
   if (sourceVersion == builder.selenium2 && targetVersion == builder.selenium1) {
     newStep = new builder.Step(builder.selenium1.stepTypes[builder.versionconverter.sel2ToSel1Steps[step.type.getName()]]);
   }
-  if (newStep != null) {
+  if (newStep !== null) {
     newStep.negated = step.negated;
     newStep.step_name = step.step_name;
     var srcParamNames = step.getParamNames();
@@ -149,7 +149,7 @@ builder.versionconverter.defaultConvertStep = function(step, sourceVersion, targ
 
 builder.versionconverter.convertParam = function(param, paramType, sourceVersion, targetVersion) {
   if (paramType == "locator") {
-    if (param.getName(targetVersion) == null) {
+    if (param.getName(targetVersion) === null) {
       // Uh-oh, this is something that the target version does not support.
       var loc2 = builder.locator.empty();
       for (var k in builder.locator.methods) {
@@ -163,7 +163,7 @@ builder.versionconverter.convertParam = function(param, paramType, sourceVersion
           }
         }
       }
-      if (loc2.getValue() == "") {
+      if (loc2.getValue() === "") {
         // Uh-oh x2: And there are no alternatives. So we'll have to convert something.
         if (sourceVersion == builder.selenium1) {
           if (param.supportsMethod(builder.locator.methods.identifier)) {
@@ -184,8 +184,8 @@ builder.versionconverter.convertParam = function(param, paramType, sourceVersion
 
 
 builder.versionconverter.convertScript = function(script, targetVersion) {
-  var newScript = new builder.Script(targetVersion);
-  for (var i = 0; i < script.steps.length; i++) {
+  var newScript = new builder.Script(targetVersion), i;
+  for (i = 0; i < script.steps.length; i++) {
     var newSteps = builder.versionconverter.convertStep(script.steps[i], script.seleniumVersion, targetVersion);
     for (var j = 0; j < newSteps.length; j++) {
       newScript.addStep(newSteps[j]);
@@ -200,7 +200,7 @@ builder.versionconverter.convertScript = function(script, targetVersion) {
     newScript.data.configs[cid] = cfg;
   }
   
-  for (var i = 0; i < script.inputs.length; i++) {
+  for (i = 0; i < script.inputs.length; i++) {
     newScript.inputs.push([script.inputs[i][0], script.inputs[i][1]]);
   }
   
@@ -211,7 +211,7 @@ builder.versionconverter.nonConvertibleStepNames = function(script, targetVersio
   var names = [];
   for (var i = 0; i < script.steps.length; i++) {
     try {
-      if (builder.versionconverter.convertStep(script.steps[i], script.seleniumVersion, targetVersion) == null) {
+      if (builder.versionconverter.convertStep(script.steps[i], script.seleniumVersion, targetVersion) === null) {
         names.push(script.steps[i].type.getName());
       }
     } catch (e) {
@@ -222,7 +222,7 @@ builder.versionconverter.nonConvertibleStepNames = function(script, targetVersio
 };
 
 builder.versionconverter.canConvert = function(script, targetVersion) {
-  return builder.versionconverter.nonConvertibleStepNames(script, targetVersion).length == 0;
+  return builder.versionconverter.nonConvertibleStepNames(script, targetVersion).length === 0;
 };
 
 builder.versionconverter.sel1ToSel2Steps = {

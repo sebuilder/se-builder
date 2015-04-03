@@ -42,7 +42,7 @@ builder.gui.suite.update = function() {
   }
   
   if (builder.suite.isSaveable()) {
-    if (builder.suite.path == null || builder.suite.path.where != "local") {
+    if (builder.suite.path === null || builder.suite.path.where != "local") {
       jQuery('#suite-save').html(_t('menu_save_suite'));
       builder.gui.menu.hideItem('suite-save-as');
     } else {
@@ -92,12 +92,12 @@ builder.gui.suite.allSavedAsSame = function() {
   for (var i = 0; i < builder.suite.scripts.length; i++) {
     if (!builder.suite.scripts[i].exportpath) { return false; }
     if (!builder.suite.scripts[i].exportpath.format.name) { return false; }
-    if (formatName == null) {
+    if (formatName === null) {
       formatName = builder.suite.scripts[i].exportpath.format.name;
     } else {
       if (formatName != builder.suite.scripts[i].exportpath.format.name) { return false; }
     }
-    if (whereName == null) {
+    if (whereName === null) {
       whereName = builder.suite.scripts[i].exportpath.where;
     } else {
       if (whereName != builder.suite.scripts[i].exportpath.where) { return false; }
@@ -108,7 +108,7 @@ builder.gui.suite.allSavedAsSame = function() {
 
 /** @return Whether all scripts are all in the same version. */
 builder.gui.suite.allSameSelenium = function() {
-  if (builder.suite.scripts.length == 0) { return true; }
+  if (builder.suite.scripts.length === 0) { return true; }
   var version = builder.suite.scripts[0].seleniumVersion;
   for (var i = 0; i < builder.suite.scripts.length; i++) {
     if (builder.suite.scripts[i].seleniumVersion !== version) { return false; }
@@ -121,7 +121,7 @@ builder.registerPostLoadHook(function() {
   // Save the suite
   builder.gui.menu.addItem('suite', _t('menu_save_suite'), 'suite-save', function() {
     if (builder.suite.isSaveable()) {
-      if (builder.suite.path == null || builder.suite.path.where != "local") {
+      if (builder.suite.path === null || builder.suite.path.where != "local") {
         builder.dialogs.exportsuite.saveAs();
       } else {
         builder.dialogs.exportsuite.save();

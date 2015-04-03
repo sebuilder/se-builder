@@ -65,7 +65,7 @@ builder.dialogs.runall.getAllRows = function(scripts, callback, failure) {
         failed = true;
         failure(e);
     }
-  }
+  };
   for (var i = 0; i < scripts.length; i++) {
     builder.dialogs.runall.getScriptRows(scripts, i, scriptIndexToRows, runsComplete, callback, f2);
   }
@@ -105,7 +105,7 @@ builder.dialogs.runall.run = function() {
     // Generate run objects, one for each script playback to do.
     builder.dialogs.runall.runs = [];
     var runIndex = 0;
-    for (var i = 0; i < scripts.length; i++) {
+    for (i = 0; i < scripts.length; i++) {
       var script = scripts[i];
       if (builder.dialogs.runall.currentScriptOnly && script != builder.getScript()) {
         continue;

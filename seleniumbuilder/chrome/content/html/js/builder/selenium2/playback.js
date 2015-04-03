@@ -57,7 +57,7 @@ builder.selenium2.playback.maxWaitCycles = function() {
 /** How many implicit wait cycles are run before waits time out. */
 builder.selenium2.playback.maxImplicitWaitCycles = function() {
   return builder.selenium2.playback.script.timeoutSeconds * 1000 / builder.selenium2.playback.implicitWaitTimeoutAmount;
-}
+};
 
 builder.selenium2.playback.currentStepIndex = function() {
   return builder.selenium2.playback.script.getStepIndexForID(builder.selenium2.playback.currentStep.id);
@@ -105,7 +105,7 @@ builder.selenium2.playback.continueTestBetween = function(startStepID, endStepID
   } else {
     builder.selenium2.playback.runTestBetween(startStepID, endStepID, postPlayCallback, jobStartedCallback, stepStateCallback, runPausedCallback);
   }
-}
+};
 
 builder.selenium2.playback.runTestBetween = function(startStepID, endStepID, postPlayCallback, jobStartedCallback, stepStateCallback, runPausedCallback) {
   if (builder.selenium2.playback.hasPlaybackSession()) { return; }
@@ -260,7 +260,7 @@ builder.selenium2.playback.continueFindingElement = function(locator, callback, 
         }
       }
     );
-  }, builder.selenium2.playback.implicitWaitCycle == 0 ? 1 : builder.selenium2.playback.implicitWaitTimeoutAmount);
+  }, builder.selenium2.playback.implicitWaitCycle === 0 ? 1 : builder.selenium2.playback.implicitWaitTimeoutAmount);
 };
 
 builder.selenium2.playback.execute = function(name, parameters, callback, errorCallback) {
@@ -277,7 +277,7 @@ builder.selenium2.playback.execute = function(name, parameters, callback, errorC
       return;
     }
     result = JSON.parse(result);
-    if (result.status != 0) {
+    if (result.status !== 0) {
       if (errorCallback) {
         errorCallback(result);
       } else {
@@ -319,7 +319,7 @@ builder.selenium2.playback.param = function(pName) {
     var ch = text.substring(i, i + 1);
     if (insideVar) {
       if (ch == "}") {
-        if (builder.selenium2.playback.vars[varName] == undefined) {
+        if (builder.selenium2.playback.vars[varName] === undefined) {
           throw _t('sel2_variable_not_set', varName);
         }
         output += builder.selenium2.playback.vars[varName];
@@ -1212,19 +1212,19 @@ builder.selenium2.playback.recordResult = function(result) {
 };
 
 builder.selenium2.playback.hasPlaybackSession = function() {
-  return builder.selenium2.playback.script != null;
+  return builder.selenium2.playback.script !== null;
 };
 
 builder.selenium2.playback.isRunning = function() {
   return !builder.selenium2.playback.pausedOnBreakpoint;
-}
+};
 
 builder.selenium2.playback.getVars = function() {
   return builder.selenium2.playback.vars;
 };
 
 builder.selenium2.playback.setVar = function(k, v) {
-  if (v == null) {
+  if (v === null) {
     delete builder.selenium2.playback.vars[k];
   } else {
     builder.selenium2.playback.vars[k] = v;

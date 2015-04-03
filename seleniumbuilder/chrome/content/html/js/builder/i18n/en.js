@@ -12,7 +12,7 @@ m.new_locale_after_restart = "Language will change after Builder restart.";
 // Startup view
 m.open_script_or_suite = "Open a script or suite";
 m.view_command_table = "View supported commands for Selenium 1 & 2";
-m.manage_plugins = "Manage plugins"
+m.manage_plugins = "Manage plugins";
 m.start_recording_at = "Start recording at";
 m.cookie_warning = "This will delete all cookies for the domain you're recording for.";
 
@@ -298,7 +298,7 @@ m.json_file_path = "JSON File Path";
 m.xml_file_path = "XML File Path";
 m.csv_file_path = "CSV File Path";
 m.csv_parse_error = "CSV parse error: {0}";
-m.row = "Row {0}"
+m.row = "Row {0}";
 m.inputs = "Inputs";
 m.string = "String";
 m.integer = "Integer";

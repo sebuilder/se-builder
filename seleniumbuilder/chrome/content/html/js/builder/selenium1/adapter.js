@@ -34,13 +34,14 @@ builder.selenium1.adapter.parseSuite = function(text, path, callback) {
   try {
     ts = bridge.TestSuite.loadString(text);
   } catch (e) {
+	var en;
     if (e == "Failed to load test suite: <table> tag not found") {
-      e = _t('sel1_no_table_tag');
+      en = _t('sel1_no_table_tag');
     }
-    callback(null, e);
+    callback(null, en);
     return;
   }
-  if (!ts || ts.tests.length == 0) {
+  if (!ts || ts.tests.length === 0) {
     callback(null, _t('could_not_open_suite'));
     return;
   }
@@ -54,7 +55,7 @@ builder.selenium1.adapter.parseSuite = function(text, path, callback) {
       if (scriptInfo) {
         script = builder.selenium1.adapter.parseScript(scriptInfo.text, scriptInfo.path);
       }
-      if (script != null) {
+      if (script !== null) {
         si.scripts.push(script);
       }
       if (i < ts.tests.length - 1) {
@@ -161,10 +162,11 @@ builder.selenium1.adapter.parseScript = function(text, path) {
     format.getFormatter().parse(testCase, text);
     return builder.selenium1.adapter.convertTestCaseToScript(testCase, format, path);
   } catch (e) {
+	var en = e;
     if (e == "no command found") {
-      e = _t('sel1_no_command_found');
+      en = _t('sel1_no_command_found');
     }
-    throw e;
+    throw en;
   }
 };
 
@@ -272,13 +274,14 @@ builder.selenium1.adapter.convertScriptToTestCase = function(script, useExportNa
     }
     if (name == "open" && params[0].startsWith(testCase.baseURL)) {
       params[0] = params[0].substring(testCase.baseURL.length);
-      if (params[0] == "") { params[0] = "/"; }
+      if (params[0] === "") { params[0] = "/"; }
     }
     testCase.commands.push(new bridge.Command(name, params[0], params[1]));
   }
+  var title;
   if (useExportName) {
     if (script.exportpath) {
-      var title = script.exportpath.path.split("/");
+      title = script.exportpath.path.split("/");
       title = title[title.length - 1].split(".")[0];
       testCase.title = title;
     }
@@ -287,7 +290,7 @@ builder.selenium1.adapter.convertScriptToTestCase = function(script, useExportNa
       testCase.file = bridge.SeFileUtils.getFile(script.path.path);
     }
     if (script.path) {
-      var title = script.path.path.split("/");
+      title = script.path.path.split("/");
       title = title[title.length - 1].split(".")[0];
       testCase.title = title;
     }

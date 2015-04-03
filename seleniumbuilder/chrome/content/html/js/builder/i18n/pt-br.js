@@ -12,7 +12,7 @@ m.new_locale_after_restart = "O idioma irá mudar após reiniciar o Builder.";
 // Startup view
 m.open_script_or_suite = "Abrir um script ou suíte";
 m.view_command_table = "Ver comandos suportados para Selenium 1 e 2";
-m.manage_plugins = "Gerenciar plugins"
+m.manage_plugins = "Gerenciar plugins";
 m.start_recording_at = "Começar gravando em";
 m.cookie_warning = "Isto irá limpar todos os cookies para o domínio que você está gravando.";
 

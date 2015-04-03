@@ -15,8 +15,8 @@
  */
 
 function Command(command, target, value) {
-  this.command = command != null ? command : '';
-    if (target != null && target instanceof Array) {
+  this.command = command !== null ? command : '';
+    if (target !== null && target instanceof Array) {
         if (target[0]) {
             this.target = target[0][0];
             this.targetCandidates = target;
@@ -24,14 +24,14 @@ function Command(command, target, value) {
             this.target = "LOCATOR_DETECTION_FAILED";
         }
     } else {
-        this.target = target != null ? target : '';
+        this.target = target !== null ? target : '';
     }
-  this.value = value != null ? value : '';
+  this.value = value !== null ? value : '';
 }
 
 Command.prototype.createCopy = function() {
   var copy = new Command();
-  for (prop in this) {
+  for (var prop in this) {
     copy[prop] = this[prop];
   }
   return copy;
@@ -43,7 +43,7 @@ Command.prototype.getRealValue = function() {
   } else {
     return this.target;
   }
-}
+};
 
 Command.prototype.getRealTarget = function() {
   if (this.value) {
@@ -51,7 +51,7 @@ Command.prototype.getRealTarget = function() {
   } else {
     return null;
   }
-}
+};
 
 Command.innerHTML = function(element) {
   var html = "";
@@ -70,7 +70,7 @@ Command.innerHTML = function(element) {
     }
   }
   return html;
-}
+};
 
 Command.loadAPI = function() {
   if (!this.functions) {
@@ -81,7 +81,7 @@ Command.loadAPI = function() {
     for (var d = 0; d < documents.length; d++) {
       // set the current document. again, by default this is the iedoc-core.xml
       document = documents[d];
-      
+
       // <function name="someName">
       //   <param name="targetName">description</param>
       //   <param name="valueName">description</param> -- optional
@@ -92,20 +92,20 @@ Command.loadAPI = function() {
       for (var i = 0; i < functionElements.length; i++) {
         var element = functionElements.item(i);
         var def = new CommandDefinition(String(element.attributes.getNamedItem('name').value));
-        
+
         var returns = element.getElementsByTagName("return");
         if (returns.length > 0) {
-          var returnType = new String(returns.item(0).attributes.getNamedItem("type").value);
+          var returnType = String(returns.item(0).attributes.getNamedItem("type").value);
           returnType = returnType.replace(/string/, "String");
           def.returnType = returnType;
           def.returnDescription = this.innerHTML(returns.item(0));
         }
-        
+
         var comments = element.getElementsByTagName("comment");
         if (comments.length > 0) {
           def.comment = this.innerHTML(comments.item(0));
         }
-        
+
         var params = element.getElementsByTagName("param");
         for (var j = 0; j < params.length; j++) {
           var paramElement = params.item(j);
@@ -114,7 +114,7 @@ Command.loadAPI = function() {
           param.description = this.innerHTML(paramElement);
           def.params.push(param);
         }
-        
+
         functions[def.name] = def;
 
         // generate negative accessors
@@ -129,14 +129,14 @@ Command.loadAPI = function() {
         }
       }
     }
-    functions['assertFailureOnNext'] = new CommandDefinition('assertFailureOnNext');
-    functions['verifyFailureOnNext'] = new CommandDefinition('verifyFailureOnNext');
-    functions['assertErrorOnNext'] = new CommandDefinition('assertErrorOnNext');
-    functions['verifyErrorOnNext'] = new CommandDefinition('verifyErrorOnNext');
+    functions.assertFailureOnNext = new CommandDefinition('assertFailureOnNext');
+    functions.verifyFailureOnNext = new CommandDefinition('verifyFailureOnNext');
+    functions.assertErrorOnNext = new CommandDefinition('assertErrorOnNext');
+    functions.verifyErrorOnNext = new CommandDefinition('verifyErrorOnNext');
     this.functions = functions;
   }
   return this.functions;
-}
+};
 
 function CommandDefinition(name) {
   this.name = name;
@@ -168,7 +168,7 @@ CommandDefinition.prototype.getReferenceFor = function(command) {
     var params = "";
     if (this.params.length > 0) {
         params += "<div>Arguments:</div><ul>";
-        for (var i = 0; i < this.params.length; i++) {
+        for (i = 0; i < this.params.length; i++) {
             params += "<li>" + this.params[i].name + " - " + this.params[i].description + "</li>";
         }
         params += "</ul>";
@@ -180,10 +180,10 @@ CommandDefinition.prototype.getReferenceFor = function(command) {
   return "<dl><dt><strong>" + (command.command || this.name) + "(" +
         paramNames.join(", ") + ")</strong></dt>" +
         note +
-      '<dd style="margin:5px;">' + 
+      '<dd style="margin:5px;">' +
         params + returns +
       this.comment + "</dd></dl>";
-}
+};
 
 CommandDefinition.prototype.negativeAccessor = function() {
   var def = new CommandDefinition(this.name);
@@ -193,20 +193,20 @@ CommandDefinition.prototype.negativeAccessor = function() {
   def.isAccessor = true;
   def.negative = true;
   return def;
-}
+};
 
 Command.prototype.getDefinition = function() {
-  if (this.command == null) return null;
+  if (this.command === null) return null;
   var commandName = this.command.replace(/AndWait$/, '');
   var api = Command.loadAPI();
   var r = /^(assert|verify|store|waitFor)(.*)$/.exec(commandName);
   if (r) {
     var suffix = r[2];
     var prefix = "";
-    if ((r = /^(.*)NotPresent$/.exec(suffix)) != null) {
+    if ((r = /^(.*)NotPresent$/.exec(suffix)) !== null) {
       suffix = r[1] + "Present";
       prefix = "!";
-    } else if ((r = /^Not(.*)$/.exec(suffix)) != null) {
+    } else if ((r = /^Not(.*)$/.exec(suffix)) !== null) {
       suffix = r[1];
       prefix = "!";
     }
@@ -220,7 +220,7 @@ Command.prototype.getDefinition = function() {
     }
   }
   return api[commandName];
-}
+};
 
 Command.prototype.getParameterAt = function(index) {
   switch (index) {
@@ -231,11 +231,11 @@ Command.prototype.getParameterAt = function(index) {
   default:
     return null;
   }
-}
+};
 
 Command.prototype.getAPI = function() {
   return window.editor.seleniumAPI;
-}
+};
 
 Command.prototype.type = 'command';
 
@@ -245,7 +245,7 @@ Command.prototype.type = 'command';
  */
 Command.prototype.toString = function()
 {
-    var s = this.command
+    var s = this.command;
     if (this.target) {
         s += ' | ' + this.target;
         if (this.value) {
@@ -253,15 +253,15 @@ Command.prototype.toString = function()
         }
     }
     return s;
-}
+};
 
 Command.prototype.isRollup = function()
 {
     return /^rollup(?:AndWait)?$/.test(this.command);
-}
+};
 
 function Comment(comment) {
-  this.comment = comment != null ? comment : '';
+  this.comment = comment !== null ? comment : '';
 }
 
 Comment.prototype.type = 'comment';
@@ -274,7 +274,7 @@ Line.prototype.type = 'line';
 
 Comment.prototype.createCopy = function() {
   var copy = new Comment();
-  for (prop in this) {
+  for (var prop in this) {
     copy[prop] = this[prop];
   }
   return copy;
@@ -297,11 +297,11 @@ function TestCase(tempTitle) {
       this.started = false;
       this.debugIndex = -1;
     },
-    
+
     nextCommand: function() {
       if (!this.started) {
         this.started = true;
-        this.debugIndex = testCase.startPoint ? testCase.commands.indexOf(testCase.startPoint) : 0
+        this.debugIndex = testCase.startPoint ? testCase.commands.indexOf(testCase.startPoint) : 0;
       } else {
         this.debugIndex++;
       }
@@ -321,13 +321,13 @@ function TestCase(tempTitle) {
             }
             return command;
     }
-  }
+  };
 }
 
 // Create a shallow copy of testcase
 TestCase.prototype.createCopy = function() {
   var copy = new TestCase();
-  for (prop in this) {
+  for (var prop in this) {
     copy[prop] = this[prop];
   }
   return copy;
@@ -342,41 +342,41 @@ TestCase.prototype.formatLocal = function(formatName) {
     this.formatLocalMap[formatName] = scope;
   }
   return scope;
-}
+};
 
 // For backwards compatibility
 TestCase.prototype.setCommands = function(commands) {
     this.commands = commands;
     this.recordModifiedInCommands();
-}
+};
 
 TestCase.prototype.recordModifiedInCommands = function() {
     if (this.commands.recordModified) {
         return;
     }
     this.commands.recordModified = true;
-  var self = this;
+    var self = this;
     var commands = this.commands;
 
   var _push = commands.push;
   commands.push = function(command) {
     _push.call(commands, command);
     self.setModified();
-  }
+  };
 
   var _splice = commands.splice;
   commands.splice = function(index, removeCount, command) {
 
-                var removed = null;
-    if (command !== undefined && command != null) {
+    var removed = null;
+    if (command !== undefined && command !== null) {
       removed = _splice.call(commands, index, removeCount, command);
     } else {
       removed = _splice.call(commands, index, removeCount);
     }
     self.setModified();
 
-                return removed;
-  }
+    return removed;
+  };
 
   var _pop = commands.pop;
   commands.pop = function() {
@@ -384,8 +384,8 @@ TestCase.prototype.recordModifiedInCommands = function() {
     commands.splice(commands.length - 1, 1);
     self.setModified();
     return command;
-  }
-}
+  };
+};
 
 TestCase.prototype.clear = function() {
   var length = this.commands.length;
@@ -396,12 +396,12 @@ TestCase.prototype.clear = function() {
 TestCase.prototype.setModified = function() {
   this.modified = true;
     this.notify("modifiedStateUpdated");
-}
+};
 
 TestCase.prototype.clearModified = function() {
   this.modified = false;
     this.notify("modifiedStateUpdated");
-}
+};
 
 TestCase.prototype.checkTimestamp = function() {
   if (this.file) {
@@ -411,7 +411,7 @@ TestCase.prototype.checkTimestamp = function() {
     }
   }
   return false;
-}
+};
 
 TestCase.prototype.getCommandIndexByTextIndex = function(text, index, formatter) {
   this.log.debug("getCommandIndexByTextIndex: index=" + index);
@@ -428,12 +428,12 @@ TestCase.prototype.getCommandIndexByTextIndex = function(text, index, formatter)
       return i;
     }
     var command = this.commands[i];
-    if (command.line != null) {
+    if (command.line !== null) {
       lineno -= command.line.split(/\n/).length;
     }
   }
   return this.commands.length;
-}
+};
 
 TestCase.prototype.getTitle = function() {
     if (this.title) {
@@ -445,10 +445,10 @@ TestCase.prototype.getTitle = function() {
     } else {
         return null;
     }
-}
+};
 
 TestCase.prototype.setBaseURL = function(baseURL) {
     this.baseURL = baseURL;
-}
+};
 
 observable(TestCase);

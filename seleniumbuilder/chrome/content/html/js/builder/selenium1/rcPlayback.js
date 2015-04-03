@@ -59,7 +59,7 @@ builder.selenium1.rcPlayback.makeRun = function(settings, script, postRunCallbac
     /** Whether to preserve this run's session for reuse. */
     preserveRunSession: !!preserveRunSession
   };
-}
+};
 
 builder.selenium1.rcPlayback.isRunning = function() {
   return builder.selenium1.rcPlayback.runs.length > 0;
@@ -89,7 +89,7 @@ builder.selenium1.rcPlayback.getVar = function(r, varIndex, varNames, vars, call
   } else {
     var cmd = "cmd=getExpression&1=" + builder.selenium1.rcPlayback.enc("${" + varNames[varIndex] + "}");    
     builder.selenium1.rcPlayback.post(r, cmd + "&sessionId=" + r.session, function(r, rcResponse) {
-      if (rcResponse.indexOf("OK,") == 0) {
+      if (rcResponse.indexOf("OK,") === 0) {
         vars[varNames[varIndex]] = rcResponse.substring(3);
       }
       if (varIndex == varNames.length - 1) {
@@ -257,7 +257,7 @@ builder.selenium1.rcPlayback.playCurrentStep = function(r) {
     r.stepStateCallback(r, r.script, r.currentStep, r.currentStepIndex, builder.stepdisplay.state.RUNNING, null, null);
     var cmd = "cmd=getExpression&1=" + builder.selenium1.rcPlayback.enc(step.message);    
     builder.selenium1.rcPlayback.post(r, cmd + "&sessionId=" + r.session, function(r, rcResponse) {
-      if (rcResponse.indexOf("OK,") == 0) {
+      if (rcResponse.indexOf("OK,") === 0) {
         r.stepStateCallback(r, r.script, r.currentStep, r.currentStepIndex, builder.stepdisplay.state.SUCCEEDED, rcResponse.substring(3), null);
       }
       builder.selenium1.rcPlayback.playNextStep(r, rcResponse);
@@ -266,7 +266,7 @@ builder.selenium1.rcPlayback.playCurrentStep = function(r) {
     r.stepStateCallback(r, r.script, r.currentStep, r.currentStepIndex, builder.stepdisplay.state.RUNNING, null, null);
     builder.selenium1.rcPlayback.post(r, builder.selenium1.rcPlayback.toCmdString(step) + "&sessionId=" + r.session, builder.selenium1.rcPlayback.playNextStep);
   }
-}
+};
 
 builder.selenium1.rcPlayback.continueTests = function() {
   for (var i = 0; i < builder.selenium1.rcPlayback.runs.length; i++) {

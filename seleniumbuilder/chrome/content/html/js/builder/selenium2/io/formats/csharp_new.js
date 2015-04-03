@@ -84,17 +84,19 @@ builder.selenium2.io.addLangFormatter({
       "        wd.SwitchTo().Alert().Dismiss();\n",
     "addCookie":
       function(step, escapeValue) {
+		var path;
         var c_name = "c" + step.id;
+        var max_age = null;
         var r = "        Cookie " + c_name + " = new Cookie(" + escapeValue(step.type, step.name) + ", " + escapeValue(step.type, step.value);
         var opts = step.options.split(",");
         for (var i = 0; i < opts.length; i++) {
           var kv = opts[i].trim().split("=");
           if (kv.length == 1) { continue; }
           if (kv[0] == "path") {
-            var path = escapeValue(step.type, kv[1]);
+            path = escapeValue(step.type, kv[1]);
           }
           if (kv[0] == "max_age") {
-            var max_age = "DateTime.Now.AddSeconds((double)" + parseInt(kv[1])+")";
+            max_age = "DateTime.Now.AddSeconds((double)" + parseInt(kv[1])+")";
           }
         }
         if (path) {
@@ -143,7 +145,7 @@ builder.selenium2.io.addLangFormatter({
     }
   },
   waitFor: function(step, escapeValue, doSubs, getter) {
-    return doSubs("        wait.Until(d => {getter} == {cmp});\n", getter).replace('wd', 'd');;
+    return doSubs("        wait.Until(d => {getter} == {cmp});\n", getter).replace('wd', 'd');
   },
   store:
     "        ${{variable}:{vartype}} = {getter};\n",
@@ -157,7 +159,7 @@ builder.selenium2.io.addLangFormatter({
     "            Console.Error.WriteLine(\"{negNot}{stepTypeName} failed\");\n" +
     "        }\n",
   boolean_waitFor: function(step, escapeValue, doSubs, getter) {
-    return doSubs("        wait.Until(d => {getter});\n", getter).replace('wd', 'd');;
+    return doSubs("        wait.Until(d => {getter});\n", getter).replace('wd', 'd');
   },
   boolean_store:
     "        ${{variable}:{vartype}} = {getter};\n",
@@ -272,11 +274,11 @@ builder.selenium2.io.addLangFormatter({
     if (stepType.name.startsWith("store") && pName == "variable") { return value; }
     if (stepType.name == "switchToFrameByIndex" && pName == "index") { return value; }
     // This function takes a string literal and escapes it and wraps it in quotes.
-    function esc(v) { return "\"" + v.replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + "\""; }
+    var esc = function esc(v) { return "\"" + v.replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + "\""; };
     
     // Don't escape numerical values.
     if (stepType == builder.selenium2.stepTypes.pause) {
-      esc = function(v) { return v; }
+      esc = function(v) { return v; };
     }
     
     // The following is a transducer that produces the escaped expression by going over each

@@ -78,7 +78,7 @@ builder.selenium2.io.addLangFormatter({
           var kv = opts[i].trim().split("=");
           if (kv.length == 1) { continue; }
           if (kv[0] == "path") {
-            cookie += ", \"path\": " + escapeValue(step.type, kv[1])
+            cookie += ", \"path\": " + escapeValue(step.type, kv[1]);
           }
           if (kv[0] == "max_age") {
             cookie += ", \"expiry\": int(time.time() + " + parseInt(kv[1]) * 1000 + ")";

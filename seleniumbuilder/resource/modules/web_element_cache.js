@@ -9,14 +9,15 @@ goog.provide = function(a) {
     }
     delete goog.implicitNamespaces_[a];
     for(var b = a;(b = b.substring(0, b.lastIndexOf("."))) && !goog.getObjectByName(b);) {
-      goog.implicitNamespaces_[b] = !0
+      goog.implicitNamespaces_[b] = !0;
     }
   }
-  goog.exportPath_(a)
+  goog.exportPath_(a);
 };
 goog.setTestOnly = function(a) {
   if(COMPILED && !goog.DEBUG) {
-    throw a = a || "", Error("Importing test-only code into non-debug environment" + a ? ": " + a : ".");
+	a = a || ""; 
+    throw Error("Importing test-only code into non-debug environment" + a ? ": " + a : ".");
   }
 };
 COMPILED || (goog.isProvided_ = function(a) {

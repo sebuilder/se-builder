@@ -37,7 +37,7 @@ builder.datasource.xml.fetchRows = function(config, script, callback, failure) {
             callback(parseXML(result.text));
           } else {
             // Local absolute path
-            var result = null;
+            result = null;
             try {
               result = parseXML(bridge.readPath(config.path));
             } catch (e) {

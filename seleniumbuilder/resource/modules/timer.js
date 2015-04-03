@@ -49,7 +49,7 @@ fxdriver.Timer.prototype.setTimeout = function(callback, opt_timeout) {
   var timeout = opt_timeout || 10;
   // NO. This cannot be changed to a local variable, Simon.
   // See documentation on msITimer.
-  this.timer = CC['@mozilla.org/timer;1'].createInstance(CI['nsITimer']);
+  this.timer = CC['@mozilla.org/timer;1'].createInstance(CI.nsITimer);
 
   this.timer.initWithCallback({
     notify: function() {

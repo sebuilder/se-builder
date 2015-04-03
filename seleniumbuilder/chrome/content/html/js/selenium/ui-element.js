@@ -2,11 +2,11 @@
 // Globals, including constants
 
 var UI_GLOBAL = {
-    UI_PREFIX: 'ui'
-    , XHTML_DOCTYPE: '<!DOCTYPE html PUBLIC '
-        + '"-//W3C//DTD XHTML 1.0 Strict//EN" '
-        + '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'
-    , XHTML_XMLNS: 'http://www.w3.org/1999/xhtml'
+    UI_PREFIX: 'ui',
+    XHTML_DOCTYPE: '<!DOCTYPE html PUBLIC '+
+        '"-//W3C//DTD XHTML 1.0 Strict//EN" '+
+        '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
+    XHTML_XMLNS: 'http://www.w3.org/1999/xhtml'
 };
 
 //*****************************************************************************
@@ -110,18 +110,18 @@ function UIElement(uiElementShorthand)
         var permutations = [];
         for (var i = 0; i < args.length; ++i) {
             var arg = args[i];
-            var defaultValues = (arguments.length > 1)
-                ? arg.getDefaultValues(opt_inDocument)
-                : arg.getDefaultValues();
+            var defaultValues = (arguments.length > 1)?
+                arg.getDefaultValues(opt_inDocument):
+                arg.getDefaultValues();
             
             // skip arguments for which no default values are defined
-            if (defaultValues.length == 0) {
+            if (defaultValues.length === 0) {
                 continue;
             }
             for (var j = 0; j < defaultValues.length; ++j) {
                 var value = defaultValues[j];
                 var nextPermutations = this.permuteArgs(args.slice(i+1));
-                if (nextPermutations.length == 0) {
+                if (nextPermutations.length === 0) {
                     var permutation = {};
                     permutation[arg.name] = value + ''; // make into string
                     permutations.push(permutation);
@@ -136,7 +136,7 @@ function UIElement(uiElementShorthand)
             break;
         }
         return permutations;
-    }
+    };
     
     
     
@@ -146,7 +146,7 @@ function UIElement(uiElementShorthand)
     this.getTestcases = function()
     {
         return this.testcases;
-    }
+    };
     
     
     
@@ -164,13 +164,13 @@ function UIElement(uiElementShorthand)
         var testcases = this.getTestcases();
         testcaseLoop: for (var i = 0; i < testcases.length; ++i) {
             var testcase = testcases[i];
-            var xhtml = UI_GLOBAL.XHTML_DOCTYPE + '<html xmlns="'
-                + UI_GLOBAL.XHTML_XMLNS + '">' + testcase.xhtml + '</html>';
+            var xhtml = UI_GLOBAL.XHTML_DOCTYPE + '<html xmlns="'+
+                UI_GLOBAL.XHTML_XMLNS + '">' + testcase.xhtml + '</html>';
             var doc = parser.parseFromString(xhtml, "text/xml");
             if (doc.firstChild.nodeName == 'parsererror') {
-                safe_alert('Error parsing XHTML in testcase "' + testcase.name
-                    + '" for UI element "' + this.name + '": ' + "\n"
-                    + doc.firstChild.firstChild.nodeValue);
+                safe_alert('Error parsing XHTML in testcase "' + testcase.name+
+                    '" for UI element "' + this.name + '": ' + "\n"+
+                    doc.firstChild.firstChild.nodeValue);
             }
             
             // we're no longer using the default locators when testing, because
@@ -187,9 +187,9 @@ function UIElement(uiElementShorthand)
             }
             else {
                 // piece the locator back together
-                locator = (locator.type == 'implicit')
-                    ? locator.string
-                    : locator.type + '=' + locator.string;
+                locator = (locator.type == 'implicit')?
+                    locator.string:
+                    locator.type + '=' + locator.string;
                 results = eval_locator(locator, doc);
             }
             if (results.length && results[0].hasAttribute('expected-result')) {
@@ -198,8 +198,8 @@ function UIElement(uiElementShorthand)
             
             // testcase failed
             if (is_IDE()) {
-                var msg = 'Testcase "' + testcase.name
-                    + '" failed for UI element "' + this.name + '":';
+                var msg = 'Testcase "' + testcase.name+
+                    '" failed for UI element "' + this.name + '":';
                 if (!results.length) {
                     msg += '\n"' + locator + '" did not match any elements!';
                 }
@@ -230,20 +230,20 @@ function UIElement(uiElementShorthand)
      * @throws  UIElementException
      */
     this.getDefaultLocators = function(opt_inDocument) {
-        var defaultLocators = {};
-        if (this.args.length == 0) {
+        var defaultLocators = {}, locator;
+        if (this.args.length === 0) {
             defaultLocators[this.getLocator({})] = {};
         }
         else {
             var permutations = this.permuteArgs(this.args, opt_inDocument);
-            if (permutations.length != 0) {
+            if (permutations.length !== 0) {
                 for (var i = 0; i < permutations.length; ++i) {
                     var args = permutations[i];
-                    var locator = this.getLocator(args);
+                    locator = this.getLocator(args);
                     if (!locator) {
-                        throw new UIElementException('Error in UIElement(): '
-                            + 'no getLocator return value for element "' + name
-                            + '"');
+                        throw new UIElementException('Error in UIElement(): '+
+                            'no getLocator return value for element "' + name+
+                            '"');
                     }
                     defaultLocators[locator] = args;
                 }
@@ -251,7 +251,7 @@ function UIElement(uiElementShorthand)
             else {
                 // try using no arguments. If it doesn't work, fine.
                 try {
-                    var locator = this.getLocator();
+                    locator = this.getLocator();
                     defaultLocators[locator] = {};
                 }
                 catch (e) {
@@ -281,10 +281,10 @@ function UIElement(uiElementShorthand)
         if (!uiElementShorthand.description) {
             throw new UIElementException(msg + 'no description specified!');
         }
-        if (!uiElementShorthand.locator
-            && !uiElementShorthand.getLocator
-            && !uiElementShorthand.xpath
-            && !uiElementShorthand.getXPath) {
+        if (!uiElementShorthand.locator &&
+            !uiElementShorthand.getLocator &&
+            !uiElementShorthand.xpath &&
+            !uiElementShorthand.getXPath) {
             throw new UIElementException(msg + 'no locator specified!');
         }
     };
@@ -340,8 +340,8 @@ function UIElement(uiElementShorthand)
                 var testcase = uiElementShorthand[attr];
                 if (uiElementShorthand.args &&
                     uiElementShorthand.args.length && !testcase.args) {
-                    safe_alert('No args defined in ' + attr + ' for UI element '
-                        + this.name + '! Skipping testcase.');
+                    safe_alert('No args defined in ' + attr + ' for UI element '+
+                        this.name + '! Skipping testcase.');
                     continue;
                 } 
                 testcase.name = attr;
@@ -354,7 +354,7 @@ function UIElement(uiElementShorthand)
         }
         
         // create the arguments
-        this.args = []
+        this.args = [];
         this.argsOrder = [];
         if (uiElementShorthand.args) {
             for (var i = 0; i < uiElementShorthand.args.length; ++i) {
@@ -389,9 +389,9 @@ function UIElement(uiElementShorthand)
 // hang this off the UIElement "namespace". This is a composite strategy.
 UIElement.defaultOffsetLocatorStrategy = function(locatedElement, pageElement) {
     var strategies = [
-        UIElement.linkXPathOffsetLocatorStrategy
-        , UIElement.preferredAttributeXPathOffsetLocatorStrategy
-        , UIElement.simpleXPathOffsetLocatorStrategy
+        UIElement.linkXPathOffsetLocatorStrategy,
+        UIElement.preferredAttributeXPathOffsetLocatorStrategy,
+        UIElement.simpleXPathOffsetLocatorStrategy
     ];
     
     for (var i = 0; i < strategies.length; ++i) {
@@ -415,9 +415,9 @@ UIElement.simpleXPathOffsetLocatorStrategy = function(locatedElement,
         var locatorBuilders = recorder.locatorBuilders;
         var currentNode = pageElement;
         
-        while (currentNode != null && currentNode != locatedElement) {
-            xpath = locatorBuilders.relativeXPathFromParent(currentNode)
-                + xpath;
+        while (currentNode !== null && currentNode != locatedElement) {
+            xpath = locatorBuilders.relativeXPathFromParent(currentNode)+
+                xpath;
             currentNode = currentNode.parentNode;
         }
         
@@ -441,8 +441,8 @@ UIElement.linkXPathOffsetLocatorStrategy = function(locatedElement, pageElement)
             .replace(/\s+$/, "");
         
         if (text) {
-            var xpath = '/descendant::a[normalize-space()='
-                + text.quoteForXPath() + ']';
+            var xpath = '/descendant::a[normalize-space()='+
+                text.quoteForXPath() + ']';
             
             var results = eval_xpath(xpath, locatedElement.ownerDocument,
                 { contextNode: locatedElement });
@@ -462,16 +462,16 @@ UIElement.preferredAttributeXPathOffsetLocatorStrategy =
 {
     // this is an ordered listing of single attributes
     var preferredAttributes =  [
-        'name'
-        , 'value'
-        , 'type'
-        , 'action'
-        , 'alt'
-        , 'title'
-        , 'class'
-        , 'src'
-        , 'href'
-        , 'onclick'
+        'name',
+        'value',
+        'type',
+        'action',
+        'alt',
+        'title',
+        'class',
+        'src',
+        'href',
+        'onclick'
     ];
     
     if (is_ancestor(locatedElement, pageElement)) {
@@ -482,8 +482,8 @@ UIElement.preferredAttributeXPathOffsetLocatorStrategy =
             var value = pageElement.getAttribute(name);
             
             if (value) {
-                var xpath = xpathBase + '[@' + name + '='
-                    + value.quoteForXPath() + ']';
+                var xpath = xpathBase + '[@' + name + '='+
+                    value.quoteForXPath() + ']';
                     
                 var results = eval_xpath(xpath, locatedElement.ownerDocument,
                     { contextNode: locatedElement });
@@ -518,8 +518,8 @@ function UIArgument(uiArgumentShorthand, localVars)
      */
     this.validate = function(uiArgumentShorthand)
     {
-        var msg = "UIArgument validation error:\n"
-            + print_r(uiArgumentShorthand);
+        var msg = "UIArgument validation error:\n"+
+            print_r(uiArgumentShorthand);
         
         // try really hard to throw an exception!
         if (!uiArgumentShorthand.name) {
@@ -550,7 +550,7 @@ function UIArgument(uiArgumentShorthand, localVars)
         if (uiArgumentShorthand.defaultValues) {
             var defaultValues = uiArgumentShorthand.defaultValues;
             this.getDefaultValues =
-                function() { return defaultValues; }
+                function() { return defaultValues; };
         }
         else {
             this.getDefaultValues = uiArgumentShorthand.getDefaultValues;
@@ -559,10 +559,7 @@ function UIArgument(uiArgumentShorthand, localVars)
         for (var name in localVars) {
             this[name] = localVars[name];
         }
-    }
-    
-    
-    
+    };
     this.init(uiArgumentShorthand, localVars);
 }
 
@@ -595,10 +592,10 @@ function UISpecifier(uiSpecifierStringOrPagesetName, elementName, args)
      */
     this._initFromUISpecifierString = function(uiSpecifierString) {
         var matches = /^(.*)::([^\(]+)\((.*)\)$/.exec(uiSpecifierString);
-        if (matches == null) {
-            throw new UISpecifierException('Error in '
-                + 'UISpecifier._initFromUISpecifierString(): "'
-                + this.string + '" is not a valid UI specifier string');
+        if (matches === null) {
+            throw new UISpecifierException('Error in '+
+                'UISpecifier._initFromUISpecifierString(): "'+
+                this.string + '" is not a valid UI specifier string');
         }
         this.pagesetName = matches[1];
         this.elementName = matches[2];
@@ -616,29 +613,30 @@ function UISpecifier(uiSpecifierStringOrPagesetName, elementName, args)
      */
     this.toString = function() {
         // empty string is acceptable for the path, but it must be defined
-        if (this.pagesetName == undefined) {
-            throw new UISpecifierException('Error in UISpecifier.toString(): "'
-                + this.pagesetName + '" is not a valid UI specifier pageset '
-                + 'name');
+        if (this.pagesetName === undefined) {
+            throw new UISpecifierException('Error in UISpecifier.toString(): "'+
+                this.pagesetName + '" is not a valid UI specifier pageset '+
+                'name');
         }
         if (!this.elementName) {
-            throw new UISpecifierException('Error in UISpecifier.unparse(): "'
-                + this.elementName + '" is not a valid UI specifier element '
-                + 'name');
+            throw new UISpecifierException('Error in UISpecifier.unparse(): "'+
+                this.elementName + '" is not a valid UI specifier element '+
+                'name');
         }
         if (!this.args) {
-            throw new UISpecifierException('Error in UISpecifier.unparse(): "'
-                + this.args + '" are not valid UI specifier args');
+            throw new UISpecifierException('Error in UISpecifier.unparse(): "'+
+                this.args + '" are not valid UI specifier args');
         }
         
         uiElement = UIMap.getInstance()
             .getUIElement(this.pagesetName, this.elementName);
-        if (uiElement != null) {
-            var kwargs = to_kwargs(this.args, uiElement.argsOrder);
+        var kwargs;            
+        if (uiElement !== null) {
+            kwargs = to_kwargs(this.args, uiElement.argsOrder);
         }
         else {
             // probably under unit test
-            var kwargs = to_kwargs(this.args);
+            kwargs = to_kwargs(this.args);
         }
         
         return this.pagesetName + '::' + this.elementName + '(' + kwargs + ')';
@@ -685,7 +683,7 @@ function Pageset(pagesetShorthand)
         }
         
         return true;
-    }
+    };
     
     
     
@@ -719,12 +717,12 @@ function Pageset(pagesetShorthand)
             }
             var uiSpecifier = new UISpecifier(this.name, uiElement.name, args);
             stubs.push([
-                UI_GLOBAL.UI_PREFIX + '=' + uiSpecifier.toString()
-                , uiElement.description
+                UI_GLOBAL.UI_PREFIX + '=' + uiSpecifier.toString(),
+                uiElement.description
             ]);
         }
         return stubs;
-    }
+    };
     
     
     
@@ -733,8 +731,8 @@ function Pageset(pagesetShorthand)
      */
     this._validate = function(pagesetShorthand)
     {
-        var msg = "Pageset validation error:\n"
-            + print_r(pagesetShorthand);
+        var msg = "Pageset validation error:\n"+
+            print_r(pagesetShorthand);
         if (!pagesetShorthand.name) {
             throw new PagesetException(msg + 'no name specified!');
         }
@@ -744,8 +742,8 @@ function Pageset(pagesetShorthand)
         if (!pagesetShorthand.paths &&
             !pagesetShorthand.pathRegexp &&
             !pagesetShorthand.pageContent) {
-            throw new PagesetException(msg
-                + 'no path, pathRegexp, or pageContent specified!');
+            throw new PagesetException(msg+
+                'no path, pathRegexp, or pageContent specified!');
         }
     };
     
@@ -758,11 +756,11 @@ function Pageset(pagesetShorthand)
         this.name = pagesetShorthand.name;
         this.description = pagesetShorthand.description;
         
-        var pathPrefixRegexp = pagesetShorthand.pathPrefix
-            ? RegExp.escape(pagesetShorthand.pathPrefix) : "";
+        var pathPrefixRegexp = pagesetShorthand.pathPrefix?
+              RegExp.escape(pagesetShorthand.pathPrefix) : "";
         var pathRegexp = '^' + pathPrefixRegexp;
         
-        if (pagesetShorthand.paths != undefined) {
+        if (pagesetShorthand.paths !== undefined) {
             pathRegexp += '(?:';
             for (var i = 0; i < pagesetShorthand.paths.length; ++i) {
                 if (i > 0) {
@@ -813,7 +811,7 @@ function UIMap()
         Editor.UI_PREFIX = UI_GLOBAL.UI_PREFIX;
     }
     
-    this.pagesets = new Object();
+    this.pagesets = {};
     
     
     
@@ -825,18 +823,19 @@ function UIMap()
      */
     this.addPageset = function(pagesetShorthand)
     {
+		var pageset;
         try {
-            var pageset = new Pageset(pagesetShorthand);
+            pageset = new Pageset(pagesetShorthand);
         }
         catch (e) {
-            safe_alert("Could not create pageset from shorthand:\n"
-                + print_r(pagesetShorthand) + "\n" + e.message);
+            safe_alert("Could not create pageset from shorthand:\n"+
+                print_r(pagesetShorthand) + "\n" + e.message);
             return false;
         }
         
         if (this.pagesets[pageset.name]) {
-            safe_alert('Could not add pageset "' + pageset.name
-                + '": a pageset with that name already exists!');
+            safe_alert('Could not add pageset "' + pageset.name+
+                '": a pageset with that name already exists!');
             return false;
         }
         
@@ -853,20 +852,21 @@ function UIMap()
      */
     this.addElement = function(pagesetName, uiElementShorthand)
     {
+		var uiElement;
         try {
-            var uiElement = new UIElement(uiElementShorthand);
+            uiElement = new UIElement(uiElementShorthand);
         }
         catch (e) {
-            safe_alert("Could not create UI element from shorthand:\n"
-                + print_r(uiElementShorthand) + "\n" + e.message);
+            safe_alert("Could not create UI element from shorthand:\n"+
+                print_r(uiElementShorthand) + "\n" + e.message);
             return false;
         }
         
         // run the element's unit tests only for the IDE, and only when the
         // IDE is starting. Make a rough guess as to the latter condition.
         if (is_IDE() && !editor.selDebugger && !uiElement.test()) {
-            safe_alert('Could not add UI element "' + uiElement.name
-                + '": failed testcases!');
+            safe_alert('Could not add UI element "' + uiElement.name+
+                '": failed testcases!');
             return false;
         }
         
@@ -874,8 +874,8 @@ function UIMap()
             this.pagesets[pagesetName].uiElements[uiElement.name] = uiElement;
         }
         catch (e) {
-            safe_alert("Could not add UI element '" + uiElement.name
-                + "' to pageset '" + pagesetName + "':\n" + e.message);
+            safe_alert("Could not add UI element '" + uiElement.name+
+                "' to pageset '" + pagesetName + "':\n" + e.message);
             return false;
         }
         
@@ -899,7 +899,7 @@ function UIMap()
         catch (e) {
             return null;
         }
-    }
+    };
     
     
     
@@ -919,7 +919,7 @@ function UIMap()
             try {
                 var uiSpecifier = new UISpecifier(uiSpecifierString);
                 pagesetName = uiSpecifier.pagesetName;
-                var uiElementName = uiSpecifier.elementName;
+                uiElementName = uiSpecifier.elementName;
             }
             catch (e) {
                 return null;
@@ -1001,12 +1001,13 @@ function UIMap()
      */
     this.getLocator = function(uiSpecifierString)
     {
+		var uiSpecifier;
         try {
-            var uiSpecifier = new UISpecifier(uiSpecifierString);
+            uiSpecifier = new UISpecifier(uiSpecifierString);
         }
         catch (e) {
-            safe_alert('Could not create UISpecifier for string "'
-                + uiSpecifierString + '": ' + e.message);
+            safe_alert('Could not create UISpecifier for string "'+
+                uiSpecifierString + '": ' + e.message);
             return null;
         }
         
@@ -1018,7 +1019,7 @@ function UIMap()
         catch (e) {
             return null;
         }
-    }
+    };
     
     
     
@@ -1051,7 +1052,7 @@ function UIMap()
                     var passedTest = false;
                     var results =
                         eval_locator(uiElement.getGenericLocator(), inDocument);
-                    for (var i = 0; i < results.length; ++i) {
+                    for (i = 0; i < results.length; ++i) {
                         if (results[i] == pageElement) {
                             passedTest = true;
                             break;
@@ -1071,10 +1072,11 @@ function UIMap()
                 }
                 
                 //safe_alert(print_r(uiElement.defaultLocators));
+                var locatedElement;
                 for (var locator in defaultLocators) {
                     var locatedElements = eval_locator(locator, inDocument);
                     if (locatedElements.length) {
-                        var locatedElement = locatedElements[0];
+                        locatedElement = locatedElements[0];
                     }
                     else {
                         continue;
@@ -1107,8 +1109,8 @@ function UIMap()
                                 return UI_GLOBAL.UI_PREFIX + '=' +
                                     new UISpecifier(pageset.name,
                                         uiElement.name,
-                                        defaultLocators[locator])
-                                    + '->' + offsetLocator;
+                                        defaultLocators[locator])+
+                                    '->' + offsetLocator;
                             }
                         }
                     }
@@ -1140,12 +1142,12 @@ function UIMap()
             return a[0] == b[0] ? 0 : 1;
         });
         return stubs;
-    }
+    };
 }
 
 UIMap.getInstance = function() {
-    return (UIMap.self == null) ? new UIMap() : UIMap.self;
-}
+    return (UIMap.self === null) ? new UIMap() : UIMap.self;
+};
 
 //******************************************************************************
 // Rollups
@@ -1159,12 +1161,12 @@ UIMap.getInstance = function() {
  * @param target
  * @param value
  */
-if (typeof(Command) == 'undefined') {
-    function Command(command, target, value) {
-        this.command = command != null ? command : '';
-        this.target = target != null ? target : '';
-        this.value = value != null ? value : '';
-    }
+if (typeof(Command) === 'undefined') {
+    Command = function Command(command, target, value) {
+        this.command = command !== null ? command : '';
+        this.target = target !== null ? target : '';
+        this.value = value !== null ? value : '';
+    };
 }
 
 
@@ -1206,8 +1208,8 @@ function CommandMatcher(commandMatcherShorthand)
      *                                 the CommandMatcher
      */
     this.validate = function(commandMatcherShorthand) {
-        var msg = "CommandMatcher validation error:\n"
-            + print_r(commandMatcherShorthand);
+        var msg = "CommandMatcher validation error:\n"+
+            print_r(commandMatcherShorthand);
         if (!commandMatcherShorthand.command) {
             throw new CommandMatcherException(msg + 'no command specified!');
         }
@@ -1255,7 +1257,7 @@ function CommandMatcher(commandMatcherShorthand)
         if (! re.test(command.target)) {
             return false;
         }
-        if (this.value != null) {
+        if (this.value !== null) {
             re = new RegExp('^' + this.value + '$');
             if (! re.test(command.value)) {
                 return false;
@@ -1288,8 +1290,8 @@ function RollupRule(rollupRuleShorthand)
      *                             RollupRule
      */
     this.validate = function(rollupRuleShorthand) {
-        var msg = "RollupRule validation error:\n"
-            + print_r(rollupRuleShorthand);
+        var msg = "RollupRule validation error:\n"+
+            print_r(rollupRuleShorthand);
         if (!rollupRuleShorthand.name) {
             throw new RollupRuleException(msg + 'no name specified!');
         }
@@ -1299,13 +1301,13 @@ function RollupRule(rollupRuleShorthand)
         // rollupRuleShorthand.args is optional
         if (!rollupRuleShorthand.commandMatchers &&
             !rollupRuleShorthand.getRollup) {
-            throw new RollupRuleException(msg
-                + 'no command matchers specified!');
+            throw new RollupRuleException(msg+
+                'no command matchers specified!');
         }
         if (!rollupRuleShorthand.expandedCommands &&
             !rollupRuleShorthand.getExpandedCommands) {
-            throw new RollupRuleException(msg
-                + 'no expanded commands specified!');
+            throw new RollupRuleException(msg+
+                'no expanded commands specified!');
         }
         
         return true;
@@ -1332,11 +1334,11 @@ function RollupRule(rollupRuleShorthand)
             this.commandMatchers = [];
             var matchers = rollupRuleShorthand.commandMatchers;
             for (var i = 0; i < matchers.length; ++i) {
-                if (matchers[i].updateArgs && this.args.length == 0) {
+                if (matchers[i].updateArgs && this.args.length === 0) {
                     // enforce metadata for arguments
-                    var msg = "RollupRule validation error:\n"
-                        + print_r(rollupRuleShorthand)
-                        + 'no argument metadata provided!';
+                    var msg = "RollupRule validation error:\n"+
+                        print_r(rollupRuleShorthand)+
+                        'no argument metadata provided!';
                     throw new RollupRuleException(msg);
                 }
                 this.commandMatchers.push(new CommandMatcher(matchers[i]));
@@ -1409,9 +1411,9 @@ function RollupRule(rollupRuleShorthand)
                 var result = rollupRuleShorthand.getRollup(commands);
                 if (result) {
                     var rollup = new Command(
-                        result.command
-                        , result.target
-                        , result.value
+                        result.command,
+                        result.target,
+                        result.value
                     );
                     rollup.replacementIndexes = result.replacementIndexes;
                     return rollup;
@@ -1422,16 +1424,16 @@ function RollupRule(rollupRuleShorthand)
         
         this.getExpandedCommands = function(kwargs) {
             var commands = [];
-            var expandedCommands = (rollupRuleShorthand.expandedCommands
-                ? rollupRuleShorthand.expandedCommands
-                : rollupRuleShorthand.getExpandedCommands(
+            var expandedCommands = (rollupRuleShorthand.expandedCommands?
+                rollupRuleShorthand.expandedCommands:
+                rollupRuleShorthand.getExpandedCommands(
                     parse_kwargs(kwargs)));
             for (var i = 0; i < expandedCommands.length; ++i) {
                 var command = expandedCommands[i];
                 commands.push(new Command(
-                    command.command
-                    , command.target
-                    , command.value
+                    command.command,
+                    command.target,
+                    command.value
                 ));
             }
             return commands;
@@ -1476,8 +1478,8 @@ function RollupManager()
             this.rollupRules[rule.name] = rule;
         }
         catch(e) {
-            smart_alert("Could not create RollupRule from shorthand:\n\n"
-                + e.message);
+            smart_alert("Could not create RollupRule from shorthand:\n\n"+
+                e.message);
             return false;
         }
         return true;
@@ -1551,9 +1553,10 @@ function RollupManager()
                         
                         // build the confirmation message
                         var msg = "Perform the following command rollup?\n\n";
+                        var replacementIndex,command;
                         for (k = 0; k < rollup.replacementIndexes.length; ++k) {
-                            var replacementIndex = rollup.replacementIndexes[k];
-                            var command = commands[replacementIndex];
+                            replacementIndex = rollup.replacementIndexes[k];
+                            command = commands[replacementIndex];
                             msg += '[' + replacementIndex + ']: ';
                             msg += command + "\n";
                         }
@@ -1567,7 +1570,7 @@ function RollupManager()
                         
                         // highlight the potentially replaced rows
                         for (k = 0; k < commands.length; ++k) {
-                            var command = commands[k];
+                            command = commands[k];
                             command.result = '';
                             if (rollup.replacementIndexes.indexOf(k) != -1) {
                                 command.selectedForReplacement = true;
@@ -1586,8 +1589,8 @@ function RollupManager()
                                 // The deletion only checks the length of the
                                 // command list.
                                 deleteRanges.push({
-                                    start: replacementIndexes[k]
-                                    , commands: [ 1 ]
+                                    start: replacementIndexes[k],
+                                    commands: [ 1 ]
                                 });
                             }
                             editor.view.executeAction(new TreeView
@@ -1620,8 +1623,8 @@ function RollupManager()
 }
 
 RollupManager.getInstance = function() {
-    return (RollupManager.self == null)
-        ? new RollupManager()
-        : RollupManager.self;
-}
+    return (RollupManager.self === null)?
+        new RollupManager():
+        RollupManager.self;
+};
 

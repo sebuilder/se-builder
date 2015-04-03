@@ -1,3 +1,4 @@
+/* jshint moz: true */
 // Establish bridge namespace.
 var bridge = {};
 /** The tab node that is highlighted green (can be used to get a reference to the content). */
@@ -13,7 +14,7 @@ bridge.logMessage = function(aMessage) {
   var consoleService = Components.classes["@mozilla.org/consoleservice;1"]
                                  .getService(Components.interfaces.nsIConsoleService);
   consoleService.logStringMessage(aMessage);
-}
+};
 
 /** Set an alternate window to record in that's not the window of the recordingTab. */
 bridge.setCustomRecordingWindow = function(newWindow) {
@@ -73,7 +74,7 @@ bridge.removeDocLoadListener = function(win, l) {
 
 bridge.prefManager = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 
-bridge.browserType = function() { return "firefox"; }
+bridge.browserType = function() { return "firefox"; };
 
 bridge.pluginRepository = function() {
   return bridge.prefManager.getCharPref("extensions.seleniumbuilder.plugins.repository");
@@ -178,8 +179,8 @@ bridge.loadFile = function(url, success, error) {
     var data = null;
     try {
       data = bridge.readFile(file);
-    } catch (e) {
-      error(e);
+    } catch (err) {
+      error(err);
       return;
     }
     window.setTimeout(function() { success(data); }, 1000); // Pretend this took time.
@@ -191,7 +192,7 @@ bridge.readPath = function(path) {
                   .createInstance(Components.interfaces.nsILocalFile);
   file.initWithPath(path);
   return bridge.readFile(file);
-}
+};
 
 bridge.readFile = function(file) {
   var fstream = Components.classes["@mozilla.org/network/file-input-stream;1"].
@@ -207,7 +208,7 @@ bridge.readFile = function(file) {
   do { 
     read = cstream.readString(0xffffffff, str); // read as much as we can and put it in str.value
     data += str.value;
-  } while (read != 0);
+  } while (read !== 0);
   cstream.close(); // this closes fstream
   return data;
 };

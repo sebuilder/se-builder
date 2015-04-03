@@ -62,7 +62,7 @@ builder.io.addStorageSystem({
   },
   "deriveRelativePath": function(path, basePath) {
     var rp = bridge.SeFileUtils.getFile(path.path).getRelativeDescriptor(bridge.SeFileUtils.getFile(basePath.path).parent);
-    return rp == null ? path : {"path": rp, "where": path.where, "format": path.format};
+    return rp === null ? path : {"path": rp, "where": path.where, "format": path.format};
   }
 });
 
@@ -92,12 +92,12 @@ builder.io.loadUnknownFile = function(addToSuite, path) {
   if (!file) { return; }
   var text = null;
   try {
-    var text = builder.io.readFile(file);
+    text = builder.io.readFile(file);
   } catch (e) {
     alert(_t('unable_to_read_file') + e);
   }
   if (text) { builder.io.loadUnknownText(text, { 'where': 'local', 'path': file.path }, addToSuite); }
-}
+};
 
 builder.io.loadUnknownText = function(text, path, addToSuite, callback) {  
   var errors = "";
@@ -108,7 +108,7 @@ builder.io.loadUnknownText = function(text, path, addToSuite, callback) {
     
     try {
       var script = seleniumVersion.io.parseScript(text, path);
-      if (script.steps.length == 0) {
+      if (script.steps.length === 0) {
         throw _t('script_is_empty');
       }
       if (script) {
@@ -130,7 +130,7 @@ builder.io.loadUnknownText = function(text, path, addToSuite, callback) {
       errors += "\n" + seleniumVersion.name + ": " + e;
     }
     if (addToSuite || !seleniumVersion.io.parseSuite) {
-      if (i == 0) {
+      if (i === 0) {
         loadText(1);
       } else {
         if (!addToSuite) {
@@ -145,7 +145,7 @@ builder.io.loadUnknownText = function(text, path, addToSuite, callback) {
       if (error) {
         errors += "\n" + seleniumVersion.name + " " + _t('suite') + ": " + error;
       } else {
-        if (suite && suite.scripts.length == 0) {
+        if (suite && suite.scripts.length === 0) {
           errors += "\n" + _t('suite_is_empty');
         } else if (suite) {
           builder.gui.switchView(builder.views.script);
@@ -157,7 +157,7 @@ builder.io.loadUnknownText = function(text, path, addToSuite, callback) {
           return;
         }
       }
-      if (i == 0) {
+      if (i === 0) {
         loadText(1);
       } else {
         builder.gui.switchView(builder.views.startup);

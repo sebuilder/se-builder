@@ -12,7 +12,7 @@ m.new_locale_after_restart = "Le changement de langue sera effectif après un re
 // Startup view
 m.open_script_or_suite = "Ouvrir un script ou une suite";
 m.view_command_table = "Voir les commandes disponibles pour Selenium 1 & 2";
-m.manage_plugins = "Gérer les modules"
+m.manage_plugins = "Gérer les modules";
 m.start_recording_at = "Démarrer l'enregistrement depuis";
 m.cookie_warning = "Cette action va entrainer la suppression des cookies sur le domaine que vous êtes en train d'enregistrer";
 
@@ -115,7 +115,7 @@ m.menu_clear_breakpoints = "Supprimer tous les points d'arrêt";
 m.clear_breakpoints_confirm = "Etes-vous sûr de vouloir effacer tous les points d'arrêt dans le script actuel?";
 m.menu_playback_variables = "variables de rejeu...";
 m.menu_share_state_across_suite = "Partager l'état pour la suite";
-m.menu_dont_share_state_across_suite = "√ Partager l'état pour la suite"
+m.menu_dont_share_state_across_suite = "√ Partager l'état pour la suite";
 
 // Variables
 m.variables = "Variables";
@@ -414,7 +414,7 @@ m.json_file_path = "Chemin vers le fichier JSON";
 m.xml_file_path = "Chemin vers le fichier XML";
 m.csv_file_path = "Chemin vers le fichier CSV";
 m.csv_parse_error = "Erreur de lecture du CSV: {0}";
-m.row = "Ligne {0}"
+m.row = "Ligne {0}";
 m.inputs = "Entrées";
 m.string = "Chaine de caractères";
 m.integer = "Entier";

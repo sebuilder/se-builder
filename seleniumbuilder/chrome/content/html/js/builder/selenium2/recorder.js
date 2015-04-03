@@ -128,7 +128,7 @@ builder.selenium2.Recorder.prototype = {
     var stepParams = step.getParamNames();
     for (var i = 0; i < stepParams.length; i++) {
       if (stepParams[i] == "locator") {
-        if (locator.probablyHasSameTarget(step["locator"])) {
+        if (locator.probablyHasSameTarget(step.locator)) {
           return true;
         }
       }
@@ -205,7 +205,7 @@ builder.selenium2.Recorder.prototype = {
       }
     
       // If this is an enter and we've already recorded the submit for it, ignore.
-      if (e.keyCode == 13 && this.lastLocator != null && lastStep && lastStep.type == builder.selenium2.stepTypes.clickElement) {
+      if (e.keyCode == 13 && this.lastLocator !== null && lastStep && lastStep.type == builder.selenium2.stepTypes.clickElement) {
         return;
       }
     
@@ -215,10 +215,10 @@ builder.selenium2.Recorder.prototype = {
     }
     
     // Selecting
-    if (e.target.type.toLowerCase() == 'select' || e.target.type.toLowerCase() == 'select-one') {
-      var vals = {};
+    var vals = {},optLoc;
+    if (e.target.type.toLowerCase() == 'select' || e.target.type.toLowerCase() == 'select-one') {      
       vals[builder.locator.methods.xpath] = [locator.getValueForMethod(builder.locator.methods.xpath) + "//option[" + (e.target.selectedIndex + 1) + "]"];
-      var optLoc = new builder.locator.Locator(builder.locator.methods.xpath, 0, vals);
+      optLoc = new builder.locator.Locator(builder.locator.methods.xpath, 0, vals);
       
       // Add select
       this.recordStep(new builder.Step(builder.selenium2.stepTypes.setElementSelected, optLoc));
@@ -228,32 +228,33 @@ builder.selenium2.Recorder.prototype = {
     if (e.target.type.toLowerCase() == 'select-multiple') {
       var currentVal = jQuery(e.target).val();
       var oldVal = e.target.__sb_oldVal || [];
-      for (var c = 0; c < currentVal.length; c++) {
+      var o,c;
+      for (c = 0; c < currentVal.length; c++) {
         var newlyAdded = true;
-        for (var o = 0; o < oldVal.length; o++) {
+        for (o = 0; o < oldVal.length; o++) {
           if (currentVal[c] == oldVal[o]) {
             newlyAdded = false;
           }
         }
         if (newlyAdded) {
-          var vals = {};
+          vals = {};
           vals[builder.locator.methods.xpath] = [locator.getValueForMethod(builder.locator.methods.xpath) + "/option[@value='" + currentVal[c] + "']"];
-          var optLoc = new builder.locator.Locator(builder.locator.methods.xpath, 0, vals);
+          optLoc = new builder.locator.Locator(builder.locator.methods.xpath, 0, vals);
           
           this.recordStep(new builder.Step(builder.selenium2.stepTypes.setElementSelected, optLoc));
         }
       }
-      for (var o = 0; o < oldVal.length; o++) {
+      for (o = 0; o < oldVal.length; o++) {
         var stillThere = false;
-        for (var c = 0; c < currentVal.length; c++) {
+        for (c = 0; c < currentVal.length; c++) {
           if (currentVal[c] == oldVal[o]) {
             stillThere = true;
           }
         }
         if (!stillThere) {
-          var vals = {};
+          vals = {};
           vals[builder.locator.methods.xpath] = [locator.getValueForMethod(builder.locator.methods.xpath) + "/option[@value='" + oldVal[o] + "']"];
-          var optLoc = new builder.locator.Locator(builder.locator.methods.xpath, 0, vals);
+          optLoc = new builder.locator.Locator(builder.locator.methods.xpath, 0, vals);
           
           this.recordStep(new builder.Step(builder.selenium2.stepTypes.setElementNotSelected, optLoc));
         }
@@ -267,7 +268,7 @@ builder.selenium2.Recorder.prototype = {
       // Replace a click with a radio button check
       if (lastStep && this.isTypeOrClickInSamePlace(lastStep, locator)) {
         lastStep.changeType(builder.selenium2.stepTypes.setElementSelected);
-        lastStep.locator = locator
+        lastStep.locator = locator;
         builder.stepdisplay.update();
         return;
       }
@@ -279,7 +280,7 @@ builder.selenium2.Recorder.prototype = {
   },
   /** Finds the frame for a given document. */
   findFrame: function(d) {
-    for (i in this.bound) {
+    for (var i in this.bound) {
       if (this.bound[i].document == d) {
         return this.bound[i];
       }

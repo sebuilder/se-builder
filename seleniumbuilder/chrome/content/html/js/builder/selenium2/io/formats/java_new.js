@@ -284,11 +284,11 @@ builder.selenium2.io.addLangFormatter({
     var esc = function(v) { 
       var escapedValue = "\"" + v.replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + "\""; 
       return escapedValue.replace(/\n/g, '\\n');
-    }
+    };
     
     // Don't escape numerical values.
     if (stepType == builder.selenium2.stepTypes.pause) {
-      esc = function(v) { return v; }
+      esc = function(v) { return v; };
     }
     
     // The following is a transducer that produces the escaped expression by going over each

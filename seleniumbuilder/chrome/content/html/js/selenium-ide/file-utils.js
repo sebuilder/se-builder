@@ -45,14 +45,14 @@ var SeFileUtils = {
 
   openFileInputStream: function(file) {
     var stream = Components.classes["@mozilla.org/network/file-input-stream;1"].createInstance(Components.interfaces.nsIFileInputStream);
-    stream.init(file, 0x01, 00004, 0);
+    stream.init(file, 0x01, 4, 0);
     var sis = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream);
     sis.init(stream);
     return sis;
   },
 
   openURLInputStream: function(url) {
-    const ioService = Components.classes['@mozilla.org/network/io-service;1'].getService(Components.interfaces.nsIIOService);
+    var ioService = Components.classes['@mozilla.org/network/io-service;1'].getService(Components.interfaces.nsIIOService);
     var stream = ioService.newChannelFromURI(ioService.newURI(url, null, null)).open();
     var sis = Components.classes['@mozilla.org/scriptableinputstream;1'].createInstance(Components.interfaces.nsIScriptableInputStream);
     sis.init(stream);
@@ -100,4 +100,4 @@ var SeFileUtils = {
         }
         return result;
     }
-}
+};

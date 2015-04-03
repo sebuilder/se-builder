@@ -12,7 +12,7 @@ m.new_locale_after_restart = "Jezyk zostanie zmieniony po ponownym uruchomieniu 
 // Startup view
 m.open_script_or_suite = "Otworz skryp lub pakiet testów";
 m.view_command_table = "Przejrzyj wspieranie komendy dla selenium 1 i 2";
-m.manage_plugins = "Zarzadzaj pluginami"
+m.manage_plugins = "Zarzadzaj pluginami";
 m.start_recording_at = "Zacznik nagrywac od";
 m.cookie_warning = "wszystkie ciasteczka zostana usuniete dla domeny w której toczy sie nagrywanie.";
 

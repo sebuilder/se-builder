@@ -44,9 +44,9 @@ function assignToVariable(type, variable, expression) {
 
 function waitFor(expression) {
   if (expression.negative) {
-    return "assert !60.times{ break unless (" + expression.invert().toString() + " rescue true); sleep 1 }"
+    return "assert !60.times{ break unless (" + expression.invert().toString() + " rescue true); sleep 1 }";
   } else {
-    return "assert !60.times{ break if (" + expression.toString() + " rescue false); sleep 1 }"
+    return "assert !60.times{ break if (" + expression.toString() + " rescue false); sleep 1 }";
   }
 }
 
@@ -56,35 +56,35 @@ function assertOrVerifyFailure(line, isAssert) {
 
 Equals.prototype.toString = function() {
   return this.e1.toString() + " == " + this.e2.toString();
-}
+};
 
 Equals.prototype.assert = function() {
   return "assert_equal " + this.e1.toString() + ", " + this.e2.toString();
-}
+};
 
 Equals.prototype.verify = function() {
   return verify(this.assert());
-}
+};
 
 NotEquals.prototype.toString = function() {
   return this.e1.toString() + " != " + this.e2.toString();
-}
+};
 
 NotEquals.prototype.assert = function() {
   return "assert_not_equal " + this.e1.toString() + ", " + this.e2.toString();
-}
+};
 
 NotEquals.prototype.verify = function() {
   return verify(this.assert());
-}
+};
 
 RegexpMatch.prototype.toString = function() {
   return "/" + this.pattern.replace(/\//g, "\\/") + "/ =~ " + this.expression;
-}
+};
 
 RegexpNotMatch.prototype.toString = function() {
   return "/" + this.pattern.replace(/\//g, "\\/") + "/ !~ " + this.expression;
-}
+};
 
 function pause(milliseconds) {
   return "sleep " + (parseInt(milliseconds) / 1000);
@@ -137,7 +137,7 @@ CallSelenium.prototype.toString = function() {
     result += ')';
   }
   return result;
-}
+};
 
 function formatComment(comment) {
   return comment.comment.replace(/.+/mg, function(str) {

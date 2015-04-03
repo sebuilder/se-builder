@@ -1,8 +1,8 @@
 builder.views.script = {};
 
 builder.views.script.clearResults = function() {
-  var script = builder.getScript();
-  for (var i = 0; i < script.steps.length; i++) {
+  var script = builder.getScript(), i;
+  for (i = 0; i < script.steps.length; i++) {
     jQuery('#' + script.steps[i].id + '-content').css('background-color', 'white');
     jQuery('#' + script.steps[i].id + '-error').hide();
     jQuery('#' + script.steps[i].id + '-message').hide();  
@@ -11,7 +11,7 @@ builder.views.script.clearResults = function() {
     script.steps[i].failureMessage = null;
   }
   jQuery('#edit-clearresults-span').hide();
-  for (var i = 0; i < builder.views.script.clearResultsListeners.length; i++) {
+  for (i = 0; i < builder.views.script.clearResultsListeners.length; i++) {
     builder.views.script.clearResultsListeners[i]();
   }
 };

@@ -16,14 +16,14 @@ builder.dialogs.variables.getVars = function(callback) {
     builder.dialogs.variables.rcRun = null;
     callback(seleniumVersion.playback.getVars());
   }
-}
+};
 
 builder.dialogs.variables.setVar = function(k, v) {
   var seleniumVersion = builder.getScript().seleniumVersion;
   var runs = seleniumVersion.rcPlayback.getTestRuns();
   if (runs.indexOf(builder.dialogs.variables.rcRun) != -1) {
     seleniumVersion.rcPlayback.setVar(builder.dialogs.variables.rcRun, k, v, function() {});
-  } else if (builder.dialogs.variables.rcRun != null) {
+  } else if (builder.dialogs.variables.rcRun !== null) {
     alert(_t('no_playback_found_for_set_vars'));
     builder.dialogs.variables.hide();
   } else {
@@ -97,7 +97,7 @@ builder.dialogs.variables.makeKVEntry = function(i, k, v) {
       builder.dialogs.variables.setVar(k, null);
     }}, "X"))
   );
-}
+};
 
 builder.dialogs.variables.hide = function() {
   jQuery(builder.dialogs.variables.dialog).remove();

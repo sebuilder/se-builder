@@ -73,7 +73,7 @@ builder.dialogs.exportsuite.saveAs = function() {
 builder.dialogs.exportsuite.doExport = function() {
   var v = builder.suite.getCommonSeleniumVersion();
   var exporters = v.io.getSuiteExportFormatsFor(builder.suite.getCommonExportFormat());
-  if (exporters.length == 0) {
+  if (exporters.length === 0) {
     return;
   }
   if (exporters.length == 1) {

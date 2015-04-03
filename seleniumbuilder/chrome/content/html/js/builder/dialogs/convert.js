@@ -15,10 +15,10 @@ function createConversionLi(script, version) {
 }
 
 builder.dialogs.convert.show = function(node) {
-  var script = builder.getScript();
+  var script = builder.getScript(), i, version;
   var conversionOptions = [];
-  for (var i = 0; i < builder.seleniumVersions.length; i++) {
-    var version = builder.seleniumVersions[i];
+  for (i = 0; i < builder.seleniumVersions.length; i++) {
+    version = builder.seleniumVersions[i];
     if (version === script.seleniumVersion) { continue; }
     if (builder.versionconverter.canConvert(script, version)) {
       conversionOptions.push(version);
@@ -49,15 +49,15 @@ builder.dialogs.convert.show = function(node) {
       append(format_list).
       append(newNode('p', cancel_b));
   
-  for (var i = 0; i < builder.seleniumVersions.length; i++) {
-    var version = builder.seleniumVersions[i];
+  for (i = 0; i < builder.seleniumVersions.length; i++) {
+    version = builder.seleniumVersions[i];
     if (version == script.seleniumVersion) { continue; }
     if (builder.versionconverter.canConvert(script, version)) {
       jQuery(format_list).append(createConversionLi(script, version));
     } else {
       var iList = builder.versionconverter.nonConvertibleStepNames(builder.getScript(), version);
       var inconvertibles = "";
-      for (var i = 0; i < iList.length; i++) {
+      for (i = 0; i < iList.length; i++) {
         inconvertibles += iList[i] + " ";
       }
       jQuery(format_list).append(newNode('li', version.name + ": " + _t('the_following_steps_cant_be_converted') + ": " + inconvertibles));
