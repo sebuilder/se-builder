@@ -219,6 +219,7 @@ m.sel2_server_error = "Server Error";
 m.sel2_must_playback_in_foreground = "Note: Must leave playback window in foreground during local playback.";
 m.sel2_eval_failed = "Script evaluation failed.";
 m.sel2_eval_false = "Eval result \"{0}\" does not match \"{1}\".";
+m.sel2_bypass = "ByPass step \{0}\"";
 
 // Step display
 m.param_expr_info = "<br>Parameter expressions of the form <i>${varname}</i> are replaced by the contents of the variable <i>varname</i>";
@@ -288,6 +289,8 @@ m.misc_sel2_cat = "Misc";
 m.assertion_sel2_cat = "Assertion";
 m.verify_sel2_cat = "Verify";
 m.wait_sel2_cat = "Wait";
+m.bypass_sel2_cat = "ByPass";
+m.bookmarklet_sel2_cat = "BookmarkLets";
 m.store_sel2_cat = "Store";
 
 // Data-driven

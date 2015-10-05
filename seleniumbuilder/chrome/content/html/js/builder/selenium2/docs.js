@@ -76,6 +76,10 @@ builder.selenium2.docs = {
     "params": {"text": "The expected alert text." },
     "description": "Wait for an alert showing with the given text."
   },
+  "bypassAlertText": {
+    "params": {"text": "The expected alert text." ,"nbstep":"number of step to bypass"},
+    "description": "bypass n steps that there is an alert showing with the given text."
+  },
   "storeAlertText": {
     "params": {"variable": "The name of the variable to store the text in." },
     "description": "Store the text of the visible alert in the given variable."
@@ -91,6 +95,10 @@ builder.selenium2.docs = {
   "waitForAlertPresent": {
     "params": {},
     "description": "Wait for an alert."
+  },
+  "bypassForAlertPresent": {
+    "params": {"nbstep":"number of step to bypass"},
+    "description": "bypass n steps that there is an alert."
   },
   "storeAlertPresent": {
     "params": {"variable": "The name of the variable to store in whether an alert is present." },
@@ -235,6 +243,12 @@ builder.selenium2.docs = {
     },
     "description": "Waits until the current URL is the given value."
   },
+  "bypassCurrentUrl": {
+    "params": {
+      "url": "The URL we want to be at."
+    },
+    "description": "Waits until the current URL is the given value."
+  },
   "storeCurrentUrl": {
     "params": {
       "variable": "The name of the variable to store the URL in."
@@ -254,6 +268,12 @@ builder.selenium2.docs = {
     "description": "Verifies that the current page has the given title. If this is not the case, script execution will be marked as failed, but the script will continue running."
   },
   "waitForTitle": {
+    "params": {
+      "title": "Title we want the current page to have."
+    },
+    "description": "Waits for the current page to have the given title."
+  },
+  "bypassTitle": {
     "params": {
       "title": "Title we want the current page to have."
     },
@@ -286,6 +306,13 @@ builder.selenium2.docs = {
     },
     "description": "Waits for the given element containing exactly the given text."
   },
+  "bypassText": {
+    "params": {
+      "locator": "How to find the element whose text to test.",
+      "text": "The text we want the element to have."
+    },
+    "description": "Waits for the given element containing exactly the given text."
+  },
   "storeText": {
     "params": {
       "variable": "The name of the variable to store the element's text in.",
@@ -306,6 +333,12 @@ builder.selenium2.docs = {
     "description": "Verifies that the given text is somewhere on the page. If this is not the case, script execution will be marked as failed, but the script will continue running."
   },
   "waitForTextPresent": {
+    "params": {
+      "text": "The text we want to feature on the page."
+    },
+    "description": "Waits for the given text to appear somewhere on the page."
+  },
+  "bypassTextPresent": {
     "params": {
       "text": "The text we want to feature on the page."
     },
@@ -336,6 +369,12 @@ builder.selenium2.docs = {
     },
     "description": "Waits for the text of the entire page body to be as given."
   },
+  "bypassBodyText": {
+    "params": {
+      "text": "The text we want the entire page to be."
+    },
+    "description": "Waits for the text of the entire page body to be as given."
+  },
   "storeBodyText": {
     "params": {
       "variable": "The name of the variable to store the page body text in."
@@ -360,6 +399,12 @@ builder.selenium2.docs = {
     },
     "description": "Waits for the page source to be as given."
   },
+  "bypassPageSource": {
+    "params": {
+      "source": "The expected page source."
+    },
+    "description": "Waits for the page source to be as given."
+  },
   "storePageSource": {
     "params": {
       "variable": "The name of the variable to store the page source in."
@@ -379,6 +424,12 @@ builder.selenium2.docs = {
     "description": "Verifies that the given element exists. If this is not the case, script execution will be marked as failed, but the script will continue running."
   },
   "waitForElementPresent": {
+    "params": {
+      "locator": "How to find the element."
+    },
+    "description": "Waits for an element to exist."
+  },
+  "bypassElementPresent": {
     "params": {
       "locator": "How to find the element."
     },
@@ -409,6 +460,12 @@ builder.selenium2.docs = {
     },
     "description": "Waits for an element to be selected."
   },
+  "bypassElementSelected": {
+    "params": {
+      "locator": "How to find the element."
+    },
+    "description": "Waits for an element to be selected."
+  },
   "storeElementSelected": {
     "params": {
       "variable": "Name of the variable to store the attribute value in.",
@@ -433,6 +490,14 @@ builder.selenium2.docs = {
     "description": "Verifies that an element's attribute has a specific value. If this is not the case, script execution will be marked as failed, but the script will continue running."
   },
   "waitForElementAttribute": {
+    "params": {
+      "locator": "How to find the element.",
+      "attributeName": "The name of the attribute to check.",
+      "value": "The value we want the attribute to have."
+    },
+    "description": "Waits for an element's attribute to assume a specific value."
+  },
+  "bypassElementAttribute": {
     "params": {
       "locator": "How to find the element.",
       "attributeName": "The name of the attribute to check.",
@@ -472,6 +537,14 @@ builder.selenium2.docs = {
     },
     "description": "Waits for an element's CSS style property to assume a specific value."
   },
+  "bypassElementStyle": {
+    "params": {
+      "locator": "How to find the element.",
+      "propertyName": "The name of the CSS style property to check.",
+      "value": "The value we want the property to have."
+    },
+    "description": "Waits for an element's CSS style property to assume a specific value."
+  },
   "storeElementStyle": {
     "params": {
       "variable": "Name of the variable to store the property value in.",
@@ -495,6 +568,13 @@ builder.selenium2.docs = {
     "description": "Verifies that an element's value is as given. If this is not the case, script execution will be marked as failed, but the script will continue running."
   },
   "waitForElementValue": {
+    "params": {
+      "locator": "How to find the element.",
+      "value": "The value we want the element to have."
+    },
+    "description": "Waits for an element's value to become the given one."
+  },
+  "bypassElementValue": {
     "params": {
       "locator": "How to find the element.",
       "value": "The value we want the element to have."
@@ -526,6 +606,12 @@ builder.selenium2.docs = {
     },
     "description": "Waits for a cookie with the given name to be present."
   },
+  "bypassCookiePresent": {
+    "params": {
+      "name": "The cookie's name."
+    },
+    "description": "Waits for a cookie with the given name to be present."
+  },
   "storeCookiePresent": {
     "params": {
       "variable": "The name of the variable where to store whether the cookie exists.",
@@ -548,6 +634,13 @@ builder.selenium2.docs = {
     "description": "Verifies that a cookie with the given name is present. If this is not the case, script execution will be marked as failed, but the script will continue running."
   },
   "waitForCookieByName": {
+    "params": {
+      "name": "The cookie's name.",
+      "value": "The value (content) the cookie is expected to have."
+    },
+    "description": "Waits for a cookie with the given name and value to be present."
+  },
+  "bypassCookieByName": {
     "params": {
       "name": "The cookie's name.",
       "value": "The value (content) the cookie is expected to have."
@@ -582,12 +675,43 @@ builder.selenium2.docs = {
     },
     "description": "Waits for the given script to evaluate to the given value. Use 'return' to return the result of the evaluation, e.g. 'return 3'."
   },
+  "bypassEval": {
+    "params": {
+      "script": "A JavaScript expression to be evaluated.",
+      "value": "The value the script is expected to evaluate to."
+    },
+    "description": "Waits for the given script to evaluate to the given value. Use 'return' to return the result of the evaluation, e.g. 'return 3'."
+  },
   "storeEval": {
     "params": {
       "variable": "The name of the variable to store evaluation result in.",
       "script": "A JavaScript expression to be evaluated. Use 'return' to return the result of the evaluation, e.g. 'return 3'."
     },
     "description": "Evaluates a JavaScript expression and stores the result in a variable."
+  },
+  "printWindowName": {
+    "description": "Print out the currrent window name."
+  },
+  "renameWindow": {
+    "params" : {
+      "name": "a current window new name"
+    },
+    "description": "Name or Rename the current window DOM object."
+  },
+  "forceTargets": {
+    "params" : {
+      "name": "a target value or framename (current value:\"_blank\",\"_self\",\"_parent\",\"_top\",...)"
+    },
+    "description": "force all links to specifie name to linked document (href and open)"
+  },
+  "deleteComments": {
+    "description": "delete all comments of the html structure"
+  },
+  "deleteCachesUrls": {
+    "description": "delete all params of urls image / css / js"
+  },
+  "deleteHiddenValues": {
+    "description": "delete data value of hidden input tags"
   }
 };
 
