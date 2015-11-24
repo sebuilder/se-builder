@@ -349,36 +349,17 @@ builder.selenium2.rcPlayback.send = function(r, http_method, path, msg, callback
 
 /** Performs ${variable} substitution for parameters. */
 builder.selenium2.rcPlayback.param = function(r, pName) {
-  var output = "";
-  var hasDollar = false;
-  var insideVar = false;
-  var varName = "";
-  var text = r.currentStep.type.getParamType(pName) == "locator" ? r.currentStep[pName].getValue() : r.currentStep[pName];
-  for (var i = 0; i < text.length; i++) {
-    var ch = text.substring(i, i + 1);
-    if (insideVar) {
-      if (ch == "}") {
-        if (r.vars[varName] == undefined) {
-          throw "Variable not set: " + varName + ".";
-        }
-        output += r.vars[varName];
-        insideVar = false;
-        hasDollar = false;
-        varName = "";
-      } else {
-        varName += ch;
-      }
-    } else {
-      // !insideVar
-      if (hasDollar) {
-        if (ch == "{") { insideVar = true; } else { hasDollar = false; output += "$" + ch; }
-      } else {
-        if (ch == "$") { hasDollar = true; } else { output += ch; }
-      }
-    }
-  }
-
-  return r.currentStep.type.getParamType(pName) == "locator" ? {"using": r.currentStep[pName].getName(builder.selenium2), "value": output} : output;
+  var text = r.currentStep.type.getParamType(pName) == "locator" 
+    ? r.currentStep[pName].getValue() 
+    : r.currentStep[pName];
+  var output = text.replace(/\${(\w+)}/g, function(match, varName) {
+    return r.vars[varName] !== undefined
+      ? r.vars[varName]
+      : match;
+  });
+  return r.currentStep.type.getParamType(pName) == "locator" 
+    ? {"using": r.currentStep[pName].getName(builder.selenium2), "value": output} 
+    : output;
 };
 
 builder.selenium2.rcPlayback.print = function(r, text) {

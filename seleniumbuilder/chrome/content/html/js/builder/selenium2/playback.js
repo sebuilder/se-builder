@@ -310,36 +310,17 @@ builder.selenium2.playback.deselectElement = function(target, callback) {
 
 /** Performs ${variable} substitution for parameters. */
 builder.selenium2.playback.param = function(pName) {
-  var output = "";
-  var hasDollar = false;
-  var insideVar = false;
-  var varName = "";
-  var text = builder.selenium2.playback.currentStep.type.getParamType(pName) == "locator" ? builder.selenium2.playback.currentStep[pName].getValue() : builder.selenium2.playback.currentStep[pName];
-  for (var i = 0; i < text.length; i++) {
-    var ch = text.substring(i, i + 1);
-    if (insideVar) {
-      if (ch == "}") {
-        if (builder.selenium2.playback.vars[varName] == undefined) {
-          throw _t('sel2_variable_not_set', varName);
-        }
-        output += builder.selenium2.playback.vars[varName];
-        insideVar = false;
-        hasDollar = false;
-        varName = "";
-      } else {
-        varName += ch;
-      }
-    } else {
-      // !insideVar
-      if (hasDollar) {
-        if (ch == "{") { insideVar = true; } else { hasDollar = false; output += "$" + ch; }
-      } else {
-        if (ch == "$") { hasDollar = true; } else { output += ch; }
-      }
-    }
-  }
-
-  return builder.selenium2.playback.currentStep.type.getParamType(pName) == "locator" ? {"type": builder.selenium2.playback.currentStep[pName].getName(builder.selenium2), "value": output} : output;
+  var text = builder.selenium2.playback.currentStep.type.getParamType(pName) == "locator" 
+    ? builder.selenium2.playback.currentStep[pName].getValue()
+    : builder.selenium2.playback.currentStep[pName];
+  var output = text.replace(/\${(\w+)}/g, function(match, varName) {
+    return builder.selenium2.playback.vars[varName] !== undefined
+      ? builder.selenium2.playback.vars[varName]
+      : match;
+  });
+  return builder.selenium2.playback.currentStep.type.getParamType(pName) == "locator" 
+    ? {"type": builder.selenium2.playback.currentStep[pName].getName(builder.selenium2), "value": output} 
+    : output;
 };
 
 builder.selenium2.playback.canPlayback = function(stepType) {
