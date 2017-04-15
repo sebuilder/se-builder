@@ -4,7 +4,8 @@ builder.selenium2.io = {};
  * Code for exporting/importing Selenium 2 scripts in a variety of formats.
 */
 builder.selenium2.io.parseScript = function(text, path) {
-  var scriptJSON = JSON.parse(text);
+  var cleanText = JSON.minify(text);
+  var scriptJSON = JSON.parse(cleanText);
   var script = new builder.Script(builder.selenium2);
   script.path = {
     'where': path.where,
