@@ -131,6 +131,7 @@ builder.loader.mainScripts = [
   "lib/cssQuery-p.js",
   "lib/browserdetect.js",
   "lib/json2.js",
+  "lib/minify.json.js",  
   "lib/js-xpath.js",
   "lib/jquery.csv-0.71.min.js",
   // Load Selenium IDE Formats & TestCase/Suite
