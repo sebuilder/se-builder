@@ -65,7 +65,7 @@
         "firefox": {
           "pluginVersion": "1.0.0",
           "builderMinVersion": "3.0",
-          "builderMaxVersion": "3.0.*",
+          "builderMaxVersion": "3.*",
           "downloadUrl": "http://testingbot.com/testingbot-builder-v3.zip"
         }
       }
